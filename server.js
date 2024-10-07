@@ -12,10 +12,8 @@ app.use(cors({ origin: 'https://kthjvr.github.io/That-Sky-Calendar/' }));
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Define a route to serve your JSON data
-app.get('/events.json', (req, res) => {
-  console.log('Received request for /events.json');
-  res.json(eventData);
+app.get('/events', (req, res) => {
+  res.redirect('./events.json'); 
 });
 
 // Define a route to serve the HTML with event data
