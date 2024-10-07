@@ -1,9 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, getDocs } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
@@ -20,24 +18,25 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// Fetch event data from Firestore
-const eventsContainer = document.getElementById('events-container');
-db.collection('events').get()
-  .then(snapshot => {
-    snapshot.docs.forEach(doc => {
-      const eventData = doc.data();
-      const eventDiv = document.createElement('div');
-      eventDiv.innerHTML = `
-        <h2>${eventData.name}</h2>
-        <p>Date: ${eventData.date}</p>
-        <p>Time: ${eventData.time}</p> <p>Location: ${eventData.location}</p>
-        <p>Description: ${eventData.description}</p>
-      `;
-      eventsContainer.appendChild(eventDiv);
-    });
-  })
-  .catch(error => {
-    console.error("Error fetching events:", error);
-    const eventsContainer = document.getElementById('events-container');
-    eventsContainer.innerHTML = 'Error fetching events. Please try again later.';
-  });
+ // Fetch event data from Firestore
+ const eventsContainer = document.getElementById('events-container');
+ const eventsCollectionRef = collection(db, 'events');
+ getDocs(eventsCollectionRef)
+   .then((snapshot) => {
+     snapshot.docs.forEach((doc) => {
+       const eventData = doc.data();
+       const eventDiv = document.createElement('div');
+       eventDiv.innerHTML = `
+         <h2>${eventData.name}</h2>
+         <p>Date: ${eventData.date}</p>
+         <p>Time: ${eventData.time}</p> <p>Location: ${eventData.location}</p>
+         <p>Description: ${eventData.description}</p>
+       `;
+       eventsContainer.appendChild(eventDiv);
+     });
+   })
+   .catch((error) => {
+     console.error("Error fetching events:", error);
+     const eventsContainer = document.getElementById('events-container');
+     eventsContainer.innerHTML = 'Error fetching events. Please try again later.';
+   });

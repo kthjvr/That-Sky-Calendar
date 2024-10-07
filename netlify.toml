@@ -1,0 +1,13 @@
+   [build]
+   command = "npm run build"
+   publish = "public"
+
+   [functions]
+   external_node_modules = ["firebase"]
+
+   [build.environment]
+   NODE_ENV = "production"
+
+   [build.processing]
+   [build.processing.javascript]
+   esbuild = true 
