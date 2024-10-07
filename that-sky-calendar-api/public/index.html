@@ -5,5 +5,26 @@
 </head>
 <body>
   <h1>That Sky Calendar</h1>
+  <ul id="event-list"></ul>
+
+  <script>
+    fetch('/events') // Fetch the events data from your server
+      .then(response => response.json())
+      .then(events => {
+        const eventList = document.getElementById('event-list');
+        events.forEach(event => {
+          const listItem = document.createElement('li');
+          listItem.innerHTML = `
+            <h2>${event.title}</h2>
+            <p>${event.date}</p>
+            <p>${event.description}</p>
+          `;
+          eventList.appendChild(listItem);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  </script>
 </body>
 </html>
