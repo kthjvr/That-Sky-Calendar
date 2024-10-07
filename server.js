@@ -13,7 +13,7 @@ app.use(cors({ origin: 'https://kthjvr.github.io/That-Sky-Calendar/' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Define a route to serve your JSON data
-app.get('/events', (req, res) => {
+app.get('/that-sky-calendar-api/events', (req, res) => {
   res.json(eventData); 
 });
 
