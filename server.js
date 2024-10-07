@@ -4,7 +4,7 @@ const app = express();
 const path = require('path');
 
 // Load your event data
-const eventData = require('events'); 
+const eventData = require('./events.json'); 
 
 // Enable CORS
 app.use(cors({ origin: 'https://kthjvr.github.io/That-Sky-Calendar/' })); 
@@ -13,7 +13,7 @@ app.use(cors({ origin: 'https://kthjvr.github.io/That-Sky-Calendar/' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Define a route to serve your JSON data
-app.get('events', (req, res) => {
+app.get('/events.json', (req, res) => {
   res.json(eventData); 
 });
 
