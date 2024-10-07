@@ -4,9 +4,9 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-      "build": "npm run build:js && npm run build:css",
-      "build:js": "esbuild script.js --bundle --outfile=public/script.js",
-      "build:css": "postcss public/styles.css -o public/styles.css"
+        "build": "npm run build:js && npm run build:css",
+        "build:js": "esbuild script.js --bundle --outfile=public/script.js --sourcemap",
+        "build:css": "postcss public/styles.css -o public/styles.css"
     },
     "repository": {
       "type": "git",
