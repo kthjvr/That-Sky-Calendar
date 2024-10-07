@@ -14,7 +14,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Define a route to serve your JSON data
 app.get('/events.json', (req, res) => {
-  res.json(eventData); 
+  console.log('Received request for /events.json');
+  res.json(eventData);
 });
 
 // Define a route to serve the HTML with event data
