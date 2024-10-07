@@ -1,18 +1,18 @@
+
 {
     "name": "that-sky-calendar",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
     "scripts": {
-        "build": "npm run build:js && npm run build:css",
-        "build:js": "esbuild script.js --bundle --outfile=public/script.js",
-        "build:css": "postcss public/styles.css -o public/styles.css"
+      "build": "npm run build:js && npm run build:css",
+      "build:js": "esbuild script.js --bundle --outfile=public/script.js",
+      "build:css": "postcss public/styles.css -o public/styles.css"
     },
     "repository": {
-        "type": "git",
-        "url": "git+https://kthjvr.github.io/That-Sky-Calendar/"
+      "type": "git",
+      "url": "git+https://kthjvr.github.io/That-Sky-Calendar/"
     },
-    "author": "",
+    "author": "Kathy",
     "license": "ISC",
     "devDependencies": {
         "esbuild": "^0.24.0",
@@ -22,4 +22,4 @@
     "dependencies": {
         "firebase": "^10.14.0"
     }
-}
+  }

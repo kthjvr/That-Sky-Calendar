@@ -13,10 +13,10 @@ const firebaseConfig = {
   measurementId: "G-FXXSH6NS6Z"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+ // Initialize Firebase
+ const app = initializeApp(firebaseConfig);
+ const analytics = getAnalytics(app);
+ const db = getFirestore(app);
 
  // Fetch event data from Firestore
  const eventsContainer = document.getElementById('events-container');
@@ -29,8 +29,7 @@ const db = getFirestore(app);
        eventDiv.innerHTML = `
          <h2>${eventData.name}</h2>
          <p>Date: ${eventData.date}</p>
-         <p>Time: ${eventData.time}</p> <p>Location: ${eventData.location}</p>
-         <p>Description: ${eventData.description}</p>
+         <p>Location: ${eventData.location}</p>
        `;
        eventsContainer.appendChild(eventDiv);
      });
