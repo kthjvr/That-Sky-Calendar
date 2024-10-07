@@ -5,7 +5,7 @@
 </head>
 <body>
   <h1>That Sky Calendar</h1>
-  <ul id="event-list">
+  <ul id="event-list"></ul>
 
   <script>
     fetch('/events.json') // Fetch the events data from the root level
@@ -26,7 +26,5 @@
         console.error('Error fetching data:', error);
       });
   </script>
-
-</ul>
 </body>
 </html>
