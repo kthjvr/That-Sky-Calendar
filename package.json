@@ -1,4 +1,3 @@
-
 {
     "name": "that-sky-calendar",
     "version": "1.0.0",
@@ -9,8 +8,8 @@
         "build:css": "postcss public/styles.css -o public/styles.css"
     },
     "repository": {
-      "type": "git",
-      "url": "git+https://kthjvr.github.io/That-Sky-Calendar/"
+        "type": "git",
+        "url": "git+https://kthjvr.github.io/That-Sky-Calendar/"
     },
     "author": "Kathy",
     "license": "ISC",
@@ -22,4 +21,4 @@
     "dependencies": {
         "firebase": "^10.14.0"
     }
-  }
+}
