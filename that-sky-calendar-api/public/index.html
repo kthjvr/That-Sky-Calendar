@@ -8,7 +8,7 @@
   <ul id="event-list"></ul>
 
   <script>
-    fetch('../events') // Fetch the events data from your server
+    fetch('../../events') // Fetch the events data from your server
       .then(response => response.json())
       .then(events => {
         const eventList = document.getElementById('event-list');
