@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const path = require('path'); // Import the 'path' module for file paths
+const path = require('path');
 
 // Load your event data
 const eventData = require('./events.json'); 
@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Define a route to serve your JSON data
 app.get('/events', (req, res) => {
-  res.json(eventData); // Send your JSON data
+  res.json(eventData); 
 });
 
 // Define a route to serve the HTML with event data
