@@ -2,6 +2,7 @@
     "name": "that-sky-calendar",
     "version": "1.0.0",
     "description": "",
+    "type": "module",
     "scripts": {
         "build": "npm run build:js && npm run build:css",
         "build:js": "esbuild script.js --bundle --outfile=public/script.js --sourcemap",
