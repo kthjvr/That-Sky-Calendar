@@ -1,5 +1,5 @@
 [build]
-command = "webpack --mode production"
+command = "npx webpack --mode production"
 publish = "dist"
 package = "."
 
@@ -8,7 +8,6 @@ external_node_modules = ["firebase"]
 
 [build.environment]
 NODE_ENV = "production"
-NPM_CONFIG_GLOBAL = "true"
 
 [build.processing]
 [build.processing.javascript]
