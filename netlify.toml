@@ -1,5 +1,5 @@
    [build]
-   command = "npm install webpack@5.95.0 && npx webpack"
+   command = "npx webpack"
    publish = "dist" 
 
    [functions]
