@@ -7,7 +7,7 @@ package = "."
 external_node_modules = ["firebase"]
 
 [build.environment]
-NODE_ENV = "production"
+NODE_ENV = "development"
 
 [build.processing]
 [build.processing.javascript]
