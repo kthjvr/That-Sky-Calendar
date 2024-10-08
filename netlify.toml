@@ -1,14 +1,15 @@
-   [build]
-   command = "npx webpack"
-   publish = "dist"
-   package = "."
+[build]
+command = "webpack --mode production"
+publish = "dist"
+package = "."
 
-   [functions]
-   external_node_modules = ["firebase"]
+[functions]
+external_node_modules = ["firebase"]
 
-   [build.environment]
-   NODE_ENV = "production"
+[build.environment]
+NODE_ENV = "production"
+NPM_CONFIG_GLOBAL = "true"
 
-   [build.processing]
-   [build.processing.javascript]
-   esbuild = true 
+[build.processing]
+[build.processing.javascript]
+esbuild = true 
