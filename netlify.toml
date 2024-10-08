@@ -1,6 +1,7 @@
    [build]
    command = "npx webpack"
-   publish = "dist" 
+   publish = "dist"
+   package = "."
 
    [functions]
    external_node_modules = ["firebase"]
