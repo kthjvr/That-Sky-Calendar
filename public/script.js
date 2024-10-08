@@ -39,3 +39,12 @@ const firebaseConfig = {
      const eventsContainer = document.getElementById('events-container');
      eventsContainer.innerHTML = 'Error fetching events. Please try again later.';
    });
+
+   
+  getDocs(eventsCollectionRef)
+  .then((snapshot) => {
+    console.log('Data fetched successfully:', snapshot.docs);
+  })
+  .catch((error) => {
+    console.error('Error fetching data:', error);
+  });
