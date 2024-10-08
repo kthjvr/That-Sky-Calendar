@@ -4,9 +4,8 @@
     "description": "",
     "type": "module",
     "scripts": {
-        "build": "npm run build:js && npm run build:css",
-        "build:js": "esbuild script.js --bundle --outfile=public/script.js --sourcemap",
-        "build:css": "postcss public/styles.css -o public/styles.css"
+        "build": "npm run build:js",
+        "build:js": "esbuild public/script.js --bundle --outfile=dist/script.js --sourcemap"
     },
     "repository": {
         "type": "git",
