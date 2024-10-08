@@ -3,25 +3,23 @@
     "version": "1.0.0",
     "description": "",
     "scripts": {
-        "build": "npm run build:js",
-        "build:js": "esbuild public/script.js --bundle --outfile=dist/script.js --sourcemap"
+      "build": "webpack --mode production"
     },
     "repository": {
-        "type": "git",
-        "url": "git+https://kthjvr.github.io/That-Sky-Calendar/"
+      "type": "git",
+      "url": "git+https://kthjvr.github.io/That-Sky-Calendar/"
     },
     "author": "Kathy",
     "license": "ISC",
     "devDependencies": {
-        "esbuild": "^0.24.0",
-        "html-loader": "^5.1.0",
-        "html-webpack-plugin": "^5.6.0",
-        "postcss": "^8.4.47",
-        "postcss-cli": "^11.0.0",
-        "webpack": "^5.95.0",
-        "webpack-cli": "^5.1.4"
+      "html-loader": "^5.1.0",
+      "html-webpack-plugin": "^5.6.0",
+      "postcss": "^8.4.47",
+      "postcss-cli": "^11.0.0",
+      "webpack": "^5.95.0",
+      "webpack-cli": "^5.1.4"
     },
     "dependencies": {
-        "firebase": "^10.14.0"
+      "firebase": "^10.14.0"
     }
-}
+  }
