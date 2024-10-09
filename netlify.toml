@@ -1,5 +1,5 @@
 [build]
-command = "npx webpack --mode production"
+command = "npx webpack"
 publish = "dist"
 package = "."
 
