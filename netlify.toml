@@ -3,12 +3,5 @@ command = "npx webpack"
 publish = "dist"
 package = "."
 
-[functions]
-external_node_modules = ["firebase"]
-
 [build.environment]
 NODE_ENV = "development"
-
-[build.processing]
-[build.processing.javascript]
-esbuild = true 
