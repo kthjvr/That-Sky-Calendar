@@ -50,7 +50,7 @@ onSnapshot(colRef, (snapshot) => {
 });
 
 // get single document data and display in HTML
-const docRef = doc(db, 'events', 'RQmeUrWGw7vJ9bnHKSx4'); // Replace 'RQmeUrWGw7vJ9bnHKSx4' with your actual document ID
+const docRef = doc(db, 'events', 'RQmeUrWGw7vJ9bnHKSx4'); 
 onSnapshot(docRef, (docSnapshot) => {
     if (docSnapshot.exists()) { // Check if the document exists
         const event = docSnapshot.data();
