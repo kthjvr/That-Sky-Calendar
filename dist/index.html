@@ -1,1 +1,25 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Event Website</title><link rel="stylesheet" href="06725520e34aae949bf6.css"><script defer="defer" src="bundle.js"></script></head><body><div id="events-container"></div><script src="8b08966c7d8b500aa09b.js" type="module"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Website</title>
+</head>
+<body>
+    <h1>This site is in development</h1>
+    <ul id="event-list"></ul> 
+    <h1 id="event-heading"></h1> 
+
+    <script src="bundle.js"></script>
+    <script>
+        function updateHeading() {
+            if (window.eventName !== undefined) {
+                document.getElementById('event-heading').innerHTML = `<h1>Today is ${window.eventName}</h1>`;
+            } else {
+                setTimeout(updateHeading, 100); 
+            }
+        }
+        updateHeading();
+    </script>
+</body>
+</html>
