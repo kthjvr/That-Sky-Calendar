@@ -49,6 +49,7 @@ onSnapshot(colRef, (snapshot) => {
     });
 });
 
+
 // get single document data and display in HTML
 const docRef = doc(db, 'events', 'RQmeUrWGw7vJ9bnHKSx4'); 
 onSnapshot(docRef, (docSnapshot) => {
@@ -59,5 +60,4 @@ onSnapshot(docRef, (docSnapshot) => {
         window.eventName = 'No events found'; // Handle empty collection
     }
 });
-
 
