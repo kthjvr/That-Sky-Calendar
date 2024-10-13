@@ -7,6 +7,9 @@
 
     <!-- CALENDAR -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
+    <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
+
     <!--  -->
     <title>That Sky Events</title>
 </head>
@@ -14,9 +17,13 @@
     <header>
         <h1>SKY Events Calendar</h1>
     </header>
-    
+    <button id="dayGridMonthView">Month View</button>
+    <button id="timeGridWeekView">Week View</button>
+    <button id="listWeekView">List View</button>
     <div class="container">
-        <div id='calendar' class="calendar"></div>
+        <div id='calendar' class="calendar">
+          
+        </div>
         <div class="legends">
           <h2>Legends</h2>
           <div class="legend-item">
@@ -64,26 +71,6 @@
             }
         }
         updateHeading();
-        // eventsData = [ 
-        //         {
-        //             title: //put title here,
-        //             start: '2024-10-15',
-        //             end: '2024-10-29',
-        //             color: 'green',
-        //         },
-        //     ];
-
-        // // for calendar element
-        // document.addEventListener('DOMContentLoaded', function() {
-        //     var calendarEl = document.getElementById('calendar');
-        //     var calendar = new FullCalendar.Calendar(calendarEl, {
-        //     initialView: 'dayGridMonth',
-        //     aspectRatio: 1.8,
-        //     events: eventsData,  
-        //     });
-        //     calendar.render();
-        // })
-
 
     </script>
 

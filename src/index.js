@@ -1,6 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, getDoc, onSnapshot, doc } from "firebase/firestore";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
@@ -61,18 +63,76 @@ onSnapshot(docRef, (docSnapshot) => {
     }
 });
 
-// Pre-defined array 
+
+// ============ this is for calendar====================================================
+
 var test = []; // Initialize the array as empty
 
 // Function to initialize FullCalendar
 function initializeCalendar(eventsData) {
   var calendarEl = document.getElementById('calendar');
+
   var calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     aspectRatio: 1.8,
-    events: eventsData, // Use the eventsData array here
+    eventDidMount: function(info) {
+        var tooltip = new Tooltip(info.el, {
+          title: info.event.extendedProps.description,
+          placement: 'top',
+          trigger: 'hover',
+          container: 'body'
+        });
+      },
+    events: eventsData,
+
+    eventContent: function(info) {
+        return {
+          html: `
+            <div class="fc-event-content">
+              <img src="" alt="${info.event.title}" class="fc-event-image"> 
+              <span class='fc-event-title'>${info.event.title}</span> 
+            </div>
+          `
+        };
+      },
+
+      eventDidMount: function(info) {
+        // Get the image path from the event data
+        const imagePath = info.event.extendedProps.image;
+      
+        const storage = getStorage();
+        const imageRef = ref(storage, imagePath);
+      
+        // Get the download URL for the image
+        getDownloadURL(imageRef)
+          .then((url) => {
+            // Update the image source with the download URL
+            info.el.querySelector('.fc-event-image').src = url;
+          })
+          .catch((error) => {
+            console.error("Error getting download URL:", error);
+          });
+      }
   });
   calendar.render();
+
+    // Get references to the buttons
+    const dayGridMonthViewButton = document.getElementById('dayGridMonthView');
+    const timeGridWeekViewButton = document.getElementById('timeGridWeekView');
+    const listWeekViewButton = document.getElementById('listWeekView');
+
+    // Add event listeners
+    dayGridMonthViewButton.addEventListener('click', () => {
+        calendar.changeView('dayGridMonth');
+    });
+
+    timeGridWeekViewButton.addEventListener('click', () => {
+        calendar.changeView('timeGridWeek');
+    });
+
+    listWeekViewButton.addEventListener('click', () => {
+        calendar.changeView('listWeek');
+    });
 }
 
 // Fetch documents from the collection
@@ -83,13 +143,17 @@ getDocs(colRef)
       const start = doc.data().start; // Fetch start date from Firestore
       const end = doc.data().end;   // Fetch end date from Firestore
       const color = doc.data().color;
+      const description = doc.data().description;
+      const image = doc.data().image;
 
       // Add the event to the test array
       test.push({
         title: title,
         start: start, 
         end: end,  
-        color: color
+        color: color,
+        description: description,
+        image: image
       });
     });
 
