@@ -17,54 +17,6 @@
     
     <div class="container">
         <div id='calendar' class="calendar"></div>
-        <!-- <div class="calendar">
-          <div class="calendar-header">
-            <div>SUN</div>
-            <div>MON</div>
-            <div>TUE</div>
-            <div>WED</div>
-            <div>THU</div>
-            <div>FRI</div>
-            <div>SAT</div>
-          </div>
-          <div class="calendar-body">
-            <div class="calendar-cell">29</div>
-            <div class="calendar-cell">30</div>
-            <div class="calendar-cell">01</div>
-            <div class="calendar-cell">02</div>
-            <div class="calendar-cell">03</div>
-            <div class="calendar-cell">04</div>
-            <div class="calendar-cell">05</div>
-            <div class="calendar-cell">06</div>
-            <div class="calendar-cell">07</div>
-            <div class="calendar-cell">08</div>
-            <div class="calendar-cell">09</div>
-            <div class="calendar-cell">10</div>
-            <div class="calendar-cell">11</div>
-            <div class="calendar-cell">12</div>
-            <div class="calendar-cell">13</div>
-            <div class="calendar-cell">14</div>
-            <div class="calendar-cell">15</div>
-            <div class="calendar-cell">16</div>
-            <div class="calendar-cell">17</div>
-            <div class="calendar-cell">18</div>
-            <div class="calendar-cell">19</div>
-            <div class="calendar-cell">20</div>
-            <div class="calendar-cell">21</div>
-            <div class="calendar-cell">22</div>
-            <div class="calendar-cell">23</div>
-            <div class="calendar-cell">24</div>
-            <div class="calendar-cell">25</div>
-            <div class="calendar-cell">26</div>
-            <div class="calendar-cell">27</div>
-            <div class="calendar-cell">28</div>
-            <div class="calendar-cell">29</div>
-            <div class="calendar-cell">30</div>
-            <div class="calendar-cell">31</div>
-            <div class="calendar-cell">01</div>
-            <div class="calendar-cell">02</div>
-          </div>
-        </div> -->
         <div class="legends">
           <h2>Legends</h2>
           <div class="legend-item">
@@ -97,11 +49,13 @@
     <h1>This site is in development</h1>
     <ul id="event-list"></ul> 
     <h1 id="event-heading"></h1> 
+    <div id="event-titles"></div>
 
     <script src="bundle.js"></script>
     <script>
-      let eventName = window.eventName;
+      
         function updateHeading() {
+          let eventName = window.eventName;
             if (eventName !== undefined) {
                 document.getElementById('event-heading').innerHTML = `<h1>Today is ${eventName}</h1>`;
                 
@@ -110,52 +64,29 @@
             }
         }
         updateHeading();
-        eventsData = [ 
-                {
-                    title: `test`,
-                    start: '2024-10-15',
-                    end: '2024-10-29',
-                    color: 'green',
-                },
-            ];
+        // eventsData = [ 
+        //         {
+        //             title: //put title here,
+        //             start: '2024-10-15',
+        //             end: '2024-10-29',
+        //             color: 'green',
+        //         },
+        //     ];
 
-        // for calendar element
-        document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            aspectRatio: 1.8,
-            events: eventsData,  
-            });
-            calendar.render();
-        })
+        // // for calendar element
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     var calendarEl = document.getElementById('calendar');
+        //     var calendar = new FullCalendar.Calendar(calendarEl, {
+        //     initialView: 'dayGridMonth',
+        //     aspectRatio: 1.8,
+        //     events: eventsData,  
+        //     });
+        //     calendar.render();
+        // })
 
 
     </script>
 
-    <!-- <script>
-      $(document).ready(function(){
-        display_events();
-      });
 
-      function display_events() {
-        var events = new Array();
-        $.ajax({
-          url: 'display_event.php',
-          dataType: 'json',
-          success: function (response) {
-            var result = response.data;
-            $.each(result, function(i, item) {
-              events.push({
-                event_id: result[i].event_id,
-                title: result[i].title,
-                start: result[i].start,
-                end: result[i].end
-              })
-            })
-          }
-        })
-      }
-    </script> -->
 </body>
 </html>

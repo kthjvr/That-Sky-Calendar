@@ -42,7 +42,7 @@ onSnapshot(colRef, (snapshot) => {
         const event = { ...doc.data(), id: doc.id };
         const listItem = document.createElement('li');
         listItem.innerHTML = `
-            <h2>${event.name}</h2> 
+            <h2>${event.title}</h2> 
             <p>${event.location}</p>
         `;
         eventList.appendChild(listItem);
@@ -55,9 +55,48 @@ const docRef = doc(db, 'events', 'RQmeUrWGw7vJ9bnHKSx4');
 onSnapshot(docRef, (docSnapshot) => {
     if (docSnapshot.exists()) { // Check if the document exists
         const event = docSnapshot.data();
-        window.eventName = event.name; // Make the variable accessible globally
+        window.eventName = event.title; // Make the variable accessible globally
     } else {
         window.eventName = 'No events found'; // Handle empty collection
     }
 });
 
+// Pre-defined array 
+var test = []; // Initialize the array as empty
+
+// Function to initialize FullCalendar
+function initializeCalendar(eventsData) {
+  var calendarEl = document.getElementById('calendar');
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    aspectRatio: 1.8,
+    events: eventsData, // Use the eventsData array here
+  });
+  calendar.render();
+}
+
+// Fetch documents from the collection
+getDocs(colRef)
+  .then(snapshot => {
+    snapshot.docs.forEach(doc => {
+      const title = doc.data().title;
+      const start = doc.data().start; // Fetch start date from Firestore
+      const end = doc.data().end;   // Fetch end date from Firestore
+      const color = doc.data().color;
+
+      // Add the event to the test array
+      test.push({
+        title: title,
+        start: start, 
+        end: end,  
+        color: color
+      });
+    });
+
+    // Initialize FullCalendar after eventsData is populated
+    // (Now called directly within the then block)
+    initializeCalendar(test); 
+  })
+  .catch(error => {
+    console.error("Error getting documents: ", error);
+  });
