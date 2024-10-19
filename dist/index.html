@@ -5,23 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
 
+    <!-- Background -->
+    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/preset-firefly@3/tsparticles.preset.firefly.bundle.min.js"></script>
+
     <!-- CALENDAR -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
     <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
-
     <!--  -->
     <title>That Sky Events</title>
 </head>
 <body>
     <header>
-        <h1>SKY Events Calendar</h1>
+        <img src="../src/assets/logo.png" alt="">
     </header>
+
+
+    <div id="tsparticles"></div>
+
+    <script>
+      (async () => {
+        await loadFireflyPreset(tsParticles);
+        await tsParticles.load({
+          id: "tsparticles",
+          options: {
+            preset: "firefly"
+          }
+        });
+      })();
+    </script>
+    
     <button id="dayGridMonthView" hidden>Month View</button>
     <button id="timeGridWeekView" hidden>Week View</button>
     <button id="listWeekView" hidden>List View</button>
-
-    <h1>This site is in development</h1>
 
     <div class="container">
         <div id='calendar' class="calendar"></div>
@@ -47,27 +63,10 @@
             <h2>Event Summary</h2>
             </div>
         </div>
-
-
       </div>
 
 
     <script src="bundle.js"></script>
-    <script>
-      
-        function updateHeading() {
-          let eventName = window.eventName;
-            if (eventName !== undefined) {
-                document.getElementById('event-heading').innerHTML = `<h1>Today is ${eventName}</h1>`;
-                
-            } else {
-                setTimeout(updateHeading, 100); 
-            }
-        }
-        updateHeading();
-
-    </script>
-
 
 </body>
 </html>

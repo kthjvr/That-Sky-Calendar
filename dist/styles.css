@@ -1,15 +1,27 @@
 
 body {
     font-family: sans-serif;
-    background-color: #f0f0f0;
     margin: 0;
     padding: 0;
+    background-color: #000;
+}
+
+#tsparticles  {
+  position: absolute; /* Position the canvas absolutely */
+  top: 0;            /* Place it at the top of the page */
+  left: 0;           /* Place it at the left of the page */
+  width: 100%;       /* Make it full width */
+  height: 100%;      /* Make it full height */
+  z-index: -1;      /* Place it behind other content */
 }
 
 header {
-    background-color: #e0e0e0;
-    padding: 10px;
     text-align: center;
+}
+
+header img {
+  width: 150px;
+  /* height: 150px; */
 }
 
 .container {
@@ -49,6 +61,7 @@ header {
   justify-content: center;
   align-items: stretch;
   flex-direction: column;
+  width: 380px;
 }
 
 .ongoing {
@@ -73,6 +86,10 @@ header {
 .fc {
     width: 800px;
     height: 600px;
+}
+
+.fc-event-time {
+  display: none;
 }
 
 .calendar {
@@ -158,7 +175,7 @@ header {
 .tooltip {
   position: absolute;
   z-index: 9999;
-  background: #FFC107;
+  background: #E4E0E1;
   color: black;
   width: 150px;
   border-radius: 3px;
@@ -185,7 +202,7 @@ header {
 
 .tooltip .tooltip-arrow,
 .popper .popper__arrow {
-  border-color: #FFC107;
+  border-color: #E4E0E1;
 }
 .style5 .tooltip .tooltip-arrow {
   border-color: #1E252B;

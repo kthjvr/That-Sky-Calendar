@@ -30,7 +30,6 @@ getDocs(colRef)
         snapshot.docs.forEach((doc) => {
             events.push({ ...doc.data(), id: doc.id})
         })
-        // console.log(events);
     })
     .catch(err => {
         console.log(err.message);
@@ -59,7 +58,8 @@ function initializeCalendar(eventsData) {
         });
       },
     events: eventsData,
-
+    timeZone: 'Asia/Manila', // Set the time zone to PST
+    timeFormat: '',       // Hide the time display for events
   });
   calendar.render();
 }
@@ -69,17 +69,25 @@ getDocs(q)
   .then(snapshot => {
     snapshot.docs.forEach(doc => {
       const title = doc.data().title;
-      const start = doc.data().start; // Fetch start date from Firestore
-      const end = doc.data().end;   // Fetch end date from Firestore
+      const start = doc.data().start; 
+      const end = doc.data().end;   
       const color = doc.data().color;
       const description = doc.data().description;
       const image = doc.data().image;
 
+      // Assuming start and end are in YYYY-MM-DD format
+      const startDate = new Date(doc.data().start);
+      const endDate = new Date(doc.data().end);
+
+      // Apply PST time (3 PM PST = 11 PM UTC)
+      startDate.setHours(15, 0, 0); // 3 PM
+      endDate.setHours(14, 59, 0); // 2:59 PM
+
       // Add the event to the test array
       test.push({
         title: title,
-        start: start, 
-        end: end,  
+        start: startDate, // Store start in UTC
+        end: endDate, // Store end in UTC
         color: color,
         description: description,
         image: image
@@ -201,7 +209,12 @@ function showOngoingAndIncomingEvents(eventsData) {
   if (ongoingEvents.length > 0) {
     ongoingEvents.forEach(event => {
       const eventItem = document.createElement('p');
-      eventItem.textContent = `${event.title} (${event.start} - ${event.end})`;
+
+      // Format start and end dates in 12-hour format with AM/PM
+      const formattedStart = formatDate(event.start, 'MMM dd yyyy hh:mm a');
+      const formattedEnd = formatDate(event.end, 'MMM dd yyyy hh:mm a');
+
+      eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
       ongoingContainer.appendChild(eventItem);
     });
   } else {
@@ -215,7 +228,12 @@ function showOngoingAndIncomingEvents(eventsData) {
   if (incomingEvents.length > 0) {
     incomingEvents.forEach(event => {
       const eventItem = document.createElement('p');
-      eventItem.textContent = `${event.title} (${event.start} - ${event.end})`;
+
+      // Format start and end dates in 12-hour format with AM/PM
+      const formattedStart = formatDate(event.start, 'MMM dd yyyy hh:mm a');
+      const formattedEnd = formatDate(event.end, 'MMM dd yyyy hh:mm a');
+
+      eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
       incomingContainer.appendChild(eventItem);
     });
   } else {
@@ -223,4 +241,17 @@ function showOngoingAndIncomingEvents(eventsData) {
     noIncomingEvents.textContent = "There are no incoming events.";
     incomingContainer.appendChild(noIncomingEvents);
   }
+}
+
+// Helper function to format dates
+function formatDate(date, format) {
+  const options = {
+    month: 'short', // MMM for short month names
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric', // h for 12-hour format
+    minute: 'numeric',
+    hour12: true, // Include AM/PM
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
 }
