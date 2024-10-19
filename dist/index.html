@@ -17,46 +17,40 @@
     <header>
         <h1>SKY Events Calendar</h1>
     </header>
-    <button id="dayGridMonthView">Month View</button>
-    <button id="timeGridWeekView">Week View</button>
-    <button id="listWeekView">List View</button>
-    <div class="container">
-        <div id='calendar' class="calendar">
-          
-        </div>
-        <div class="legends">
-          <h2>Legends</h2>
-          <div class="legend-item">
-            <div class="legend-icon" style="background-color: #6699cc;"></div>
-            <div class="legend-text">Traveling Spirit</div>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon" style="background-color: #99cc66;"></div>
-            <div class="legend-text">Group Traveling Spirits</div>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon" style="background-color: #ffff66;"></div>
-            <div class="legend-text">Days of Event_name</div>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon" style="background-color: #cc99ff;"></div>
-            <div class="legend-text">Season of Event_name</div>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon" style="background-color: #ff6666;"></div>
-            <div class="legend-text">Red Shard</div>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon" style="background-color: #666666;"></div>
-            <div class="legend-text">Black Shard</div>
-          </div>
-        </div>
-      </div>
+    <button id="dayGridMonthView" hidden>Month View</button>
+    <button id="timeGridWeekView" hidden>Week View</button>
+    <button id="listWeekView" hidden>List View</button>
 
     <h1>This site is in development</h1>
-    <ul id="event-list"></ul> 
-    <h1 id="event-heading"></h1> 
-    <div id="event-titles"></div>
+
+    <div class="container">
+        <div id='calendar' class="calendar"></div>
+
+        <div class="side-container">
+            <div class="top-container">
+                <div class="legends" id="legends">
+                    <h2>Legends</h2>
+                </div>
+
+                <div class="econtainer">
+                    <div class="ongoing" id="ongoing">
+                        <h2>Ongoing Events</h2>
+                    </div>
+    
+                    <div class="incoming" id="incoming">
+                        <h2>Incoming Events</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary" id="summary">
+            <h2>Event Summary</h2>
+            </div>
+        </div>
+
+
+      </div>
+
 
     <script src="bundle.js"></script>
     <script>

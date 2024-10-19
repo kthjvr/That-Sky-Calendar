@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, getDoc, onSnapshot, doc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, getDoc, onSnapshot, doc, query, orderBy } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 
@@ -36,33 +36,8 @@ getDocs(colRef)
         console.log(err.message);
     })
 
-// Get the list element
-const eventList = document.getElementById('event-list'); 
-onSnapshot(colRef, (snapshot) => {
-    eventList.innerHTML = '';
-    snapshot.docs.forEach((doc) => {
-        const event = { ...doc.data(), id: doc.id };
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `
-            <h2>${event.title}</h2> 
-            <p>${event.location}</p>
-        `;
-        eventList.appendChild(listItem);
-    });
-});
-
-
-// get single document data and display in HTML
-const docRef = doc(db, 'events', 'RQmeUrWGw7vJ9bnHKSx4'); 
-onSnapshot(docRef, (docSnapshot) => {
-    if (docSnapshot.exists()) { // Check if the document exists
-        const event = docSnapshot.data();
-        window.eventName = event.title; // Make the variable accessible globally
-    } else {
-        window.eventName = 'No events found'; // Handle empty collection
-    }
-});
-
+// Get the list element by start date order
+const q = query(colRef, orderBy("start", "asc"));
 
 // ============ this is for calendar====================================================
 
@@ -85,58 +60,12 @@ function initializeCalendar(eventsData) {
       },
     events: eventsData,
 
-    eventContent: function(info) {
-        return {
-          html: `
-            <div class="fc-event-content">
-              <img src="" alt="${info.event.title}" class="fc-event-image"> 
-              <span class='fc-event-title'>${info.event.title}</span> 
-            </div>
-          `
-        };
-      },
-
-      eventDidMount: function(info) {
-        // Get the image path from the event data
-        const imagePath = info.event.extendedProps.image;
-      
-        const storage = getStorage();
-        const imageRef = ref(storage, imagePath);
-      
-        // Get the download URL for the image
-        getDownloadURL(imageRef)
-          .then((url) => {
-            // Update the image source with the download URL
-            info.el.querySelector('.fc-event-image').src = url;
-          })
-          .catch((error) => {
-            console.error("Error getting download URL:", error);
-          });
-      }
   });
   calendar.render();
-
-    // Get references to the buttons
-    const dayGridMonthViewButton = document.getElementById('dayGridMonthView');
-    const timeGridWeekViewButton = document.getElementById('timeGridWeekView');
-    const listWeekViewButton = document.getElementById('listWeekView');
-
-    // Add event listeners
-    dayGridMonthViewButton.addEventListener('click', () => {
-        calendar.changeView('dayGridMonth');
-    });
-
-    timeGridWeekViewButton.addEventListener('click', () => {
-        calendar.changeView('timeGridWeek');
-    });
-
-    listWeekViewButton.addEventListener('click', () => {
-        calendar.changeView('listWeek');
-    });
 }
 
 // Fetch documents from the collection
-getDocs(colRef)
+getDocs(q)
   .then(snapshot => {
     snapshot.docs.forEach(doc => {
       const title = doc.data().title;
@@ -158,9 +87,140 @@ getDocs(colRef)
     });
 
     // Initialize FullCalendar after eventsData is populated
-    // (Now called directly within the then block)
     initializeCalendar(test); 
+    updateLegend(test); 
+    updateSummary(test);
+    showOngoingAndIncomingEvents(test);
   })
   .catch(error => {
     console.error("Error getting documents: ", error);
   });
+
+  // Function to update the legend
+function updateLegend(eventsData) {
+  const legendContainer = document.getElementById("legends");
+  legendContainer.innerHTML = "<h2>Legends</h2>"; 
+
+  // Create a set to store colors
+  const uniqueColors = new Set();
+  eventsData.forEach(event => {
+    uniqueColors.add(event.color);
+  });
+
+  // Create legend items for each color
+  uniqueColors.forEach(color => {
+    const legendItem = document.createElement("div");
+    legendItem.classList.add("legend-item");
+
+    const legendIcon = document.createElement("div");
+    legendIcon.classList.add("legend-icon");
+    legendIcon.style.backgroundColor = color;
+
+    const legendText = document.createElement("div");
+    legendText.classList.add("legend-text");
+
+    // Find the event with the matching color and use its title
+    const matchingEvent = eventsData.find(event => event.color === color);
+    if (matchingEvent) {
+      legendText.textContent = matchingEvent.title;
+    } else {
+      legendText.textContent = "Unknown Event"; // handle the case where no matching event is found
+    }
+
+    legendItem.appendChild(legendIcon);
+    legendItem.appendChild(legendText);
+    legendContainer.appendChild(legendItem);
+  });
+}
+
+function updateSummary(eventsData) {
+  const legendContainer = document.getElementById("summary");
+  legendContainer.innerHTML = "<h2>Summary</h2>";
+
+  // Create a set to store colors
+  const uniqueColors = new Set();
+  eventsData.forEach(event => {
+    uniqueColors.add(event.color);
+  });
+
+  // Create legend items for each color
+  uniqueColors.forEach(color => {
+    const legendItem = document.createElement("div");
+    legendItem.classList.add("sum-item");
+
+    const legendIcon = document.createElement("div");
+    legendIcon.classList.add("sum-icon");
+    legendIcon.style.backgroundColor = color;
+
+    const legendText = document.createElement("div");
+    legendText.classList.add("sum-text");
+
+    // Find the event with the matching color and use its title
+    const matchingEvent = eventsData.find(event => event.color === color);
+    if (matchingEvent) {
+      // Convert strings to Date objects
+      const startDate = new Date(matchingEvent.start);
+      const endDate = new Date(matchingEvent.end);
+
+      // Format the dates
+      const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      // Add formatted dates to the legend text
+      legendText.textContent = `${matchingEvent.title} 
+                              (${formattedStartDate} - ${formattedEndDate})`;
+    } else {
+      legendText.textContent = "Unknown Event"; // handle the case where no matching event is found
+    }
+
+    legendItem.appendChild(legendIcon);
+    legendItem.appendChild(legendText);
+    legendContainer.appendChild(legendItem);
+  });
+}
+
+function showOngoingAndIncomingEvents(eventsData) {
+  const today = new Date();
+  const ongoingEvents = [];
+  const incomingEvents = [];
+
+  eventsData.forEach(event => {
+    const eventStart = new Date(event.start);
+    const eventEnd = new Date(event.end);
+
+    if (today >= eventStart && today <= eventEnd) {
+      ongoingEvents.push(event);
+    } else if (today < eventStart) {
+      incomingEvents.push(event);
+    }
+  });
+
+  // Display ongoing events
+  const ongoingContainer = document.getElementById("ongoing");
+        
+  if (ongoingEvents.length > 0) {
+    ongoingEvents.forEach(event => {
+      const eventItem = document.createElement('p');
+      eventItem.textContent = `${event.title} (${event.start} - ${event.end})`;
+      ongoingContainer.appendChild(eventItem);
+    });
+  } else {
+    const noOngoingEvents = document.createElement('p');
+    noOngoingEvents.textContent = "There are no ongoing events.";
+    ongoingContainer.appendChild(noOngoingEvents);
+  }
+
+  // Display incoming events
+  const incomingContainer = document.getElementById("incoming");
+  if (incomingEvents.length > 0) {
+    incomingEvents.forEach(event => {
+      const eventItem = document.createElement('p');
+      eventItem.textContent = `${event.title} (${event.start} - ${event.end})`;
+      incomingContainer.appendChild(eventItem);
+    });
+  } else {
+    const noIncomingEvents = document.createElement('p');
+    noIncomingEvents.textContent = "There are no incoming events.";
+    incomingContainer.appendChild(noIncomingEvents);
+  }
+}

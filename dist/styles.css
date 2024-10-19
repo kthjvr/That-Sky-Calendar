@@ -16,9 +16,58 @@ header {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 90vh;
     justify-content: space-evenly
 }
+
+.side-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  height: 600px;
+  flex-direction: column;
+}
+
+.top-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-direction: row;
+}
+
+.summary {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
+.econtainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.ongoing {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-left: 20px;
+}
+
+.incoming {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
 
 /* calendar height width*/
 .fc {
@@ -87,6 +136,22 @@ header {
 
 .legend-text {
     font-weight: bold;
+}
+
+.sum-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.sum-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.sum-text {
+  font-weight: bold;
 }
 
 .popper,
