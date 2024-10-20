@@ -213,9 +213,9 @@ header img {
 }
 
 .calendar-body {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
+  display: flex;
+  flex-direction: column; /* Stack cells vertically on mobile */
+  gap: 10px;
 }
 
 .calendar-cell {
@@ -224,6 +224,7 @@ header img {
     text-align: center;
     border-radius: 3px;
     cursor: pointer;
+    width: 100%;
 }
 
 .calendar-cell:hover {
@@ -398,4 +399,92 @@ header img {
 
   .fc-event-content {
     height: 20px;
+  }
+
+  /* for mobile view */
+  @media (max-width: 768px) {
+
+    body {
+      font-size: 12px;
+    }
+
+    .calendar-header div {
+      width: 14.28%; /* 100% / 7 days */
+      font-size: 10px;
+    }
+
+    .calendar-cell {
+      font-size: 12px; /* Adjust font size for smaller screens */
+    }
+
+    .calendar-body {
+      display: grid;
+      grid-template-columns: repeat(7, 150px); /* 7 columns, each 150px wide */
+      gap: 10px;
+    }
+
+    .fc {
+      width: 100%;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 14px;
+    }
+
+    .fc .fc-today-button {
+      display: none;
+    }
+
+    .event-icon{
+      margin-top: 8px;
+      height: 12px;
+      width: 12px;
+    }
+
+    .container{
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      margin: 10px;
+      align-items: flex-start;
+    }
+
+    .side-container {
+      width: 100%;
+      height: auto; /* Adjust height to fit content */
+    }
+
+    .legends {
+      width: 70%;
+    }
+
+    .legend-text {
+      font-size: 12px;
+    }
+
+    .top-container {
+      display: flex; /* Enable flexbox */
+      flex-direction: column; /* Stack containers vertically on mobile */
+      align-items: flex-start; /* Align items to the start (left by default) */
+      justify-content: center; /* Center content horizontally */
+      margin: 20px 0px 0px 0px;
+    }
+
+    .econtainer {
+      width: 100%;
+      margin: 20px 0px;
+    }
+
+    .ongoing {
+      margin-left: 0px;
+    }
+
+    .incoming {
+      margin-left: 0px;
+    }
+
+    .summary {
+      margin-left: 0px;
+      margin-top: 0px;
+    }
   }
