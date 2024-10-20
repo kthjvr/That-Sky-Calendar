@@ -20,7 +20,8 @@
     },
     "dependencies": {
         "firebase": "^10.14.0",
-        "fullcalendar": "^6.1.15"
+        "fullcalendar": "^6.1.15",
+        "moment": "^2.30.1"
     },
     "main": "webpack.config.js",
     "keywords": [],

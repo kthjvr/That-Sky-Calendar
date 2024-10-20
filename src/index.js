@@ -116,9 +116,36 @@ Promise.all([
 
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      // Adjust start and end times to user's timezone
-      start.setHours(15, start.getMinutes(), start.getSeconds(), 0, userTimezone);
-      end.setHours(14, 59, start.getSeconds(), 0, userTimezone);
+      start.setHours(15, start.getMinutes(), start.getSeconds(), 0);
+      end.setHours(14, 59, start.getSeconds(), 0);
+    
+      // Format the adjusted times using toLocaleString
+      let formattedStartTime = start.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false,
+        timeZone: userTimezone,
+      });
+
+      let formattedEndTime = end.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false,
+        timeZone: userTimezone,
+      });
+
+      // Extract hours, minutes, and seconds from the formatted strings
+      const [hours, minutes, seconds] = formattedStartTime.split(':').map(Number);
+      start.setHours(hours, minutes, seconds, 0);
+
+      console.log(start);
+      
+
+      const [endHours, endMinutes, endSeconds] = formattedEndTime.split(':').map(Number);
+      end.setHours(endHours, endMinutes, endSeconds, 0);
+      
 
       events.push({
         title: doc.data().title,
@@ -144,48 +171,40 @@ Promise.all([
     console.error("Error getting documents: ", error);
   }); 
 
-// // Fetch documents from the collection and initialize the calendar
-// getDocs(q)
-//   .then(snapshot => {
-//     snapshot.docs.forEach(doc => {
-//       const title = doc.data().title;
-//       const start = doc.data().start; 
-//       const end = doc.data().end;   
-//       const color = doc.data().color;
-//       const description = doc.data().description;
-//       const image = doc.data().image;
 
-//       // Assuming start and end are in YYYY-MM-DD format
-//       const startDate = new Date(doc.data().start);
-//       const endDate = new Date(doc.data().end);
+  // function getFormattedDateTime(timezone) {
+  //   // Create a Date object for the current time
+  //   const now = new Date();
+  //   console.log(now)
+  
+  //   // Get the offset for the specified timezone in minutes
+  //   const offsetMinutes = now.getTimezoneOffset();
+  
+  //   // Adjust the time based on the offset
+  //   const adjustedTime = new Date(now.getTime() + offsetMinutes);
+  
+  //   // Format the date and time
+  //   const formattedDateTime = adjustedTime.toLocaleString('en-US', {
+  //     hour: 'numeric',
+  //     minute: 'numeric',
+  //     hour12: true,
+  //     timeZone: timezone,
+  //   });
+  
+  //   return formattedDateTime;
+  // }
+  
+  // // Example usage:
+  // const philippinesTime = getFormattedDateTime('Asia/Manila');
+  // const indonesiaTime = getFormattedDateTime('Asia/Jakarta');
+  
+  // console.log('Philippines:', philippinesTime);
+  // console.log('Indonesia:', indonesiaTime);
 
-//       // Apply PST time (3 PM PST = 11 PM UTC)
-//       startDate.setHours(15, 0, 0); // 3 PM
-//       endDate.setHours(14, 59, 0); // 2:59 PM
+  
 
-//       // Add the event to the test array
-//       test.push({
-//         title: title,
-//         start: startDate, // Store start in UTC
-//         end: endDate, // Store end in UTC
-//         color: color,
-//         description: description,
-//         image: image
-//       });
-//     });
 
-//     // Initialize FullCalendar after eventsData is populated
-//     initializeCalendar(test); 
-//     updateLegend(test); 
-//     updateSummary(test);
-//     showOngoingAndIncomingEvents(test);
-//     displayReminders(test);
-//   })
-//   .catch(error => {
-//     console.error("Error getting documents: ", error);
-//   });
-
-  // Function to update the legend
+// Function to update the legend
   function updateLegend(eventsData) {
     const legendContainer = document.getElementById("legends");
     legendContainer.innerHTML = "<h2>Legends</h2>"; 
