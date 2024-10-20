@@ -401,6 +401,35 @@ header img {
     height: 20px;
   }
 
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000; /* Solid black background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top of other elements */
+    opacity: 1; /* Initial opacity */
+    transition: opacity 0.5s ease-in-out; /* Smooth transition */
+  }
+  
+  .loader {
+    border: 4px solid #f3f3f3; /* Light gray border */
+    border-radius: 50%;
+    border-top-color: #3498db; /* Blue color for spinning */
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite; /* Spin animation */
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
   /* for mobile view */
   @media (max-width: 768px) {
 

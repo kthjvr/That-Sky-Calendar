@@ -34,6 +34,10 @@
         <img src="logo.png" alt="">
     </header>
 
+    <div class="overlay">
+      <div class="loader"></div>
+    </div>
+
 
     <div id="tsparticles"></div>
 
@@ -85,6 +89,15 @@
 
 
     <script src="bundle.js"></script>
+
+    <script>
+      setTimeout(function() {
+        document.querySelector('.overlay').style.opacity = 0;
+        setTimeout(function() {
+          document.querySelector('.overlay').style.display = 'none';
+        }, 500); // Wait for the fade-out to complete before hiding
+      }, 1200);
+    </script>
 
 </body>
 
