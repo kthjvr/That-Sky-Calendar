@@ -115,8 +115,11 @@ Promise.all([
       const start = new Date(doc.data().start);
       const end = new Date(doc.data().end);
 
-      start.setHours(15, 0, 0);
-      end.setHours(14, 59, 0);
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // Adjust start and end times to user's timezone
+      start.setHours(15, start.getMinutes(), start.getSeconds(), 0, userTimezone);
+      end.setHours(14, 59, start.getSeconds(), 0, userTimezone);
 
       events.push({
         title: doc.data().title,
@@ -140,7 +143,7 @@ Promise.all([
   })
   .catch(error => {
     console.error("Error getting documents: ", error);
-  });
+  }); 
 
 // // Fetch documents from the collection and initialize the calendar
 // getDocs(q)
