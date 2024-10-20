@@ -23,20 +23,9 @@ const db = getFirestore()
 // get collection reference
 const colRef = collection(db, 'events')
 
-// get collection data
-getDocs(colRef)
-    .then((snapshot) => {
-        let events = []
-        snapshot.docs.forEach((doc) => {
-            events.push({ ...doc.data(), id: doc.id})
-        })
-    })
-    .catch(err => {
-        console.log(err.message);
-    })
-
 // Get the list element by start date order
 const q = query(colRef, orderBy("start", "asc"));
+const shardsCollection = collection(db, 'shards');
 
 // ============ this is for calendar====================================================
 
@@ -49,97 +38,191 @@ function initializeCalendar(eventsData) {
   var calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     aspectRatio: 1.8,
-    eventDidMount: function(info) {
-        var tooltip = new Tooltip(info.el, {
-          title: info.event.extendedProps.description,
-          placement: 'top',
-          trigger: 'hover',
-          container: 'body'
-        });
-      },
     events: eventsData,
-    timeZone: 'Asia/Manila', // Set the time zone to PST
-    timeFormat: '',       // Hide the time display for events
+    timeZone: 'Asia/Manila', 
+    timeFormat: '', 
+    eventDidMount: function(info) {
+      var tooltip = new Tooltip(info.el, {
+        title: info.event.extendedProps.description,
+        placement: 'top',
+        trigger: 'hover',
+        container: 'body'
+      });
+
+      var iconPath = info.event.extendedProps.icon;
+      if (iconPath) {
+        var icon = document.createElement('img');
+        icon.src = iconPath;
+        icon.classList.add('event-icon'); // Optional: Add a class for styling
+    
+        // Remove default event title and content:
+        info.el.querySelector('.fc-event-title').remove();
+        info.el.querySelector('.fc-event-time').remove();
+        info.el.style.backgroundColor = 'transparent';
+        const eventEl = info.el;
+        eventEl.style.top = '-25px'; // Adjust top position
+        eventEl.style.height = '15px';
+    
+        // Append the icon to the event element:
+        info.el.appendChild(icon);
+      }
+    },
+    eventOrder: "description"
   });
   calendar.render();
 }
 
-// Fetch documents from the collection
-getDocs(q)
-  .then(snapshot => {
-    snapshot.docs.forEach(doc => {
+// Fetch events and shard events, then combine and initialize the calendar
+Promise.all([
+  getDocs(query(colRef, orderBy("start", "asc"))), // Fetch events
+  getDocs(shardsCollection) // Fetch shards,
+])
+  .then(([eventsSnapshot, shardsSnapshot]) => {
+    const events = [];
+    const shardEvents = [];
+
+    // Process shard events from the 'shards' collection
+    shardsSnapshot.docs.forEach((doc,shardIndex) => {
       const title = doc.data().title;
-      const start = doc.data().start; 
-      const end = doc.data().end;   
       const color = doc.data().color;
-      const description = doc.data().description;
-      const image = doc.data().image;
+      const datesString  = doc.data().dates;
+      const imageURL = doc.data().image;
 
-      // Assuming start and end are in YYYY-MM-DD format
-      const startDate = new Date(doc.data().start);
-      const endDate = new Date(doc.data().end);
+      const dates = datesString.split(',').map(date => parseInt(date.trim())); 
 
-      // Apply PST time (3 PM PST = 11 PM UTC)
-      startDate.setHours(15, 0, 0); // 3 PM
-      endDate.setHours(14, 59, 0); // 2:59 PM
+      dates.forEach(date => {
+        const startDate = new Date(`2024-10-${date}`);
+        const endDate = new Date(startDate);
+        endDate.setHours(23, 59, 59, 999);
 
-      // Add the event to the test array
-      test.push({
-        title: title,
-        start: startDate, // Store start in UTC
-        end: endDate, // Store end in UTC
-        color: color,
-        description: description,
-        image: image
+        // Apply PST time 
+        startDate.setHours(15, 0, 0);
+        endDate.setHours(14, 59, 0);
+        const priority = doc.data().priority;
+        shardEvents.push({
+          title: title,
+          start: startDate,
+          end: endDate,
+          color: color,
+          description: ``,
+          icon: imageURL,
+        });
       });
     });
 
-    // Initialize FullCalendar after eventsData is populated
-    initializeCalendar(test); 
-    updateLegend(test); 
-    updateSummary(test);
-    showOngoingAndIncomingEvents(test);
+    // Process events from the 'events' collection
+    eventsSnapshot.docs.forEach(doc => {
+      const start = new Date(doc.data().start);
+      const end = new Date(doc.data().end);
+
+      start.setHours(15, 0, 0);
+      end.setHours(14, 59, 0);
+
+      events.push({
+        title: doc.data().title,
+        start: start,
+        end: end,
+        color: doc.data().color,
+        description: doc.data().description,
+        image: doc.data().image,
+      });
+    });
+
+    // Combine events and shard events
+    const allEvents = [...shardEvents, ...events,];
+
+    // Initialize FullCalendar with the combined events
+    initializeCalendar(allEvents);
+    updateLegend(allEvents);
+    updateSummary(events);
+    showOngoingAndIncomingEvents(events);
+    displayReminders(allEvents);
   })
   .catch(error => {
     console.error("Error getting documents: ", error);
   });
 
+// // Fetch documents from the collection and initialize the calendar
+// getDocs(q)
+//   .then(snapshot => {
+//     snapshot.docs.forEach(doc => {
+//       const title = doc.data().title;
+//       const start = doc.data().start; 
+//       const end = doc.data().end;   
+//       const color = doc.data().color;
+//       const description = doc.data().description;
+//       const image = doc.data().image;
+
+//       // Assuming start and end are in YYYY-MM-DD format
+//       const startDate = new Date(doc.data().start);
+//       const endDate = new Date(doc.data().end);
+
+//       // Apply PST time (3 PM PST = 11 PM UTC)
+//       startDate.setHours(15, 0, 0); // 3 PM
+//       endDate.setHours(14, 59, 0); // 2:59 PM
+
+//       // Add the event to the test array
+//       test.push({
+//         title: title,
+//         start: startDate, // Store start in UTC
+//         end: endDate, // Store end in UTC
+//         color: color,
+//         description: description,
+//         image: image
+//       });
+//     });
+
+//     // Initialize FullCalendar after eventsData is populated
+//     initializeCalendar(test); 
+//     updateLegend(test); 
+//     updateSummary(test);
+//     showOngoingAndIncomingEvents(test);
+//     displayReminders(test);
+//   })
+//   .catch(error => {
+//     console.error("Error getting documents: ", error);
+//   });
+
   // Function to update the legend
-function updateLegend(eventsData) {
-  const legendContainer = document.getElementById("legends");
-  legendContainer.innerHTML = "<h2>Legends</h2>"; 
-
-  // Create a set to store colors
-  const uniqueColors = new Set();
-  eventsData.forEach(event => {
-    uniqueColors.add(event.color);
-  });
-
-  // Create legend items for each color
-  uniqueColors.forEach(color => {
-    const legendItem = document.createElement("div");
-    legendItem.classList.add("legend-item");
-
-    const legendIcon = document.createElement("div");
-    legendIcon.classList.add("legend-icon");
-    legendIcon.style.backgroundColor = color;
-
-    const legendText = document.createElement("div");
-    legendText.classList.add("legend-text");
-
-    // Find the event with the matching color and use its title
-    const matchingEvent = eventsData.find(event => event.color === color);
-    if (matchingEvent) {
-      legendText.textContent = matchingEvent.title;
-    } else {
-      legendText.textContent = "Unknown Event"; // handle the case where no matching event is found
-    }
-
-    legendItem.appendChild(legendIcon);
-    legendItem.appendChild(legendText);
-    legendContainer.appendChild(legendItem);
-  });
-}
+  function updateLegend(eventsData) {
+    const legendContainer = document.getElementById("legends");
+    legendContainer.innerHTML = "<h2>Legends</h2>"; 
+  
+    // Create a set to store colors
+    const uniqueColors = new Set();
+    eventsData.forEach(event => {
+      uniqueColors.add(event.color);
+    });
+  
+    // Create legend items for each color
+    uniqueColors.forEach(color => {
+      const legendItem = document.createElement("div");
+      legendItem.classList.add("legend-item");
+  
+      // Find the event with the matching color
+      const matchingEvent = eventsData.find(event => event.color === color);
+  
+      // Check if it's a shard event
+      if (matchingEvent && matchingEvent.icon) { // Assuming you have an 'icon' property for shard events
+        const legendIcon = document.createElement("img"); // Create an image element
+        legendIcon.classList.add("legend-icon");
+        legendIcon.src = matchingEvent.icon; // Set the image source
+        legendItem.appendChild(legendIcon);
+      } else {
+        // Create a colored square for non-shard events
+        const legendIcon = document.createElement("div");
+        legendIcon.classList.add("legend-icon");
+        legendIcon.style.backgroundColor = color;
+        legendItem.appendChild(legendIcon);
+      }
+  
+      const legendText = document.createElement("div");
+      legendText.classList.add("legend-text");
+      legendText.textContent = matchingEvent ? matchingEvent.title : "Unknown Event";
+      legendItem.appendChild(legendText);
+      legendContainer.appendChild(legendItem);
+    });
+  }
 
 function updateSummary(eventsData) {
   const legendContainer = document.getElementById("summary");
@@ -173,6 +256,14 @@ function updateSummary(eventsData) {
       // Format the dates
       const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      // Check if the event has ended
+      const today = new Date();
+      if (today > endDate) {
+        legendText.style.textDecoration = "line-through";
+        legendText.style.textDecorationThickness = "3px";
+        legendText.style.textDecorationColor = "black"; // Change to red color
+      }
 
       // Add formatted dates to the legend text
       legendText.textContent = `${matchingEvent.title} 
@@ -254,4 +345,55 @@ function formatDate(date, format) {
     hour12: true, // Include AM/PM
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
+}
+
+// Function to display reminders
+function displayReminders(eventsData) {
+  // Get the reminders container
+  const remindersContainer = document.getElementById("reminders");
+  remindersContainer.innerHTML = ''; // Clear previous reminders
+
+  // Get the current date and tomorrow's date
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+  // Filter events for ongoing and tomorrow's events
+  const ongoingEvents = eventsData.filter(event => {
+    const eventStart = new Date(event.start);
+    const eventEnd = new Date(event.end);
+    return today >= eventStart && today <= eventEnd;
+  });
+
+  // Filter events for tomorrow's events, excluding ongoing events
+  const tomorrowEvents = eventsData.filter(event => {
+    const eventStart = new Date(event.start);
+    const eventEnd = new Date(event.end);
+    return eventStart.getDate() === tomorrow.getDate() && eventStart.getMonth() === tomorrow.getMonth() && eventStart.getFullYear() === tomorrow.getFullYear() && !(today >= eventStart && today <= eventEnd); // Exclude ongoing events
+  });
+
+  const header = document.createElement('h2');
+  header.textContent = `Remiders:`;
+  remindersContainer.appendChild(header);
+
+  // Display ongoing events
+  if (ongoingEvents.length > 0) {
+    const ongoingMessage = document.createElement('p');
+    ongoingMessage.textContent = `You have ongoing events: ${ongoingEvents.map(event => event.title).join(', ')}`;
+    remindersContainer.appendChild(ongoingMessage);
+  }
+
+  // Display tomorrow's events
+  if (tomorrowEvents.length > 0) {
+    const tomorrowMessage = document.createElement('p');
+    tomorrowMessage.textContent = `Don't forget, you have events starting tomorrow: ${tomorrowEvents.map(event => event.title).join(', ')}`;
+    remindersContainer.appendChild(tomorrowMessage);
+  }
+
+  // If no reminders
+  if (ongoingEvents.length === 0 && tomorrowEvents.length === 0) {
+    const noReminders = document.createElement('p');
+    noReminders.textContent = "No reminders for today or tomorrow. Enjoy your day!";
+    remindersContainer.appendChild(noReminders);
+  }
 }
