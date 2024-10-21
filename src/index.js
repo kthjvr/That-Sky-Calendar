@@ -115,6 +115,7 @@ Promise.all([
       const end = new Date(doc.data().end);
 
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log(userTimezone);
 
       start.setHours(15, start.getMinutes(), start.getSeconds(), 0);
       end.setHours(14, 59, start.getSeconds(), 0);
@@ -139,8 +140,6 @@ Promise.all([
       // Extract hours, minutes, and seconds from the formatted strings
       const [hours, minutes, seconds] = formattedStartTime.split(':').map(Number);
       start.setHours(hours, minutes, seconds, 0);
-
-      console.log(start);
       
 
       const [endHours, endMinutes, endSeconds] = formattedEndTime.split(':').map(Number);
