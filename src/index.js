@@ -393,28 +393,154 @@ function displayReminders(eventsData) {
     return eventStart.getDate() === tomorrow.getDate() && eventStart.getMonth() === tomorrow.getMonth() && eventStart.getFullYear() === tomorrow.getFullYear() && !(today >= eventStart && today <= eventEnd); // Exclude ongoing events
   });
 
-  const header = document.createElement('h2');
-  header.textContent = `Remiders:`;
-  remindersContainer.appendChild(header);
+  // Date content --------------------------------------
+    const dateSection = document.createElement('div');
+    dateSection.classList.add('date-section');
+
+        // Image 1
+        const image1 = document.createElement('img');
+        image1.src = "../src/skid1.png"; // Replace with your actual image URL
+        image1.alt = "Image 1";
+        image1.classList.add('date-image-1');
+        dateSection.appendChild(image1);
+    
+        // Image 2
+        const image2 = document.createElement('img');
+        image2.src = "../src/skid3.png"; // Replace with your actual image URL
+        image2.alt = "Image 2";
+        image2.classList.add('date-image-2');
+        dateSection.appendChild(image2);
+
+        const month = document.createElement('h2');
+        month.classList.add('month');
+        month.textContent = today.toLocaleString('default', { month: 'long' });
+        dateSection.appendChild(month);
+
+        const day = document.createElement('h2');
+        day.classList.add('day');
+        day.textContent = today.getDate();
+        dateSection.appendChild(day);
+
+        remindersContainer.appendChild(dateSection);
+
+    // Reminder content --------------------------------------
+    const contentSection = document.createElement('div');
+    contentSection.classList.add('content-section');
+
+    const image3 = document.createElement('img');
+    image3.src = "../src/skid2.png"; // Replace with your actual image URL
+    image3.alt = "Image 3";
+    image3.classList.add('date-image-3');
+    contentSection.appendChild(image3);
+
+    // Container for image and header
+    const headerContainer = document.createElement('div');
+    headerContainer.classList.add('header-container');
+
+    // Image
+    const image = document.createElement('img');
+    image.src = "https://img.icons8.com/matisse/100/alarm.png"; // Replace with your actual image URL
+    image.alt = "Alarm Icon";
+    image.classList.add('header-image');
+    headerContainer.appendChild(image);
+
+    // header
+    const header = document.createElement('h2');
+    header.textContent = "Heads Up, Skids!";
+    headerContainer.appendChild(header);
+    contentSection.appendChild(headerContainer)
+    remindersContainer.appendChild(contentSection);
 
   // Display ongoing events
   if (ongoingEvents.length > 0) {
     const ongoingMessage = document.createElement('p');
-    ongoingMessage.textContent = `You have ongoing events: ${ongoingEvents.map(event => event.title).join(', ')}`;
-    remindersContainer.appendChild(ongoingMessage);
+    ongoingMessage.textContent = `${ongoingEvents.map(event => event.title).join(', ')} is in full swing!`;
+    contentSection.appendChild(ongoingMessage)
   }
 
   // Display tomorrow's events
   if (tomorrowEvents.length > 0) {
     const tomorrowMessage = document.createElement('p');
-    tomorrowMessage.textContent = `Don't forget, you have events starting tomorrow: ${tomorrowEvents.map(event => event.title).join(', ')}`;
-    remindersContainer.appendChild(tomorrowMessage);
+    tomorrowMessage.textContent = `Don't miss out on the ${tomorrowEvents.map(event => event.title).join(', ')} starting tomorrow!`;
+    contentSection.appendChild(tomorrowMessage);
   }
 
   // If no reminders
   if (ongoingEvents.length === 0 && tomorrowEvents.length === 0) {
     const noReminders = document.createElement('p');
-    noReminders.textContent = "No reminders for today or tomorrow. Enjoy your day!";
+    noReminders.textContent = "Take a break from the hustle and bustle. Enjoy your day!!";
     remindersContainer.appendChild(noReminders);
   }
+
+// Links
+const linksSection = document.createElement('div');
+linksSection.classList.add('links-section');
+
+const image4 = document.createElement('img');
+image4.src = "../src/skid4.png"; // Replace with your actual image URL
+image4.alt = "Image 4";
+image4.classList.add('date-image-4');
+linksSection.appendChild(image4);
+
+const image5 = document.createElement('img');
+image5.src = "../src/skid5.png"; // Replace with your actual image URL
+image5.alt = "Image 5";
+image5.classList.add('date-image-5');
+linksSection.appendChild(image5);
+
+// Title for links
+const linksTitle = document.createElement('div');
+linksTitle.classList.add('links-title');
+
+const linksHeaderText = document.createElement('h4');
+linksHeaderText.textContent = "Visit these sites for more info";
+
+linksTitle.appendChild(linksHeaderText);
+linksSection.appendChild(linksTitle);
+
+const linkList = document.createElement('div');
+linkList.classList.add('links-list');
+
+const links = ['Shard', 'Clock', 'Planner', 'Wiki'];
+const linkImages = [
+  "https://img.icons8.com/clouds/100/rhomboid-shape.png", // Shard image
+  "https://img.icons8.com/clouds/100/apple-clock.png", // Clock image
+  "https://img.icons8.com/clouds/100/planner.png", // Planner image
+  "https://img.icons8.com/clouds/100/fandom.png", // Wiki image
+];
+const linkUrls = [
+  "#", // Shard URL
+  "#", // Clock URL
+  "#", // Planner URL
+  "#", // Wiki URL
+];
+
+links.forEach((link, index) => {
+  const linkContainer = document.createElement('div');
+  linkContainer.classList.add('link-container');
+
+  // Link element
+  const linkElement = document.createElement('a');
+  linkElement.href = linkUrls[index]; // Set the URL for the link
+  linkElement.classList.add('link');
+
+  // Image
+  const linkImage = document.createElement('img');
+  linkImage.src = linkImages[index];
+  linkImage.alt = link;
+  linkImage.classList.add('link-image');
+  linkElement.appendChild(linkImage);
+
+  // Link text
+  const linkText = document.createElement('p');
+  linkText.classList.add('linkText');
+  linkText.textContent = link;
+  linkElement.appendChild(linkText);
+
+  linkContainer.appendChild(linkElement);
+  linkList.appendChild(linkContainer);
+});
+
+linksSection.appendChild(linkList);
+remindersContainer.appendChild(linksSection);
 }
