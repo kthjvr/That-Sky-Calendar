@@ -39,7 +39,6 @@ function initializeCalendar(eventsData) {
     initialView: 'dayGridMonth',
     aspectRatio: 1.8,
     events: eventsData,
-    timeFormat: '', 
     eventDidMount: function(info) {
       var tooltip = new Tooltip(info.el, {
         title: info.event.extendedProps.description,
