@@ -399,14 +399,14 @@ function displayReminders(eventsData) {
 
         // Image 1
         const image1 = document.createElement('img');
-        image1.src = "../src/skid1.png"; // Replace with your actual image URL
+        image1.src = "skid1.png"; // Replace with your actual image URL
         image1.alt = "Image 1";
         image1.classList.add('date-image-1');
         dateSection.appendChild(image1);
     
         // Image 2
         const image2 = document.createElement('img');
-        image2.src = "../src/skid3.png"; // Replace with your actual image URL
+        image2.src = "skid3.png"; // Replace with your actual image URL
         image2.alt = "Image 2";
         image2.classList.add('date-image-2');
         dateSection.appendChild(image2);
@@ -428,7 +428,7 @@ function displayReminders(eventsData) {
     contentSection.classList.add('content-section');
 
     const image3 = document.createElement('img');
-    image3.src = "../src/skid2.png"; // Replace with your actual image URL
+    image3.src = "skid2.png"; // Replace with your actual image URL
     image3.alt = "Image 3";
     image3.classList.add('date-image-3');
     contentSection.appendChild(image3);
@@ -477,13 +477,13 @@ const linksSection = document.createElement('div');
 linksSection.classList.add('links-section');
 
 const image4 = document.createElement('img');
-image4.src = "../src/skid4.png"; // Replace with your actual image URL
+image4.src = "skid4.png"; // Replace with your actual image URL
 image4.alt = "Image 4";
 image4.classList.add('date-image-4');
 linksSection.appendChild(image4);
 
 const image5 = document.createElement('img');
-image5.src = "../src/skid5.png"; // Replace with your actual image URL
+image5.src = "skid5.png"; // Replace with your actual image URL
 image5.alt = "Image 5";
 image5.classList.add('date-image-5');
 linksSection.appendChild(image5);
