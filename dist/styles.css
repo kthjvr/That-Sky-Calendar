@@ -56,11 +56,14 @@ footer {
 .event-icon {
   width: 20px; /* Set the width of the icon */
   height: 20px; /* Set the height of the icon */
-  /* display: block;  */
 }
 
 .fc-daygrid-event-dot {
   display: none;
+}
+
+.fc .fc-daygrid-event {
+  background-color: transparent;
 }
 
 .reminders {
@@ -361,7 +364,7 @@ header img {
 
 .calendar {
     background-color: #fff;
-    padding: 20px;
+    padding: 15px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow: hidden;
@@ -557,7 +560,7 @@ header img {
     width: 20px; 
     height: 20px; 
   }
-  
+
   .fc-event {
     min-height: 10px;
   }
@@ -593,14 +596,199 @@ header img {
     height: 60px;
     animation: spin 1s linear infinite; /* Spin animation */
   }
-  
+
+  .fc-day-today {
+    background: #a9c9e0 !important;
+    border: none !important;
+} 
+
+.fc .fc-today-button {
+  display: none;
+}
+
+.daily-container {
+  background-image: linear-gradient(to right top, #fedeff, #ecdfff, #d7e0ff, #c1e1ff, #aee2ff);
+  padding: 20px;
+  text-align: center;
+  margin: 20px 50px;
+  border-radius: 20px;
+}
+
+.daily-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.daily-item-list {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.daily-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 25%; 
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background-color: #fff;
+}
+
+.daily-item-text {
+  font-weight: bold;
+  margin-bottom: 10px;
+  height: 2rem;
+}
+
+.daily-item-image {
+  width: 100%;
+  height: 40vh;; 
+  border-radius: 20px;
+  transition: transform 0.2s ease; 
+  cursor: pointer; 
+}
+
+.daily-item-image:hover {
+  transform: scale(1.1); /* Zoom in on hover */
+}
+
+.daily-item-image.full-size {
+  width: 45%;
+  height: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.daily-item-image.full-size::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2); /* 20% opacity black background */
+  z-index: 99;
+  cursor: pointer;
+}
+
+.daily-item-image.full-size .close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: white;
+  color: black;
+  padding: 5px 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 110;
+}
+
+body.full-size-mode {
+  overflow: hidden; 
+}
+
+.daily-item-image.full-size {
+  pointer-events: auto; /* Allow clicks on the full-size image */
+}
+
+.daily-item-image.full-size .close-button {
+  pointer-events: auto;
+}
+
+.has-image .fc-event-main {
+  background-color: transparent;
+}
+
+.has-image .event-icon-container {
+  margin-top: -25px !important;
+}
+
+
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
 
+  /* for tablet */
+  @media (min-width: 768px) and (max-width: 1024px) {
+
+  }
+
   /* for mobile view */
   @media (max-width: 768px) {
+
+    .daily-container {
+      background-image: linear-gradient(to right top, #fedeff, #ecdfff, #d7e0ff, #c1e1ff, #aee2ff);
+      padding: 20px;
+      text-align: center;
+      margin: 20px 10px; /* Center the container horizontally */
+      border-radius: 10px;
+    }
+    
+    .daily-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .daily-item-list {
+      display: flex;
+      flex-direction: column; /* Arrange items in rows */
+    }
+    
+    .daily-item {
+      display: flex;
+      align-items: center; /* Vertically align items */
+      width: auto;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #fff;
+      margin-bottom: 10px; /* Add space between rows */
+    }
+    
+    .daily-item-image {
+      width: 10rem; /* Adjust image width as needed */
+      height: 10rem; /* Adjust image height as needed */
+      border-radius: 5px;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+      margin-right: 10px; /* Add space between image and text */
+      margin-bottom: 10px;
+    }
+    
+    .daily-item-text {
+      font-weight: bold;
+      flex: 1; /* Allow the text to take up available space */
+    }
+
+    .close-button {
+      display: none;
+    }
+
+    .daily-item-image.full-size {
+      width: 100%;
+      height: auto;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+      background-color: transparent;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
 
     body {
       font-size: 12px;
@@ -608,10 +796,11 @@ header img {
 
     .reminders {
       flex-direction: column;
+      margin: 20px 10px;
     }
 
     .content-section {
-      width: 90%;
+      width: 100%;
       font-size: 12px;
     }
 
@@ -665,12 +854,16 @@ header img {
 }
 
     .links-section {
-      width: 90%;
+      width: 100%;
+    }
+
+    .calendar {
+      overflow: hidden;
     }
 
     .calendar-header div {
       width: 14.28%; /* 100% / 7 days */
-      font-size: 10px;
+      font-size: 12px;
     }
 
     .calendar-cell {
@@ -688,7 +881,7 @@ header img {
     }
 
     .fc .fc-toolbar-title {
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .fc .fc-today-button {
@@ -696,7 +889,8 @@ header img {
     }
 
     .fc .fc-event-title{
-      display: none;
+      /* display: none; */
+      /* font-size: 12px; */
     }
 
     .event-icon{
@@ -719,7 +913,8 @@ header img {
     }
 
     .legends {
-      width: 80%;
+      width: 86%;
+      margin-left: 0px;
     }
 
     .legend-text {

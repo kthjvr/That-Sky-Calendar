@@ -28,6 +28,10 @@
     <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
     <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
 
+    <!-- Timezone -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data-2012-2022.min.js"></script>
+
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,10 +91,14 @@
             </div>
 
             <div class="summary" id="summary">
-            <h2>Event Summary</h2>
+              <h2>Event Summary</h2>
             </div>
         </div>
-      </div>
+    </div>
+
+    <div class="daily-container" id="daily">
+
+    </div>
 
     <script src="moment.js"></script>
     <script src="bundle.js"></script>
@@ -100,7 +108,7 @@
         document.querySelector('.overlay').style.opacity = 0;
         setTimeout(function() {
           document.querySelector('.overlay').style.display = 'none';
-        }, 500); // Wait for the fade-out to complete before hiding
+        }, 500);
       }, 1200);
     </script>
 
@@ -109,7 +117,7 @@
 <footer>
   <div class="footer-container">
     <div class="footer-content">
-      <p class="made-by">Made by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank">Kathy</a></p>
+      <!-- <p class="made-by">Made by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank">Kathy</a></p> -->
       <p class="copyright">&copy; 2023 Kathy. All rights reserved.</p>
     </div>
     <p class="disclaimer">Disclaimer: This site is a community resource for players of Sky: Children of the Light, not officially endorsed by thatgamecompany.</p>

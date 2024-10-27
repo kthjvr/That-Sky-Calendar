@@ -19,6 +19,7 @@ initializeApp(firebaseConfig)
 
 // initialize services
 const db = getFirestore()
+const storage = getStorage();
 
 // get collection reference
 const colRef = collection(db, 'events')
@@ -39,33 +40,24 @@ function initializeCalendar(eventsData) {
     initialView: 'dayGridMonth',
     aspectRatio: 1.8,
     events: eventsData,
-    eventDidMount: function(info) {
-      var tooltip = new Tooltip(info.el, {
-        title: info.event.extendedProps.description,
-        placement: 'top',
-        trigger: 'hover',
-        container: 'body'
-      });
-
+    eventContent: function(info) {
       var iconPath = info.event.extendedProps.icon;
       if (iconPath) {
-        var icon = document.createElement('img');
-        icon.src = iconPath;
-        icon.classList.add('event-icon'); // Optional: Add a class for styling
-    
-        // Remove default event title and content:
-        info.el.querySelector('.fc-event-title').remove();
-        info.el.querySelector('.fc-event-time').remove();
-        info.el.style.backgroundColor = 'transparent';
-        const eventEl = info.el;
-        eventEl.style.top = '-25px'; // Adjust top position
-        eventEl.style.height = '15px';
-    
-        // Append the icon to the event element:
-        info.el.appendChild(icon);
+        return {
+          html: `
+            <div class="event-icon-container">
+              <img src="${iconPath}" class="event-icon" />
+            </div>
+          `
+        };
+      } else {
+        // If no icon is provided, render the default title and time
+        return {
+          html: `<span class="fc-event-title">${info.event.title}</span>`
+        };
       }
     },
-    eventOrder: "description"
+    eventOrder: "description",
   });
   calendar.render();
 }
@@ -75,173 +67,150 @@ Promise.all([
   getDocs(query(colRef, orderBy("start", "asc"))), // Fetch events
   getDocs(shardsCollection) // Fetch shards,
 ])
-  .then(([eventsSnapshot, shardsSnapshot]) => {
-    const events = [];
-    const shardEvents = [];
+.then(([eventsSnapshot, shardsSnapshot]) => {
+  const events = [];
+  const shardEvents = [];
 
-    // Process shard events from the 'shards' collection
-    shardsSnapshot.docs.forEach((doc,shardIndex) => {
-      const title = doc.data().title;
-      const color = doc.data().color;
-      const datesString  = doc.data().dates;
-      const imageURL = doc.data().image;
+  const moment = require('moment');
+  require('moment-timezone');
+  const userTimezone = moment.tz.guess();
+  const userLocalTime = moment().tz(userTimezone).format('LLLL');
+  console.log("User's Timezone:", userTimezone);
 
-      const dates = datesString.split(',').map(date => parseInt(date.trim())); 
+  // Process shard events from the 'shards' collection
+  shardsSnapshot.docs.forEach((doc,shardIndex) => {
+    const title = doc.data().title;
+    const color = doc.data().color;
+    const datesString  = doc.data().dates;
+    const imageURL = doc.data().image;
 
-      dates.forEach(date => {
-        const startDate = new Date(`2024-10-${date}`);
-        const endDate = new Date(startDate);
-        endDate.setHours(23, 59, 59, 999);
+    const dates = datesString.split(',').map(date => parseInt(date.trim())); 
 
-        // Apply PST time 
-        startDate.setHours(15, 0, 0);
-        endDate.setHours(14, 59, 0);
-        const priority = doc.data().priority;
-        shardEvents.push({
-          title: title,
-          start: startDate,
-          end: endDate,
-          color: color,
-          description: ``,
-          icon: imageURL,
-        });
+    dates.forEach(date => {
+      const startDate = new Date(`2024-10-${date}`);
+      const endDate = new Date(startDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      // Apply PST time 
+      startDate.setHours(17, 30, 0); // 5:30 PM
+      // endDate.setHours(9, 20, 0); // 9:20 AM the next day
+      // endDate.setDate(endDate.getDate() + 1); // Increment the day for endDate
+
+      const priority = doc.data().priority;
+      shardEvents.push({
+        title: title,
+        start: startDate,
+        end: endDate,
+        color: color,
+        description: ``,
+        icon: imageURL,
+        className: doc.data().image ? 'has-image' : ''
       });
     });
+  });
 
-    // Process events from the 'events' collection
-    eventsSnapshot.docs.forEach(doc => {
-      const start = new Date(doc.data().start);
-      const end = new Date(doc.data().end);
+  // Process events from the 'events' collection
+  eventsSnapshot.docs.forEach(doc => {
+    const start = new Date(doc.data().start);
+    const end = new Date(doc.data().end);
 
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      console.log(userTimezone);
+    // const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      start.setHours(15, start.getMinutes(), start.getSeconds(), 0);
-      end.setHours(14, 59, start.getSeconds(), 0);
+
+    start.setHours(15, start.getMinutes(), start.getSeconds(), 0);
+    end.setHours(14, 59, start.getSeconds(), 0);
+  
+    // Format the adjusted times using toLocaleString
+    let formattedStartTime = start.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+      timeZone: userTimezone,
+    });
+
+    let formattedEndTime = end.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false,
+      timeZone: userTimezone,
+    });
+
+    // Extract hours, minutes, and seconds from the formatted strings
+    const [hours, minutes, seconds] = formattedStartTime.split(':').map(Number);
+    start.setHours(hours, minutes, seconds, 0);
     
-      // Format the adjusted times using toLocaleString
-      let formattedStartTime = start.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: false,
-        timeZone: userTimezone,
-      });
 
-      let formattedEndTime = end.toLocaleString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: false,
-        timeZone: userTimezone,
-      });
+    const [endHours, endMinutes, endSeconds] = formattedEndTime.split(':').map(Number);
+    end.setHours(endHours, endMinutes, endSeconds, 0);
+    
 
-      // Extract hours, minutes, and seconds from the formatted strings
-      const [hours, minutes, seconds] = formattedStartTime.split(':').map(Number);
-      start.setHours(hours, minutes, seconds, 0);
-      
-
-      const [endHours, endMinutes, endSeconds] = formattedEndTime.split(':').map(Number);
-      end.setHours(endHours, endMinutes, endSeconds, 0);
-      
-
-      events.push({
-        title: doc.data().title,
-        start: start,
-        end: end,
-        color: doc.data().color,
-        description: doc.data().description,
-        image: doc.data().image,
-      });
+    events.push({
+      title: doc.data().title,
+      start: start,
+      end: end,
+      color: doc.data().color,
+      description: doc.data().description,
+      image: doc.data().image,
     });
+  });
 
-    // Combine events and shard events
-    const allEvents = [...shardEvents, ...events,];
+  // Combine events and shard events
+  const allEvents = [...shardEvents, ...events];
 
-    // Initialize FullCalendar with the combined events
-    initializeCalendar(allEvents);
-    updateLegend(allEvents);
-    updateSummary(events);
-    showOngoingAndIncomingEvents(events);
-    displayReminders(allEvents);
-  })
-  .catch(error => {
-    console.error("Error getting documents: ", error);
-  }); 
-
-
-  // function getFormattedDateTime(timezone) {
-  //   // Create a Date object for the current time
-  //   const now = new Date();
-  //   console.log(now)
-  
-  //   // Get the offset for the specified timezone in minutes
-  //   const offsetMinutes = now.getTimezoneOffset();
-  
-  //   // Adjust the time based on the offset
-  //   const adjustedTime = new Date(now.getTime() + offsetMinutes);
-  
-  //   // Format the date and time
-  //   const formattedDateTime = adjustedTime.toLocaleString('en-US', {
-  //     hour: 'numeric',
-  //     minute: 'numeric',
-  //     hour12: true,
-  //     timeZone: timezone,
-  //   });
-  
-  //   return formattedDateTime;
-  // }
-  
-  // // Example usage:
-  // const philippinesTime = getFormattedDateTime('Asia/Manila');
-  // const indonesiaTime = getFormattedDateTime('Asia/Jakarta');
-  
-  // console.log('Philippines:', philippinesTime);
-  // console.log('Indonesia:', indonesiaTime);
-
-  
+  // Initialize FullCalendar with the combined events
+  initializeCalendar(allEvents);
+  updateLegend(allEvents);
+  updateSummary(events);
+  showOngoingAndIncomingEvents(events);
+  displayReminders(allEvents);
+})
+.catch(error => {
+  console.error("Error getting documents: ", error);
+}); 
 
 
 // Function to update the legend
-  function updateLegend(eventsData) {
-    const legendContainer = document.getElementById("legends");
-    legendContainer.innerHTML = "<h2>Legends</h2>"; 
-  
-    // Create a set to store colors
-    const uniqueColors = new Set();
-    eventsData.forEach(event => {
-      uniqueColors.add(event.color);
-    });
-  
-    // Create legend items for each color
-    uniqueColors.forEach(color => {
-      const legendItem = document.createElement("div");
-      legendItem.classList.add("legend-item");
-  
-      // Find the event with the matching color
-      const matchingEvent = eventsData.find(event => event.color === color);
-  
-      // Check if it's a shard event
-      if (matchingEvent && matchingEvent.icon) { // Assuming you have an 'icon' property for shard events
-        const legendIcon = document.createElement("img"); // Create an image element
-        legendIcon.classList.add("legend-icon");
-        legendIcon.src = matchingEvent.icon; // Set the image source
-        legendItem.appendChild(legendIcon);
-      } else {
-        // Create a colored square for non-shard events
-        const legendIcon = document.createElement("div");
-        legendIcon.classList.add("legend-icon");
-        legendIcon.style.backgroundColor = color;
-        legendItem.appendChild(legendIcon);
-      }
-  
-      const legendText = document.createElement("div");
-      legendText.classList.add("legend-text");
-      legendText.textContent = matchingEvent ? matchingEvent.title : "Unknown Event";
-      legendItem.appendChild(legendText);
-      legendContainer.appendChild(legendItem);
-    });
-  }
+function updateLegend(eventsData) {
+  const legendContainer = document.getElementById("legends");
+  legendContainer.innerHTML = "<h2>Legends</h2>"; 
+
+  // Create a set to store colors
+  const uniqueColors = new Set();
+  eventsData.forEach(event => {
+    uniqueColors.add(event.color);
+  });
+
+  // Create legend items for each color
+  uniqueColors.forEach(color => {
+    const legendItem = document.createElement("div");
+    legendItem.classList.add("legend-item");
+
+    // Find the event with the matching color
+    const matchingEvent = eventsData.find(event => event.color === color);
+
+    // Check if it's a shard event
+    if (matchingEvent && matchingEvent.icon) { // Assuming you have an 'icon' property for shard events
+      const legendIcon = document.createElement("img"); // Create an image element
+      legendIcon.classList.add("legend-icon");
+      legendIcon.src = matchingEvent.icon; // Set the image source
+      legendItem.appendChild(legendIcon);
+    } else {
+      // Create a colored square for non-shard events
+      const legendIcon = document.createElement("div");
+      legendIcon.classList.add("legend-icon");
+      legendIcon.style.backgroundColor = color;
+      legendItem.appendChild(legendIcon);
+    }
+
+    const legendText = document.createElement("div");
+    legendText.classList.add("legend-text");
+    legendText.textContent = matchingEvent ? matchingEvent.title : "Unknown Event";
+    legendItem.appendChild(legendText);
+    legendContainer.appendChild(legendItem);
+  });
+}
 
 function updateSummary(eventsData) {
   const legendContainer = document.getElementById("summary");
@@ -353,7 +322,6 @@ function showOngoingAndIncomingEvents(eventsData) {
   }
 }
 
-// Helper function to format dates
 function formatDate(date, format) {
   const options = {
     month: 'short', // MMM for short month names
@@ -396,18 +364,18 @@ function displayReminders(eventsData) {
     dateSection.classList.add('date-section');
 
         // Image 1
-        const image1 = document.createElement('img');
-        image1.src = "skid1.png"; // Replace with your actual image URL
-        image1.alt = "Image 1";
-        image1.classList.add('date-image-1');
-        dateSection.appendChild(image1);
+        // const image1 = document.createElement('img');
+        // image1.src = "skid1.png"; // Replace with your actual image URL
+        // image1.alt = "Image 1";
+        // image1.classList.add('date-image-1');
+        // dateSection.appendChild(image1);
     
         // Image 2
-        const image2 = document.createElement('img');
-        image2.src = "skid3.png"; // Replace with your actual image URL
-        image2.alt = "Image 2";
-        image2.classList.add('date-image-2');
-        dateSection.appendChild(image2);
+        // const image2 = document.createElement('img');
+        // image2.src = "skid3.png"; // Replace with your actual image URL
+        // image2.alt = "Image 2";
+        // image2.classList.add('date-image-2');
+        // dateSection.appendChild(image2);
 
         const month = document.createElement('h2');
         month.classList.add('month');
@@ -425,11 +393,11 @@ function displayReminders(eventsData) {
     const contentSection = document.createElement('div');
     contentSection.classList.add('content-section');
 
-    const image3 = document.createElement('img');
-    image3.src = "skid2.png"; // Replace with your actual image URL
-    image3.alt = "Image 3";
-    image3.classList.add('date-image-3');
-    contentSection.appendChild(image3);
+    // const image3 = document.createElement('img');
+    // image3.src = "skid2.png"; // Replace with your actual image URL
+    // image3.alt = "Image 3";
+    // image3.classList.add('date-image-3');
+    // contentSection.appendChild(image3);
 
     // Container for image and header
     const headerContainer = document.createElement('div');
@@ -474,17 +442,17 @@ function displayReminders(eventsData) {
 const linksSection = document.createElement('div');
 linksSection.classList.add('links-section');
 
-const image4 = document.createElement('img');
-image4.src = "skid4.png"; // Replace with your actual image URL
-image4.alt = "Image 4";
-image4.classList.add('date-image-4');
-linksSection.appendChild(image4);
+// const image4 = document.createElement('img');
+// image4.src = "skid4.png"; // Replace with your actual image URL
+// image4.alt = "Image 4";
+// image4.classList.add('date-image-4');
+// linksSection.appendChild(image4);
 
-const image5 = document.createElement('img');
-image5.src = "skid5.png"; // Replace with your actual image URL
-image5.alt = "Image 5";
-image5.classList.add('date-image-5');
-linksSection.appendChild(image5);
+// const image5 = document.createElement('img');
+// image5.src = "skid5.png"; // Replace with your actual image URL
+// image5.alt = "Image 5";
+// image5.classList.add('date-image-5');
+// linksSection.appendChild(image5);
 
 // Title for links
 const linksTitle = document.createElement('div');
@@ -507,10 +475,10 @@ const linkImages = [
   "https://img.icons8.com/clouds/100/fandom.png", // Wiki image
 ];
 const linkUrls = [
-  "#", // Shard URL
-  "#", // Clock URL
-  "#", // Planner URL
-  "#", // Wiki URL
+  "https://sky-shards.pages.dev/en", // Shard URL
+  "https://sky-clock.netlify.app/", // Clock URL
+  "https://sky-planner.com/", // Planner URL
+  "https://sky-children-of-the-light.fandom.com/wiki/Sky:_Children_of_the_Light_Wiki", // Wiki URL
 ];
 
 links.forEach((link, index) => {
@@ -521,6 +489,7 @@ links.forEach((link, index) => {
   const linkElement = document.createElement('a');
   linkElement.href = linkUrls[index]; // Set the URL for the link
   linkElement.classList.add('link');
+  linkElement.target = "_blank";
 
   // Image
   const linkImage = document.createElement('img');
@@ -541,4 +510,84 @@ links.forEach((link, index) => {
 
 linksSection.appendChild(linkList);
 remindersContainer.appendChild(linksSection);
+}
+
+const dailyCollection = collection(db, 'dailies');
+
+// Function to create daily quest items
+function createDailyItems() {
+  const dailyContainer = document.getElementById("daily");
+
+  const dailyTitle = document.createElement("h2");
+  dailyTitle.classList.add("daily-title");
+  dailyTitle.textContent = "Daily Quests";
+  dailyContainer.appendChild(dailyTitle);
+
+  const dailyItemList = document.createElement("div");
+  dailyItemList.classList.add("daily-item-list");
+
+  getDocs(dailyCollection).then(snapshot => {
+    snapshot.docs.forEach(doc => {
+      const dailyData = doc.data();
+      const dailyItem = document.createElement("div");
+      dailyItem.classList.add("daily-item");
+
+      const dailyItemText = document.createElement("p");
+      dailyItemText.classList.add("daily-item-text");
+      dailyItemText.textContent = dailyData.title; 
+      dailyItem.appendChild(dailyItemText);
+
+      const dailyItemImage = document.createElement("img");
+      dailyItemImage.classList.add("daily-item-image");
+
+      // Get the public URL from the storage URL
+      const imageRef = ref(storage, dailyData.image); 
+
+      getDownloadURL(imageRef)
+        .then(url => {
+          dailyItemImage.src = url;
+          dailyItem.appendChild(dailyItemImage);
+
+          // Add event listeners before the image is loaded
+          dailyItemImage.addEventListener('click', () => {
+            // If an image is already open, close it
+            if (document.querySelector('.daily-item-image.full-size')) {
+              closeFullSizeImage();
+            }
+
+            // Open the clicked image
+            dailyItemImage.classList.add('full-size');
+            dailyItemImage.addEventListener('click', closeFullSizeImage); 
+          });
+
+          const closeButton = document.createElement('div');
+          closeButton.classList.add('close-button');
+          closeButton.textContent = 'x';
+
+          closeButton.addEventListener('click', () => {
+            closeFullSizeImage();
+          });
+
+          dailyItem.appendChild(dailyItemImage);
+          dailyItem.appendChild(closeButton); 
+          dailyItemList.appendChild(dailyItem);
+        })
+        .catch(error => {
+          console.error("Error getting download URL: ", error);
+        });
+    });
+  });
+
+  dailyContainer.appendChild(dailyItemList);
+}
+
+createDailyItems(); 
+
+function closeFullSizeImage() {
+  const fullSizeImage = document.querySelector('.daily-item-image.full-size');
+  if (fullSizeImage) {
+    fullSizeImage.classList.remove('full-size');
+    fullSizeImage.removeEventListener('click', closeFullSizeImage); 
+    fullSizeImage.removeChild(fullSizeImage.querySelector('.close-button'));
+  }
 }
