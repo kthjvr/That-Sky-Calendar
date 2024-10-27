@@ -116,9 +116,9 @@ Promise.all([
 
     // const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-
     start.setHours(15, start.getMinutes(), start.getSeconds(), 0);
     end.setHours(14, 59, start.getSeconds(), 0);
+    end.setDate(end.getDate() + 1);
   
     // Format the adjusted times using toLocaleString
     let formattedStartTime = start.toLocaleString('en-US', {
@@ -558,7 +558,36 @@ function createDailyItems() {
             // Open the clicked image
             dailyItemImage.classList.add('full-size');
             dailyItemImage.addEventListener('click', closeFullSizeImage); 
-          });
+      });
+
+      dailyItemImage.alt = dailyData.altText
+      dailyItemImage.addEventListener('mouseover', () => {
+        if (dailyItemImage.classList.contains('full-size')) {
+          const tooltip = document.createElement('div');
+          tooltip.classList.add('tooltip');
+          tooltip.textContent = dailyItemImage.alt;
+
+          tooltip.style.position = 'absolute';
+          tooltip.style.top = `${dailyItemImage.offsetTop + dailyItemImage.offsetHeight}px`;
+          tooltip.style.left = `${dailyItemImage.offsetLeft}px`;
+
+          tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+          tooltip.style.color = '#fff';
+          tooltip.style.padding = '5px';
+          tooltip.style.borderRadius = '5px';
+          tooltip.style.fontSize = '14px'
+          tooltip.style.width = '20rem'
+
+          dailyItemImage.parentNode.appendChild(tooltip);
+        }
+      });
+      dailyItemImage.addEventListener('mouseout', () => {
+        // Remove the tooltip
+        const tooltip = document.querySelector('.tooltip');
+        if (tooltip) {
+          tooltip.remove();
+        }
+      });
 
           const closeButton = document.createElement('div');
           closeButton.classList.add('close-button');
