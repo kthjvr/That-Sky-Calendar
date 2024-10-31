@@ -351,52 +351,71 @@ function showOngoingAndIncomingEvents(eventsData) {
     if (today >= eventStart && today <= eventEnd) {
       ongoingEvents.push(event);
     } else if (today < eventStart) {
-      // Check if event starts within the next two months
-      const currentMonth = today.getMonth();
-      const nextMonth = (currentMonth + 1) % 12;
-      const twoMonthsAhead = (currentMonth + 2) % 12;
-      if (eventStart.getMonth() === currentMonth || 
-          eventStart.getMonth() === nextMonth || 
-          eventStart.getMonth() === twoMonthsAhead) {
-        incomingEvents.push(event);
-      }
+      incomingEvents.push(event);
     }
   });
 
-  // Helper function to display events in a container
-  function displayEvents(events, containerId) {
-    const container = document.getElementById(containerId);
-    if (events.length > 0) {
-      events.forEach(event => {
-        const eventItem = document.createElement('p');
-        const formattedStart = formatDate(event.start, 'MMM dd yyyy');
-        const formattedEnd = formatDate(event.end, 'MMM dd yyyy');
-        eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
-        container.appendChild(eventItem);
-      });
-    } else {
-      const noEvents = document.createElement('p');
-      noEvents.textContent = `There are no ${containerId === 'ongoing' ? 'ongoing' : 'incoming'} events.`;
-      container.appendChild(noEvents);
-    }
+  // Display ongoing events
+  const ongoingContainer = document.getElementById("ongoing");
+        
+  if (ongoingEvents.length > 0) {
+    ongoingEvents.forEach(event => {
+      const eventItem = document.createElement('p');
+
+      // Format start and end dates in 12-hour format with AM/PM
+      const formattedStart = formatDate2(event.start, 'MMM dd yyyy');
+      const formattedEnd = formatDate2(event.end, 'MMM dd yyyy');
+
+      eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
+      ongoingContainer.appendChild(eventItem);
+    });
+  } else {
+    const noOngoingEvents = document.createElement('p');
+    noOngoingEvents.textContent = "There are no ongoing events.";
+    ongoingContainer.appendChild(noOngoingEvents);
   }
 
-  // Display ongoing and incoming events using the helper function
-  displayEvents(ongoingEvents, 'ongoing');
-  displayEvents(incomingEvents, 'incoming');
-}
+   // Display incoming events
+   const incomingContainer = document.getElementById("incoming");
+   if (incomingEvents.length > 0) {
+     incomingEvents.forEach(event => {
+       const eventItem = document.createElement('p');
+ 
+       // Format start and end dates in 12-hour format with AM/PM
+       const formattedStart = formatDate(event.start, 'MMM dd yyyy hh:mm a');
+       const formattedEnd = formatDate(event.end, 'MMM dd yyyy hh:mm a');
+ 
+       eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
+       incomingContainer.appendChild(eventItem);
+     });
+   } else {
+     const noIncomingEvents = document.createElement('p');
+     noIncomingEvents.textContent = "There are no incoming events.";
+     incomingContainer.appendChild(noIncomingEvents);
+   }
+  }
 
 function formatDate(date, format) {
   const options = {
-    month: 'short', // MMM for short month names
+    month: 'short',
     day: 'numeric',
     year: 'numeric',
-    hour: '2-digit', // Use '2-digit' for consistent two-digit hours
+    hour: '2-digit', 
     minute: 'numeric',
-    hour12: true, // Include AM/PM
+    hour12: true, 
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
 }
+
+function formatDate2(date, format) {
+  const options = {
+    month: 'long', 
+    day: 'numeric',
+    year: 'numeric',
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+}
+
 // Function to display reminders
 function displayReminders(eventsData) {
   // Get the reminders container
