@@ -71,11 +71,13 @@
     <button id="listWeekView" hidden>List View</button>
 
     <div class="container">
-        <div id='calendar' class="calendar"></div>
+        <div id='calendar' class="calendar">
+        </div>
+
 
         <div class="side-container">
             <div class="top-container">
-                <div class="legends" id="legends">
+                <div class="legends" id="legends" hidden>
                     <h2>Legends</h2>
                 </div>
 
@@ -96,7 +98,7 @@
         </div>
     </div>
 
-    <div class="daily-container" id="daily">
+    <div class="daily-container" id="daily" hidden>
 
     </div>
 
@@ -110,6 +112,8 @@
           document.querySelector('.overlay').style.display = 'none';
         }, 500);
       }, 1200);
+
+
     </script>
 
 </body>

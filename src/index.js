@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, getDoc, onSnapshot, doc, query, orderBy } from "firebase/firestore";
+import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 
@@ -30,7 +30,6 @@ const shardsCollection = collection(db, 'shards');
 
 // ============ this is for calendar====================================================
 
-var test = []; // Initialize the array as empty
 
 // Function to initialize FullCalendar
 function initializeCalendar(eventsData) {
@@ -60,22 +59,44 @@ function initializeCalendar(eventsData) {
     eventOrder: "description",
   });
   calendar.render();
+
+  // fiter
+  const categoryFilterDropdown = document.createElement('select');
+  categoryFilterDropdown.id = 'category-filter';
+  categoryFilterDropdown.innerHTML = `
+    <option value="">All Categories</option>
+    <option value="shard">Shard</option>
+    <option value="days-of-events">Days of Events</option>
+    <option value="travelling-spirits">Travelling Spirits</option>
+    <option value="seasons">Seasons</option>
+  `;
+  const calendarHeader = document.querySelector('.fc-toolbar-chunk:nth-child(2)'); 
+  calendarHeader.appendChild(categoryFilterDropdown); 
+
+  categoryFilterDropdown.addEventListener('change', function() {
+    const selectedCategory = this.value.toLowerCase();
+    console.log(selectedCategory);
+
+    const filteredEvents = eventsData.filter(event => {
+      if (event.category) { 
+        return event.category.toLowerCase() === selectedCategory || selectedCategory === '';
+      } else {
+        return selectedCategory === ''; 
+      }
+    });
+    calendar.removeAllEventSources();
+    calendar.addEventSource(filteredEvents);
+  });
 }
 
 // Fetch events and shard events, then combine and initialize the calendar
 Promise.all([
-  getDocs(query(colRef, orderBy("start", "asc"))), // Fetch events
-  getDocs(shardsCollection) // Fetch shards,
+  getDocs(query(colRef, orderBy("start", "asc"))), 
+  getDocs(shardsCollection) 
 ])
 .then(([eventsSnapshot, shardsSnapshot]) => {
   const events = [];
   const shardEvents = [];
-
-  const moment = require('moment');
-  require('moment-timezone');
-  const userTimezone = moment.tz.guess();
-  const userLocalTime = moment().tz(userTimezone).format('LLLL');
-  console.log("User's Timezone:", userTimezone);
 
   // Process shard events from the 'shards' collection
   shardsSnapshot.docs.forEach((doc,shardIndex) => {
@@ -85,18 +106,16 @@ Promise.all([
     const imageURL = doc.data().image;
 
     const dates = datesString.split(',').map(date => parseInt(date.trim())); 
+    const month = doc.data().month;
 
     dates.forEach(date => {
-      const startDate = new Date(`2024-10-${date}`);
+      const startDate = new Date(`2024-${month}-${date}`);
       const endDate = new Date(startDate);
       endDate.setHours(23, 59, 59, 999);
 
       // Apply PST time 
       startDate.setHours(17, 30, 0); // 5:30 PM
-      // endDate.setHours(9, 20, 0); // 9:20 AM the next day
-      // endDate.setDate(endDate.getDate() + 1); // Increment the day for endDate
 
-      const priority = doc.data().priority;
       shardEvents.push({
         title: title,
         start: startDate,
@@ -104,7 +123,8 @@ Promise.all([
         color: color,
         description: ``,
         icon: imageURL,
-        className: doc.data().image ? 'has-image' : ''
+        className: doc.data().image ? 'has-image' : '',
+        category: doc.data().category || 'Default Category' 
       });
     });
   });
@@ -113,46 +133,44 @@ Promise.all([
   eventsSnapshot.docs.forEach(doc => {
     const start = new Date(doc.data().start);
     const end = new Date(doc.data().end);
-
-    // const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    start.setHours(15, start.getMinutes(), start.getSeconds(), 0);
-    end.setHours(14, 59, start.getSeconds(), 0);
-    end.setDate(end.getDate() + 1);
   
-    // Format the adjusted times using toLocaleString
-    let formattedStartTime = start.toLocaleString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric',
-      hour12: false,
-      timeZone: userTimezone,
-    });
-
-    let formattedEndTime = end.toLocaleString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric',
-      hour12: false,
-      timeZone: userTimezone,
-    });
-
-    // Extract hours, minutes, and seconds from the formatted strings
-    const [hours, minutes, seconds] = formattedStartTime.split(':').map(Number);
-    start.setHours(hours, minutes, seconds, 0);
-    
-
-    const [endHours, endMinutes, endSeconds] = formattedEndTime.split(':').map(Number);
-    end.setHours(endHours, endMinutes, endSeconds, 0);
-    
-
+    // Assuming you have moment-timezone installed
+    const moment = require('moment');
+    require('moment-timezone');
+  
+    // Get the user's timezone
+    const userTimezone = moment.tz.guess();
+    console.log("User's Timezone:", userTimezone);
+  
+    // Convert start and end times to moment objects (already in LA time)
+    const startMoment = moment(start).tz('America/Los_Angeles');
+    const endMoment = moment(end).tz('America/Los_Angeles');
+  
+    // Set the start time to 1:00 AM PDT
+    startMoment.hour(23).minute(0).second(0); 
+  
+    // Set the end time to 23:59 in LA
+    endMoment.hour(22).minute(59).second(59);
+  
+    // Convert the LA times to the user's timezone, taking DST into account
+    const startLocalTime = startMoment.clone().tz(userTimezone);
+    const endLocalTime = endMoment.clone().tz(userTimezone);
+  
+    // Convert the LA start time to Philippine time, taking DST into account
+    const startPHTime = startMoment.clone().tz('Asia/Manila');
+  
+    // Convert back to Date objects
+    const formattedStartDate = startLocalTime.toDate(); // Use startLocalTime for the user's local time
+    const formattedEndDate = endLocalTime.toDate();
+  
     events.push({
       title: doc.data().title,
-      start: start,
-      end: end,
+      start: formattedStartDate,
+      end: formattedEndDate,
       color: doc.data().color,
       description: doc.data().description,
       image: doc.data().image,
+      category: doc.data().category || 'Default Category',
     });
   });
 
@@ -161,15 +179,14 @@ Promise.all([
 
   // Initialize FullCalendar with the combined events
   initializeCalendar(allEvents);
+  showOngoingAndIncomingEvents(events);
   updateLegend(allEvents);
   updateSummary(events);
-  showOngoingAndIncomingEvents(events);
   displayReminders(allEvents);
 })
 .catch(error => {
   console.error("Error getting documents: ", error);
 }); 
-
 
 // Function to update the legend
 function updateLegend(eventsData) {
@@ -179,7 +196,13 @@ function updateLegend(eventsData) {
   // Create a set to store colors
   const uniqueColors = new Set();
   eventsData.forEach(event => {
-    uniqueColors.add(event.color);
+    // Check if the event falls within the current month
+    const eventStartDate = new Date(event.start);
+    const eventEndDate = new Date(event.end);
+    const currentMonth = new Date().getMonth();
+    if (eventStartDate.getMonth() === currentMonth || eventEndDate.getMonth() === currentMonth) {
+      uniqueColors.add(event.color);
+    }
   });
 
   // Create legend items for each color
@@ -212,58 +235,108 @@ function updateLegend(eventsData) {
   });
 }
 
-function updateSummary(eventsData) {
+function updateSummary(eventsData, month = new Date().getMonth()) {
   const legendContainer = document.getElementById("summary");
-  legendContainer.innerHTML = "<h2>Summary</h2>";
+  legendContainer.innerHTML = ""; // Clear previous content
+
+  // Create heading and button container
+  const headingContainer = document.createElement("div");
+  headingContainer.classList.add("summary-heading");
+
+  const heading = document.createElement("h2");
+  const monthName = new Date(new Date().getFullYear(), month).toLocaleString('en-US', { month: 'long' });
+  heading.textContent = `${monthName} Events Summary`;
+  headingContainer.appendChild(heading);
+
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("buttons");
+
+  // Add next and previous buttons
+  const nextButton = document.createElement("button");
+  nextButton.textContent = "Next";
+  nextButton.addEventListener("click", () => {
+    month = (month + 1) % 12; // Cycle through months
+    updateSummary(eventsData, month);
+  });
+
+  const previousButton = document.createElement("button");
+  previousButton.textContent = "Previous";
+  previousButton.addEventListener("click", () => {
+    month = (month - 1 + 12) % 12; // Cycle through months
+    updateSummary(eventsData, month);
+  });
+
+  buttonContainer.appendChild(previousButton);
+  buttonContainer.appendChild(nextButton);
+
+  headingContainer.appendChild(buttonContainer);
+  legendContainer.appendChild(headingContainer);
 
   // Create a set to store colors
   const uniqueColors = new Set();
+  let hasEvents = false; // Flag to check if any events exist for the month
+
   eventsData.forEach(event => {
-    uniqueColors.add(event.color);
+    // Convert strings to Date objects
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+
+    // Check if the event falls within the specified month
+    if (startDate.getMonth() === month || endDate.getMonth() === month) {
+      uniqueColors.add(event.color);
+      hasEvents = true; // Set flag to true if an event is found
+    }
   });
 
   // Create legend items for each color
-  uniqueColors.forEach(color => {
-    const legendItem = document.createElement("div");
-    legendItem.classList.add("sum-item");
+  if (hasEvents) {
+    uniqueColors.forEach(color => {
+      const legendItem = document.createElement("div");
+      legendItem.classList.add("sum-item");
 
-    const legendIcon = document.createElement("div");
-    legendIcon.classList.add("sum-icon");
-    legendIcon.style.backgroundColor = color;
+      const legendIcon = document.createElement("div");
+      legendIcon.classList.add("sum-icon");
+      legendIcon.style.backgroundColor = color;
 
-    const legendText = document.createElement("div");
-    legendText.classList.add("sum-text");
+      const legendText = document.createElement("div");
+      legendText.classList.add("sum-text");
 
-    // Find the event with the matching color and use its title
-    const matchingEvent = eventsData.find(event => event.color === color);
-    if (matchingEvent) {
-      // Convert strings to Date objects
-      const startDate = new Date(matchingEvent.start);
-      const endDate = new Date(matchingEvent.end);
+      // Find the event with the matching color and use its title
+      const matchingEvent = eventsData.find(event => event.color === color);
+      if (matchingEvent) {
+        // Convert strings to Date objects
+        const startDate = new Date(matchingEvent.start);
+        const endDate = new Date(matchingEvent.end);
 
-      // Format the dates
-      const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        // Format the dates
+        const formattedStartDate = startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const formattedEndDate = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-      // Check if the event has ended
-      const today = new Date();
-      if (today > endDate) {
-        legendText.style.textDecoration = "line-through";
-        legendText.style.textDecorationThickness = "3px";
-        legendText.style.textDecorationColor = "black"; // Change to red color
+        // Check if the event has ended
+        const today = new Date();
+        if (today > endDate) {
+          legendText.style.textDecoration = "line-through";
+          legendText.style.textDecorationThickness = "3px";
+          legendText.style.textDecorationColor = "black"; // Change to red color
+        }
+
+        // Add formatted dates to the legend text
+        legendText.textContent = `${matchingEvent.title} 
+                                (${formattedStartDate} - ${formattedEndDate})`;
+      } else {
+        legendText.textContent = "Unknown Event"; // handle the case where no matching event is found
       }
 
-      // Add formatted dates to the legend text
-      legendText.textContent = `${matchingEvent.title} 
-                              (${formattedStartDate} - ${formattedEndDate})`;
-    } else {
-      legendText.textContent = "Unknown Event"; // handle the case where no matching event is found
-    }
-
-    legendItem.appendChild(legendIcon);
-    legendItem.appendChild(legendText);
-    legendContainer.appendChild(legendItem);
-  });
+      legendItem.appendChild(legendIcon);
+      legendItem.appendChild(legendText);
+      legendContainer.appendChild(legendItem);
+    });
+  } else {
+    // Display "No events found" message if no events exist for the month
+    const noEventsMessage = document.createElement("p");
+    noEventsMessage.textContent = "No events found for this month.";
+    legendContainer.appendChild(noEventsMessage);
+  }
 }
 
 function showOngoingAndIncomingEvents(eventsData) {
@@ -278,48 +351,39 @@ function showOngoingAndIncomingEvents(eventsData) {
     if (today >= eventStart && today <= eventEnd) {
       ongoingEvents.push(event);
     } else if (today < eventStart) {
-      incomingEvents.push(event);
+      // Check if event starts within the next two months
+      const currentMonth = today.getMonth();
+      const nextMonth = (currentMonth + 1) % 12;
+      const twoMonthsAhead = (currentMonth + 2) % 12;
+      if (eventStart.getMonth() === currentMonth || 
+          eventStart.getMonth() === nextMonth || 
+          eventStart.getMonth() === twoMonthsAhead) {
+        incomingEvents.push(event);
+      }
     }
   });
 
-  // Display ongoing events
-  const ongoingContainer = document.getElementById("ongoing");
-        
-  if (ongoingEvents.length > 0) {
-    ongoingEvents.forEach(event => {
-      const eventItem = document.createElement('p');
-
-      // Format start and end dates in 12-hour format with AM/PM
-      const formattedStart = formatDate(event.start, 'MMM dd yyyy hh:mm a');
-      const formattedEnd = formatDate(event.end, 'MMM dd yyyy hh:mm a');
-
-      eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
-      ongoingContainer.appendChild(eventItem);
-    });
-  } else {
-    const noOngoingEvents = document.createElement('p');
-    noOngoingEvents.textContent = "There are no ongoing events.";
-    ongoingContainer.appendChild(noOngoingEvents);
+  // Helper function to display events in a container
+  function displayEvents(events, containerId) {
+    const container = document.getElementById(containerId);
+    if (events.length > 0) {
+      events.forEach(event => {
+        const eventItem = document.createElement('p');
+        const formattedStart = formatDate(event.start, 'MMM dd yyyy');
+        const formattedEnd = formatDate(event.end, 'MMM dd yyyy');
+        eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
+        container.appendChild(eventItem);
+      });
+    } else {
+      const noEvents = document.createElement('p');
+      noEvents.textContent = `There are no ${containerId === 'ongoing' ? 'ongoing' : 'incoming'} events.`;
+      container.appendChild(noEvents);
+    }
   }
 
-  // Display incoming events
-  const incomingContainer = document.getElementById("incoming");
-  if (incomingEvents.length > 0) {
-    incomingEvents.forEach(event => {
-      const eventItem = document.createElement('p');
-
-      // Format start and end dates in 12-hour format with AM/PM
-      const formattedStart = formatDate(event.start, 'MMM dd yyyy hh:mm a');
-      const formattedEnd = formatDate(event.end, 'MMM dd yyyy hh:mm a');
-
-      eventItem.textContent = `${event.title} (${formattedStart} - ${formattedEnd})`;
-      incomingContainer.appendChild(eventItem);
-    });
-  } else {
-    const noIncomingEvents = document.createElement('p');
-    noIncomingEvents.textContent = "There are no incoming events.";
-    incomingContainer.appendChild(noIncomingEvents);
-  }
+  // Display ongoing and incoming events using the helper function
+  displayEvents(ongoingEvents, 'ongoing');
+  displayEvents(incomingEvents, 'incoming');
 }
 
 function formatDate(date, format) {
@@ -327,13 +391,12 @@ function formatDate(date, format) {
     month: 'short', // MMM for short month names
     day: 'numeric',
     year: 'numeric',
-    hour: 'numeric', // h for 12-hour format
+    hour: '2-digit', // Use '2-digit' for consistent two-digit hours
     minute: 'numeric',
     hour12: true, // Include AM/PM
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
 }
-
 // Function to display reminders
 function displayReminders(eventsData) {
   // Get the reminders container

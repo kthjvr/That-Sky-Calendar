@@ -7,6 +7,29 @@ body {
     color: #808080;
 }
 
+.fc-toolbar-chunk:nth-child(2) {
+  margin-left: auto;
+}
+
+#category-filter {
+  background-color: var(--fc-button-bg-color);
+  border-color: var(--fc-button-border-color);
+  color: var(--fc-button-text-color);
+  border-bottom-left-radius: 0px;
+  border-top-left-radius: 0px;
+  border: 1px solid transparent;
+  border-radius: 0.25em;
+  display: inline-block;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 0.4em;
+  text-align: center;
+  user-select: none;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
 #tsparticles  {
   position: absolute; /* Position the canvas absolutely */
   top: 0;            /* Place it at the top of the page */
@@ -274,6 +297,13 @@ header img {
     margin: 20px 50px
 }
 
+.top-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-direction: row;
+}
+
 .side-container {
   display: flex;
   justify-content: center;
@@ -283,13 +313,6 @@ header img {
   flex-direction: column;
 }
 
-.top-container {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  flex-direction: row;
-}
-
 .summary {
   background-color: #fff;
   padding: 20px;
@@ -297,15 +320,60 @@ header img {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-left: 20px;
   margin-top: 20px;
+  height: 100%;
+}
+
+.summary h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.summary .event { /* Style for each event */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.summary .event h3 { /* Style for event titles */
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.summary .event p { /* Style for event dates */
+  font-size: 14px;
+}
+
+.summary button {
+  background-color: #666; 
+  color: white; 
+  border: none; 
+  padding: 5px 20px;
+  border-radius: 5px; 
+  cursor: pointer;
+  margin-right: 10px;
+  /* margin-left: 20%; */
+  font-size: 16px;
+  grid-column: span 5; /* Make the heading span all columns */
+  text-align: center; /* Center the heading */
+
+}
+
+.summary button:hover {
+  background-color: #0056b3;
 }
 
 .sum-text {
   font-size: 14px;
 }
 
-.summary h2 {
-  font-size: 20px;
-  font-weight: 800;
+.summary-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
 }
 
 .econtainer {
@@ -313,7 +381,7 @@ header img {
   justify-content: center;
   align-items: stretch;
   flex-direction: column;
-  width: 380px;
+  width: 100%;
 }
 
 .ongoing {
@@ -329,7 +397,7 @@ header img {
 }
 
 .ongoing h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
@@ -347,7 +415,7 @@ header img {
 }
 
 .incoming h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
@@ -355,7 +423,7 @@ header img {
 /* calendar height width*/
 .fc {
     width: 900px;
-    height:655px;
+    height:700px;
 }
 
 .fc-event-time {
@@ -567,6 +635,7 @@ header img {
 
   .fc-event-title {
     position: relative;
+    color: #65647C;
   }
 
   .fc-event-content {
