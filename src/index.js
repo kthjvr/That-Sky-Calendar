@@ -133,8 +133,7 @@ Promise.all([
   eventsSnapshot.docs.forEach(doc => {
     const start = new Date(doc.data().start);
     const end = new Date(doc.data().end);
-  
-    // Assuming you have moment-timezone installed
+
     const moment = require('moment');
     require('moment-timezone');
   
@@ -147,20 +146,17 @@ Promise.all([
     const endMoment = moment(end).tz('America/Los_Angeles');
   
     // Set the start time to 1:00 AM PDT
-    startMoment.hour(23).minute(0).second(0); 
+    startMoment.hour(24).minute(0).second(0); 
   
     // Set the end time to 23:59 in LA
-    endMoment.hour(22).minute(59).second(59);
+    endMoment.hour(23).minute(59).second(59);
   
-    // Convert the LA times to the user's timezone, taking DST into account
+    // Convert the LA times to the user's timezone``
     const startLocalTime = startMoment.clone().tz(userTimezone);
     const endLocalTime = endMoment.clone().tz(userTimezone);
   
-    // Convert the LA start time to Philippine time, taking DST into account
-    const startPHTime = startMoment.clone().tz('Asia/Manila');
-  
     // Convert back to Date objects
-    const formattedStartDate = startLocalTime.toDate(); // Use startLocalTime for the user's local time
+    const formattedStartDate = startLocalTime.toDate(); 
     const formattedEndDate = endLocalTime.toDate();
   
     events.push({
@@ -420,7 +416,7 @@ function formatDate2(date, format) {
 function displayReminders(eventsData) {
   // Get the reminders container
   const remindersContainer = document.getElementById("reminders");
-  remindersContainer.innerHTML = ''; // Clear previous reminders
+  remindersContainer.innerHTML = ''; 
 
   // Get the current date and tomorrow's date
   const today = new Date();
@@ -445,37 +441,27 @@ function displayReminders(eventsData) {
     const dateSection = document.createElement('div');
     dateSection.classList.add('date-section');
 
-        // Image 1
-        // const image1 = document.createElement('img');
-        // image1.src = "skid1.png"; // Replace with your actual image URL
-        // image1.alt = "Image 1";
-        // image1.classList.add('date-image-1');
-        // dateSection.appendChild(image1);
-    
-        // Image 2
-        // const image2 = document.createElement('img');
-        // image2.src = "skid3.png"; // Replace with your actual image URL
-        // image2.alt = "Image 2";
-        // image2.classList.add('date-image-2');
-        // dateSection.appendChild(image2);
+    const tdy = document.createElement('h3');
+    tdy.classList.add('todays');
+    tdy.textContent = "Today is";
+    dateSection.appendChild(tdy);
 
-        const month = document.createElement('h2');
-        month.classList.add('month');
-        month.textContent = today.toLocaleString('default', { month: 'long' });
-        dateSection.appendChild(month);
+    const month = document.createElement('h2');
+    month.classList.add('month');
+    month.textContent = today.toLocaleString('default', { month: 'long' });
+    dateSection.appendChild(month);
 
-        const day = document.createElement('h2');
-        day.classList.add('day');
-        day.textContent = today.getDate();
-        dateSection.appendChild(day);
+    const day = document.createElement('h2');
+    day.classList.add('day');
+    day.textContent = today.getDate();
+    dateSection.appendChild(day);
 
-        remindersContainer.appendChild(dateSection);
+    remindersContainer.appendChild(dateSection);
 
     // Reminder content --------------------------------------
     const contentSection = document.createElement('div');
     contentSection.classList.add('content-section');
 
-    // const image3 = document.createElement('img');
     // image3.src = "skid2.png"; // Replace with your actual image URL
     // image3.alt = "Image 3";
     // image3.classList.add('date-image-3');
@@ -486,11 +472,11 @@ function displayReminders(eventsData) {
     headerContainer.classList.add('header-container');
 
     // Image
-    const image = document.createElement('img');
-    image.src = "https://img.icons8.com/matisse/100/alarm.png"; // Replace with your actual image URL
-    image.alt = "Alarm Icon";
-    image.classList.add('header-image');
-    headerContainer.appendChild(image);
+    // const image = document.createElement('img');
+    // image.src = "https://img.icons8.com/matisse/100/alarm.png"; // Replace with your actual image URL
+    // image.alt = "Alarm Icon";
+    // image.classList.add('header-image');
+    // headerContainer.appendChild(image);
 
     // header
     const header = document.createElement('h2');
@@ -501,24 +487,81 @@ function displayReminders(eventsData) {
 
   // Display ongoing events
   if (ongoingEvents.length > 0) {
-    const ongoingMessage = document.createElement('p');
-    ongoingMessage.textContent = `${ongoingEvents.map(event => event.title).join(', ')} is in full swing!`;
-    contentSection.appendChild(ongoingMessage)
+    const onMessage = document.createElement('p');
+    const onText = document.createElement('span');
+    onText.textContent = '[Today]';
+    onText.style.color = '#3D5300';
+    onText.style.fontWeight = 'bold'
+
+    onMessage.appendChild(onText);
+  
+    onMessage.appendChild(document.createTextNode(' ')); 
+  
+    onMessage.appendChild(document.createTextNode(ongoingEvents.map(event => event.title).join(', '))); 
+  
+    contentSection.appendChild(onMessage);
   }
 
   // Display tomorrow's events
   if (tomorrowEvents.length > 0) {
-    const tomorrowMessage = document.createElement('p');
-    tomorrowMessage.textContent = `Don't miss out on the ${tomorrowEvents.map(event => event.title).join(', ')} starting tomorrow!`;
-    contentSection.appendChild(tomorrowMessage);
+    const tomMessage = document.createElement('p');
+    const tomText = document.createElement('span');
+    tomText.textContent = '[Tomorrow]';
+    tomText.style.color = '#556FB5';
+    tomText.style.fontWeight = 'bold'
+
+    tomMessage.appendChild(tomText);
+  
+    tomMessage.appendChild(document.createTextNode(' ')); 
+  
+    tomMessage.appendChild(document.createTextNode(tomorrowEvents.map(event => event.title).join(', '))); 
+  
+    contentSection.appendChild(tomMessage);
   }
+
+  // Filter events ending by tomorrow
+  const endingTomorrowEvents = eventsData.filter(event => {
+    const eventEnd = new Date(event.end);
+    return eventEnd.getDate() === tomorrow.getDate() && eventEnd.getMonth() === tomorrow.getMonth() && eventEnd.getFullYear() === tomorrow.getFullYear();
+  });
 
   // If no reminders
   if (ongoingEvents.length === 0 && tomorrowEvents.length === 0) {
     const noReminders = document.createElement('p');
-    noReminders.textContent = "Take a break from the hustle and bustle. Enjoy your day!!";
+    noReminders.textContent = "Take a break from the hustle and bustle. Enjoy your day!";
     remindersContainer.appendChild(noReminders);
+  } else if (tomorrowEvents.length === 0){
+    const tomMessage = document.createElement('p');
+    const tomText = document.createElement('span');
+    tomText.textContent = '[Tomorrow]';
+    tomText.style.color = '#556FB5';
+    tomText.style.fontWeight = 'bold'
+
+    tomMessage.appendChild(tomText);
+  
+    tomMessage.appendChild(document.createTextNode(' ')); 
+  
+    tomMessage.appendChild(document.createTextNode("No new events starting tomorrow!")); 
+  
+    contentSection.appendChild(tomMessage);
   }
+
+    // Display events ending by tomorrow
+    if (endingTomorrowEvents.length > 0) {
+      const endingMessage = document.createElement('p');
+      const endingText = document.createElement('span');
+      endingText.textContent = '[Ending tomorrow]';
+      endingText.style.color = '#E4508F';
+      endingText.style.fontWeight = 'bold'
+
+      endingMessage.appendChild(endingText);
+    
+      endingMessage.appendChild(document.createTextNode(' ')); 
+    
+      endingMessage.appendChild(document.createTextNode(endingTomorrowEvents.map(event => event.title).join(', '))); 
+    
+      contentSection.appendChild(endingMessage);
+    }
 
 // Links
 const linksSection = document.createElement('div');
