@@ -106,9 +106,16 @@
     <div class="traveling-spirits">
       <h2>Novembers Traveling Spirit</h2>
       <div class="ts-container">
-        <div class="ts1"><img src="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/Warrior%20of%20love.png?alt=media&token=5a319163-703b-46a8-a350-2325fa975102" alt="First TS"></div>
-        <div class="ts2"><img src="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/ts-unannounced.png?alt=media&token=4c523cab-206c-4499-9218-98c757de4f79" alt="Second TS"></div>
+        <div class="ts1"><img id="myImg" src="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/Warrior%20of%20love.png?alt=media&token=5a319163-703b-46a8-a350-2325fa975102" alt="First TS"></div>
+        <div class="ts2"><img id="myImg" src="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/ts-unannounced.png?alt=media&token=4c523cab-206c-4499-9218-98c757de4f79" alt="Second TS"></div>
       </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+      <span class="close">&times;</span>
+      <img class="modal-content" id="img01">
+      <!-- <div id="caption"></div> -->
     </div>
 
     <div class="daily-container" id="daily" hidden>
@@ -117,16 +124,39 @@
 
     <script src="moment.js"></script>
     <script src="bundle.js"></script>
+  
 
     <script>
+// Get the modal
+var modal = document.getElementById('myModal');
+
+// Select all images within the ts-container
+var images = document.querySelectorAll('.ts-container img');
+
+// Loop through each image and add an onclick event
+images.forEach(image => {
+  image.onclick = function() {
+    modal.style.display = "block";
+    // Get the modal image element inside the onclick function
+    var modalImg = document.getElementById("img01");
+    modalImg.src = this.src; // Set the modal image source to the clicked image
+  };
+});
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+};
+
       setTimeout(function() {
         document.querySelector('.overlay').style.opacity = 0;
         setTimeout(function() {
           document.querySelector('.overlay').style.display = 'none';
         }, 500);
       }, 1500);
-
-
     </script>
 
 </body>
