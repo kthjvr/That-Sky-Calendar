@@ -69,6 +69,7 @@ function initializeCalendar(eventsData) {
     <option value="days-of-events">Days of Events</option>
     <option value="travelling-spirits">Travelling Spirits</option>
     <option value="seasons">Seasons</option>
+    <option value="hide">Hide Shards</option>
   `;
   const calendarHeader = document.querySelector('.fc-toolbar-chunk:nth-child(2)'); 
   calendarHeader.appendChild(categoryFilterDropdown); 
@@ -78,10 +79,14 @@ function initializeCalendar(eventsData) {
     console.log(selectedCategory);
 
     const filteredEvents = eventsData.filter(event => {
-      if (event.category) { 
-        return event.category.toLowerCase() === selectedCategory || selectedCategory === '';
+      if (selectedCategory === 'hide') { 
+        return !event.category || !event.category.toLowerCase().includes('shard'); 
       } else {
-        return selectedCategory === ''; 
+        if (event.category) { 
+          return event.category.toLowerCase() === selectedCategory || selectedCategory === '';
+        } else {
+          return selectedCategory === ''; 
+        }
       }
     });
     calendar.removeAllEventSources();
@@ -184,7 +189,6 @@ Promise.all([
   console.error("Error getting documents: ", error);
 }); 
 
-// Function to update the legend
 function updateLegend(eventsData) {
   const legendContainer = document.getElementById("legends");
   legendContainer.innerHTML = "<h2>Legends</h2>"; 
@@ -412,7 +416,6 @@ function formatDate2(date, format) {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 }
 
-// Function to display reminders
 function displayReminders(eventsData) {
   // Get the reminders container
   const remindersContainer = document.getElementById("reminders");
@@ -638,8 +641,6 @@ remindersContainer.appendChild(linksSection);
 }
 
 const dailyCollection = collection(db, 'dailies');
-
-// Function to create daily quest items
 function createDailyItems() {
   const dailyContainer = document.getElementById("daily");
 

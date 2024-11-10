@@ -7,6 +7,67 @@ body {
     /* color: #808080; */
 }
 
+.warning{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px 50px;
+  background-color: #4284a6; 
+  padding: 8px;
+  border-radius: 24px;
+}
+
+.warning p {
+  color: #eef7fc;
+  line-height: 2em;
+  font-size: 21px;
+  margin: 24px;
+}
+
+.traveling-spirits{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px 50px;
+  background-color: #eef7fc; 
+  padding: 8px;
+  border-radius: 24px;
+}
+
+.ts-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+
+.ts1{
+  background-color: #72b9dd; 
+  padding: 8px;
+  border-radius: 24px;
+  width: 100%;
+  margin: 12px;
+}
+
+.ts2{
+  background-color: #72b9dd; 
+  padding: 8px;
+  border-radius: 24px;
+  width: 100%;
+  margin: 12px;
+}
+
+.ts-container img{
+  width: 100%;
+}
+
 .fc-toolbar-chunk:nth-child(2) {
   margin-left: auto;
 }
@@ -334,7 +395,7 @@ header img {
 }
 
 .summary h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -408,7 +469,7 @@ header img {
 }
 
 .ongoing h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -425,7 +486,7 @@ header img {
 }
 
 .incoming h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -515,13 +576,14 @@ header img {
 }
 
 .sum-icon {
+  display: none;
   width: 20px;
   height: 20px;
   margin-right: 10px;
 }
 
 .sum-text {
-  font-weight: bold;
+  /* font-weight: bold; */
   font-size: 14px;
 }
 
@@ -688,7 +750,7 @@ header img {
   }
 
   .fc-day-today {
-    background: #71b9df !important;
+    background: #4284a6 !important;
     border: none !important;
 } 
 
