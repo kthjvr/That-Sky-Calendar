@@ -3,7 +3,6 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
-
 const firebaseConfig = {
     apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
     authDomain: "that-sky-calendar-ffd49.firebaseapp.com",
@@ -27,9 +26,6 @@ const colRef = collection(db, 'events')
 // Get the list element by start date order
 const q = query(colRef, orderBy("start", "asc"));
 const shardsCollection = collection(db, 'shards');
-
-// ============ this is for calendar====================================================
-
 
 // Function to initialize FullCalendar
 function initializeCalendar(eventsData) {
@@ -196,7 +192,6 @@ function updateLegend(eventsData) {
   // Create a set to store colors
   const uniqueColors = new Set();
   eventsData.forEach(event => {
-    // Check if the event falls within the current month
     const eventStartDate = new Date(event.start);
     const eventEndDate = new Date(event.end);
     const currentMonth = new Date().getMonth();
@@ -214,10 +209,10 @@ function updateLegend(eventsData) {
     const matchingEvent = eventsData.find(event => event.color === color);
 
     // Check if it's a shard event
-    if (matchingEvent && matchingEvent.icon) { // Assuming you have an 'icon' property for shard events
-      const legendIcon = document.createElement("img"); // Create an image element
+    if (matchingEvent && matchingEvent.icon) { 
+      const legendIcon = document.createElement("img"); 
       legendIcon.classList.add("legend-icon");
-      legendIcon.src = matchingEvent.icon; // Set the image source
+      legendIcon.src = matchingEvent.icon; 
       legendItem.appendChild(legendIcon);
     } else {
       // Create a colored square for non-shard events
@@ -237,17 +232,15 @@ function updateLegend(eventsData) {
 
 function updateSummary(eventsData, month = new Date().getMonth()) {
   const legendContainer = document.getElementById("summary");
-  legendContainer.innerHTML = ""; // Clear previous content
+  legendContainer.innerHTML = ""; 
 
   // Create heading and button container
   const headingContainer = document.createElement("div");
   headingContainer.classList.add("summary-heading");
-
   const heading = document.createElement("h2");
   const monthName = new Date(new Date().getFullYear(), month).toLocaleString('en-US', { month: 'long' });
   heading.textContent = `${monthName} Events Summary`;
   headingContainer.appendChild(heading);
-
   const buttonContainer = document.createElement("div");
   buttonContainer.classList.add("buttons");
 
@@ -274,7 +267,7 @@ function updateSummary(eventsData, month = new Date().getMonth()) {
 
   // Create a set to store colors
   const uniqueColors = new Set();
-  let hasEvents = false; // Flag to check if any events exist for the month
+  let hasEvents = false;
 
   eventsData.forEach(event => {
     // Convert strings to Date objects
@@ -347,7 +340,6 @@ function showOngoingAndIncomingEvents(eventsData) {
   eventsData.forEach(event => {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end);
-
     if (today >= eventStart && today <= eventEnd) {
       ongoingEvents.push(event);
     } else if (today < eventStart) {
@@ -357,12 +349,9 @@ function showOngoingAndIncomingEvents(eventsData) {
 
   // Display ongoing events
   const ongoingContainer = document.getElementById("ongoing");
-        
   if (ongoingEvents.length > 0) {
     ongoingEvents.forEach(event => {
       const eventItem = document.createElement('p');
-
-      // Format start and end dates in 12-hour format with AM/PM
       const formattedStart = formatDate2(event.start, 'MMM dd yyyy');
       const formattedEnd = formatDate2(event.end, 'MMM dd yyyy');
 
@@ -380,8 +369,6 @@ function showOngoingAndIncomingEvents(eventsData) {
    if (incomingEvents.length > 0) {
      incomingEvents.forEach(event => {
        const eventItem = document.createElement('p');
- 
-       // Format start and end dates in 12-hour format with AM/PM
        const formattedStart = formatDate(event.start, 'MMM dd yyyy hh:mm a');
        const formattedEnd = formatDate(event.end, 'MMM dd yyyy hh:mm a');
  
@@ -393,7 +380,7 @@ function showOngoingAndIncomingEvents(eventsData) {
      noIncomingEvents.textContent = "There are no incoming events.";
      incomingContainer.appendChild(noIncomingEvents);
    }
-  }
+}
 
 function formatDate(date, format) {
   const options = {
@@ -417,7 +404,7 @@ function formatDate2(date, format) {
 }
 
 function displayReminders(eventsData) {
-  // Get the reminders container
+
   const remindersContainer = document.getElementById("reminders");
   remindersContainer.innerHTML = ''; 
 
@@ -441,52 +428,38 @@ function displayReminders(eventsData) {
   });
 
   // Date content --------------------------------------
-    const dateSection = document.createElement('div');
-    dateSection.classList.add('date-section');
+  const dateSection = document.createElement('div');
+  dateSection.classList.add('date-section');
+  const tdy = document.createElement('h3');
+  tdy.classList.add('todays');
+  tdy.textContent = "Today is";
+  dateSection.appendChild(tdy);
+  const month = document.createElement('h2');
+  month.classList.add('month');
+  month.textContent = today.toLocaleString('default', { month: 'long' });
+  dateSection.appendChild(month);
+  const day = document.createElement('h2');
+  day.classList.add('day');
+  day.textContent = today.getDate();
+  dateSection.appendChild(day);
+  remindersContainer.appendChild(dateSection);
 
-    const tdy = document.createElement('h3');
-    tdy.classList.add('todays');
-    tdy.textContent = "Today is";
-    dateSection.appendChild(tdy);
+  // Reminder content --------------------------------------
+  const contentSection = document.createElement('div');
+  contentSection.classList.add('content-section');
+  // image3.src = "skid2.png"; // Replace with your actual image URL
+  // image3.alt = "Image 3";
+  // image3.classList.add('date-image-3');
+  // contentSection.appendChild(image3);
 
-    const month = document.createElement('h2');
-    month.classList.add('month');
-    month.textContent = today.toLocaleString('default', { month: 'long' });
-    dateSection.appendChild(month);
-
-    const day = document.createElement('h2');
-    day.classList.add('day');
-    day.textContent = today.getDate();
-    dateSection.appendChild(day);
-
-    remindersContainer.appendChild(dateSection);
-
-    // Reminder content --------------------------------------
-    const contentSection = document.createElement('div');
-    contentSection.classList.add('content-section');
-
-    // image3.src = "skid2.png"; // Replace with your actual image URL
-    // image3.alt = "Image 3";
-    // image3.classList.add('date-image-3');
-    // contentSection.appendChild(image3);
-
-    // Container for image and header
-    const headerContainer = document.createElement('div');
-    headerContainer.classList.add('header-container');
-
-    // Image
-    // const image = document.createElement('img');
-    // image.src = "https://img.icons8.com/matisse/100/alarm.png"; // Replace with your actual image URL
-    // image.alt = "Alarm Icon";
-    // image.classList.add('header-image');
-    // headerContainer.appendChild(image);
-
-    // header
-    const header = document.createElement('h2');
-    header.textContent = "Heads Up, Skids!";
-    headerContainer.appendChild(header);
-    contentSection.appendChild(headerContainer)
-    remindersContainer.appendChild(contentSection);
+  // Container for image and header
+  const headerContainer = document.createElement('div');
+  headerContainer.classList.add('header-container');
+  const header = document.createElement('h2');
+  header.textContent = "Heads Up, Skids!";
+  headerContainer.appendChild(header);
+  contentSection.appendChild(headerContainer)
+  remindersContainer.appendChild(contentSection);
 
   // Display ongoing events
   if (ongoingEvents.length > 0) {
@@ -497,11 +470,8 @@ function displayReminders(eventsData) {
     onText.style.fontWeight = 'bold'
 
     onMessage.appendChild(onText);
-  
     onMessage.appendChild(document.createTextNode(' ')); 
-  
     onMessage.appendChild(document.createTextNode(ongoingEvents.map(event => event.title).join(', '))); 
-  
     contentSection.appendChild(onMessage);
   }
 
@@ -514,11 +484,8 @@ function displayReminders(eventsData) {
     tomText.style.fontWeight = 'bold'
 
     tomMessage.appendChild(tomText);
-  
     tomMessage.appendChild(document.createTextNode(' ')); 
-  
     tomMessage.appendChild(document.createTextNode(tomorrowEvents.map(event => event.title).join(', '))); 
-  
     contentSection.appendChild(tomMessage);
   }
 
@@ -541,208 +508,80 @@ function displayReminders(eventsData) {
     tomText.style.fontWeight = 'bold'
 
     tomMessage.appendChild(tomText);
-  
     tomMessage.appendChild(document.createTextNode(' ')); 
-  
     tomMessage.appendChild(document.createTextNode("No new events starting tomorrow!")); 
-  
     contentSection.appendChild(tomMessage);
   }
 
-    // Display events ending by tomorrow
-    if (endingTomorrowEvents.length > 0) {
-      const endingMessage = document.createElement('p');
-      const endingText = document.createElement('span');
-      endingText.textContent = '[Ending tomorrow]';
-      endingText.style.color = '#E4508F';
-      endingText.style.fontWeight = 'bold'
+  // Display events ending by tomorrow
+  if (endingTomorrowEvents.length > 0) {
+    const endingMessage = document.createElement('p');
+    const endingText = document.createElement('span');
+    endingText.textContent = '[Ending tomorrow]';
+    endingText.style.color = '#E4508F';
+    endingText.style.fontWeight = 'bold'
 
-      endingMessage.appendChild(endingText);
-    
-      endingMessage.appendChild(document.createTextNode(' ')); 
-    
-      endingMessage.appendChild(document.createTextNode(endingTomorrowEvents.map(event => event.title).join(', '))); 
-    
-      contentSection.appendChild(endingMessage);
-    }
+    endingMessage.appendChild(endingText);
+    endingMessage.appendChild(document.createTextNode(' ')); 
+    endingMessage.appendChild(document.createTextNode(endingTomorrowEvents.map(event => event.title).join(', '))); 
+    contentSection.appendChild(endingMessage);
+  }
 
-// Links
-const linksSection = document.createElement('div');
-linksSection.classList.add('links-section');
+  // Links --------------------------------------
+  const linksSection = document.createElement('div');
+  linksSection.classList.add('links-section');
 
-// const image4 = document.createElement('img');
-// image4.src = "skid4.png"; // Replace with your actual image URL
-// image4.alt = "Image 4";
-// image4.classList.add('date-image-4');
-// linksSection.appendChild(image4);
+  // Title for links
+  const linksTitle = document.createElement('div');
+  linksTitle.classList.add('links-title');
+  const linksHeaderText = document.createElement('h4');
+  linksHeaderText.textContent = "Visit these sites for more info";
+  linksTitle.appendChild(linksHeaderText);
+  linksSection.appendChild(linksTitle);
+  const linkList = document.createElement('div');
+  linkList.classList.add('links-list');
 
-// const image5 = document.createElement('img');
-// image5.src = "skid5.png"; // Replace with your actual image URL
-// image5.alt = "Image 5";
-// image5.classList.add('date-image-5');
-// linksSection.appendChild(image5);
+  const links = ['Shard', 'Clock', 'Planner', 'Wiki'];
+  const linkImages = [
+    "https://img.icons8.com/clouds/100/rhomboid-shape.png", // Shard image
+    "https://img.icons8.com/clouds/100/apple-clock.png", // Clock image
+    "https://img.icons8.com/clouds/100/planner.png", // Planner image
+    "https://img.icons8.com/clouds/100/fandom.png", // Wiki image
+  ];
+  const linkUrls = [
+    "https://sky-shards.pages.dev/en", // Shard URL
+    "https://sky-clock.netlify.app/", // Clock URL
+    "https://sky-planner.com/", // Planner URL
+    "https://sky-children-of-the-light.fandom.com/wiki/Sky:_Children_of_the_Light_Wiki", // Wiki URL
+  ];
 
-// Title for links
-const linksTitle = document.createElement('div');
-linksTitle.classList.add('links-title');
+  links.forEach((link, index) => {
+    const linkContainer = document.createElement('div');
+    linkContainer.classList.add('link-container');
 
-const linksHeaderText = document.createElement('h4');
-linksHeaderText.textContent = "Visit these sites for more info";
+    // Link element
+    const linkElement = document.createElement('a');
+    linkElement.href = linkUrls[index];
+    linkElement.classList.add('link');
+    linkElement.target = "_blank";
 
-linksTitle.appendChild(linksHeaderText);
-linksSection.appendChild(linksTitle);
+    // Image
+    const linkImage = document.createElement('img');
+    linkImage.src = linkImages[index];
+    linkImage.alt = link;
+    linkImage.classList.add('link-image');
+    linkElement.appendChild(linkImage);
 
-const linkList = document.createElement('div');
-linkList.classList.add('links-list');
+    // Link text
+    const linkText = document.createElement('p');
+    linkText.classList.add('linkText');
+    linkText.textContent = link;
+    linkElement.appendChild(linkText);
 
-const links = ['Shard', 'Clock', 'Planner', 'Wiki'];
-const linkImages = [
-  "https://img.icons8.com/clouds/100/rhomboid-shape.png", // Shard image
-  "https://img.icons8.com/clouds/100/apple-clock.png", // Clock image
-  "https://img.icons8.com/clouds/100/planner.png", // Planner image
-  "https://img.icons8.com/clouds/100/fandom.png", // Wiki image
-];
-const linkUrls = [
-  "https://sky-shards.pages.dev/en", // Shard URL
-  "https://sky-clock.netlify.app/", // Clock URL
-  "https://sky-planner.com/", // Planner URL
-  "https://sky-children-of-the-light.fandom.com/wiki/Sky:_Children_of_the_Light_Wiki", // Wiki URL
-];
-
-links.forEach((link, index) => {
-  const linkContainer = document.createElement('div');
-  linkContainer.classList.add('link-container');
-
-  // Link element
-  const linkElement = document.createElement('a');
-  linkElement.href = linkUrls[index]; // Set the URL for the link
-  linkElement.classList.add('link');
-  linkElement.target = "_blank";
-
-  // Image
-  const linkImage = document.createElement('img');
-  linkImage.src = linkImages[index];
-  linkImage.alt = link;
-  linkImage.classList.add('link-image');
-  linkElement.appendChild(linkImage);
-
-  // Link text
-  const linkText = document.createElement('p');
-  linkText.classList.add('linkText');
-  linkText.textContent = link;
-  linkElement.appendChild(linkText);
-
-  linkContainer.appendChild(linkElement);
-  linkList.appendChild(linkContainer);
-});
-
-linksSection.appendChild(linkList);
-remindersContainer.appendChild(linksSection);
-}
-
-const dailyCollection = collection(db, 'dailies');
-function createDailyItems() {
-  const dailyContainer = document.getElementById("daily");
-
-  const dailyTitle = document.createElement("h2");
-  dailyTitle.classList.add("daily-title");
-  dailyTitle.textContent = "Daily Quests";
-  dailyContainer.appendChild(dailyTitle);
-
-  const dailyItemList = document.createElement("div");
-  dailyItemList.classList.add("daily-item-list");
-
-  getDocs(dailyCollection).then(snapshot => {
-    snapshot.docs.forEach(doc => {
-      const dailyData = doc.data();
-      const dailyItem = document.createElement("div");
-      dailyItem.classList.add("daily-item");
-
-      const dailyItemText = document.createElement("p");
-      dailyItemText.classList.add("daily-item-text");
-      dailyItemText.textContent = dailyData.title; 
-      dailyItem.appendChild(dailyItemText);
-
-      const dailyItemImage = document.createElement("img");
-      dailyItemImage.classList.add("daily-item-image");
-
-      // Get the public URL from the storage URL
-      const imageRef = ref(storage, dailyData.image); 
-
-      getDownloadURL(imageRef)
-        .then(url => {
-          dailyItemImage.src = url;
-          dailyItem.appendChild(dailyItemImage);
-
-          // Add event listeners before the image is loaded
-          dailyItemImage.addEventListener('click', () => {
-            // If an image is already open, close it
-            if (document.querySelector('.daily-item-image.full-size')) {
-              closeFullSizeImage();
-            }
-
-            // Open the clicked image
-            dailyItemImage.classList.add('full-size');
-            dailyItemImage.addEventListener('click', closeFullSizeImage); 
-      });
-
-      dailyItemImage.alt = dailyData.altText
-      dailyItemImage.addEventListener('mouseover', () => {
-        if (dailyItemImage.classList.contains('full-size')) {
-          const tooltip = document.createElement('div');
-          tooltip.classList.add('tooltip');
-          tooltip.textContent = dailyItemImage.alt;
-
-          tooltip.style.position = 'absolute';
-          tooltip.style.top = `${dailyItemImage.offsetTop + dailyItemImage.offsetHeight}px`;
-          tooltip.style.left = `${dailyItemImage.offsetLeft}px`;
-
-          tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-          tooltip.style.color = '#fff';
-          tooltip.style.padding = '5px';
-          tooltip.style.borderRadius = '5px';
-          tooltip.style.fontSize = '14px'
-          tooltip.style.width = '20rem'
-
-          dailyItemImage.parentNode.appendChild(tooltip);
-        }
-      });
-      dailyItemImage.addEventListener('mouseout', () => {
-        // Remove the tooltip
-        const tooltip = document.querySelector('.tooltip');
-        if (tooltip) {
-          tooltip.remove();
-        }
-      });
-
-          const closeButton = document.createElement('div');
-          closeButton.classList.add('close-button');
-          closeButton.textContent = 'x';
-
-          closeButton.addEventListener('click', () => {
-            closeFullSizeImage();
-          });
-
-          dailyItem.appendChild(dailyItemImage);
-          dailyItem.appendChild(closeButton); 
-          dailyItemList.appendChild(dailyItem);
-        })
-        .catch(error => {
-          console.error("Error getting download URL: ", error);
-        });
-    });
+    linkContainer.appendChild(linkElement);
+    linkList.appendChild(linkContainer);
   });
 
-  dailyContainer.appendChild(dailyItemList);
-}
-
-createDailyItems(); 
-
-function closeFullSizeImage() {
-  const fullSizeImage = document.querySelector('.daily-item-image.full-size');
-  if (fullSizeImage) {
-    fullSizeImage.classList.remove('full-size');
-    fullSizeImage.removeEventListener('click', closeFullSizeImage); 
-    fullSizeImage.removeChild(fullSizeImage.querySelector('.close-button'));
-  }
+  linksSection.appendChild(linkList);
+  remindersContainer.appendChild(linksSection);
 }

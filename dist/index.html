@@ -6,32 +6,25 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/x-icon" href="fav.png">
 
-    <!-- google seo -->
     <meta name="google-site-verification" content="wE5_GjQhxEZxniT4nB-VI50OlKfUy2C_BrV6rbvkXAE" />
-
-    <!-- google analytics -->
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DRC19V15XY"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
 
-    gtag('config', 'G-DRC19V15XY');
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DRC19V15XY');
     </script>
 
     <!-- Background -->
     <script src="https://cdn.jsdelivr.net/npm/@tsparticles/preset-firefly@3/tsparticles.preset.firefly.bundle.min.js"></script>
-
     <!-- CALENDAR -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
     <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
-
     <!-- Timezone -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.33/moment-timezone-with-data-2012-2022.min.js"></script>
-
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,14 +32,11 @@
     <title>That Sky Events</title>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="">
-    </header>
+    <header><img src="logo.png" alt=""></header>
 
     <div class="overlay">
       <div class="loader"></div>
     </div>
-
 
     <div id="tsparticles"></div>
 
@@ -62,18 +52,16 @@
       })();
     </script>
 
-<div class="reminders" id="reminders">
+    <div class="reminders" id="reminders">
 
-</div>
+    </div>
     
     <button id="dayGridMonthView" hidden>Month View</button>
     <button id="timeGridWeekView" hidden>Week View</button>
     <button id="listWeekView" hidden>List View</button>
 
     <div class="container">
-        <div id='calendar' class="calendar">
-        </div>
-
+        <div id='calendar' class="calendar"></div>
 
         <div class="side-container">
             <div class="top-container">
@@ -111,45 +99,32 @@
       </div>
     </div>
 
-    <!-- The Modal -->
     <div id="myModal" class="modal">
       <span class="close">&times;</span>
       <img class="modal-content" id="img01">
-      <!-- <div id="caption"></div> -->
     </div>
 
-    <div class="daily-container" id="daily" hidden>
-
-    </div>
+    <div class="daily-container" id="daily" hidden></div>
 
     <script src="moment.js"></script>
     <script src="bundle.js"></script>
   
-
     <script>
-// Get the modal
-var modal = document.getElementById('myModal');
+      var modal = document.getElementById('myModal');
+      var images = document.querySelectorAll('.ts-container img');
 
-// Select all images within the ts-container
-var images = document.querySelectorAll('.ts-container img');
-
-// Loop through each image and add an onclick event
-images.forEach(image => {
-  image.onclick = function() {
-    modal.style.display = "block";
-    // Get the modal image element inside the onclick function
-    var modalImg = document.getElementById("img01");
-    modalImg.src = this.src; // Set the modal image source to the clicked image
-  };
-});
-
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
-
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = "none";
-};
+      // Loop through each image and add an onclick event
+      images.forEach(image => {
+        image.onclick = function() {
+          modal.style.display = "block";
+          var modalImg = document.getElementById("img01");
+          modalImg.src = this.src;
+        };
+      });
+      var span = document.getElementsByClassName("close")[0];
+      span.onclick = function() {
+        modal.style.display = "none";
+      };
 
       setTimeout(function() {
         document.querySelector('.overlay').style.opacity = 0;
@@ -170,4 +145,5 @@ span.onclick = function() {
     <p class="disclaimer">Disclaimer: This site is a community resource for players of Sky: Children of the Light, not officially endorsed by thatgamecompany.</p>
   </div>
 </footer>
+
 </html>
