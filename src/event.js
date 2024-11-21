@@ -205,7 +205,7 @@ function updateSummary(eventsData, month = new Date().getMonth()) {
   // Add next and previous buttons
   const nextButton = document.createElement("button");
   nextButton.classList.add("next-btn")
-  nextButton.textContent = "Next";
+  nextButton.textContent = ">";
   nextButton.addEventListener("click", () => {
     month = (month + 1) % 12; // Cycle through months
     updateSummary(eventsData, month);
@@ -213,7 +213,7 @@ function updateSummary(eventsData, month = new Date().getMonth()) {
 
   const previousButton = document.createElement("button");
   previousButton.classList.add("back-btn")
-  previousButton.textContent = "Previous";
+  previousButton.textContent = "<";
   previousButton.addEventListener("click", () => {
     month = (month - 1 + 12) % 12; // Cycle through months
     updateSummary(eventsData, month);
