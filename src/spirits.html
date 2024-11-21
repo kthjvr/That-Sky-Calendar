@@ -40,22 +40,36 @@
     </div>
     <a href="index.html" class="sidebar-item">Calendar</a>
     <a href="event.html" class="sidebar-item">Events Summary</a>
-    <a href="spirit.html" class="sidebar-item active">Travelling Spirits</a>
+    <a href="spirits.html" class="sidebar-item active">Travelling Spirits</a>
   </div>
 
   <div class="content">
-    <div class="event-modal-container">
-      <div class="event-modal" id="ts">
-        <h2 class="event-modal-title">Travelling Spirits</h2>
+
+    <div class="overlay">
+      <div class="loader"></div>
+    </div>
+
+    <div class="sum-event-modal-container">
+      <div class="sum-event-modal" id="summary">
+        <h2 class="event-modal-title">Summary of Events</h2>
       </div>
+    </div>
+  
+    <div class="imageModal" id="imageModal">
+      <p>Click any events to preview the spirits.</p>
     </div>
   </div>
 
     <script src="moment.js"></script>
-    <!-- <script src="spirit.bundle.js"></script> -->
+    <!-- <script src="event.bundle.js"></script> -->
 
     <script>
-      
+      setTimeout(function() {
+        document.querySelector('.overlay').style.opacity = 0;
+        setTimeout(function() {
+        document.querySelector('.overlay').style.display = 'none';
+        }, 300);
+      }, 800);
     </script>
 
 </body>

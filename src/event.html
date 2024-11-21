@@ -40,10 +40,14 @@
     </div>
     <a href="index.html" class="sidebar-item">Calendar</a>
     <a href="event.html" class="sidebar-item active">Events Summary</a>
-    <a href="spirit.html" class="sidebar-item">Travelling Spirits</a>
+    <a href="spirits.html" class="sidebar-item">Travelling Spirits</a>
   </div>
 
   <div class="content">
+
+    <div class="overlay">
+      <div class="loader"></div>
+    </div>
 
     <div class="on-event-modal-container">
       <div class="on-event-modal" id="ongoing">
@@ -69,7 +73,12 @@
     <!-- <script src="event.bundle.js"></script> -->
 
     <script>
-      
+      setTimeout(function() {
+        document.querySelector('.overlay').style.opacity = 0;
+        setTimeout(function() {
+        document.querySelector('.overlay').style.display = 'none';
+        }, 300);
+      }, 800);
     </script>
 
 </body>

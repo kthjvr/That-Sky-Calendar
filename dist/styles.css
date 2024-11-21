@@ -50,7 +50,44 @@ width: 150px;
   animation: spin 1s linear infinite;
 }
 
-/* Event Modal */
+/* Traveling spirits -------------------------------------------------------------------------------*/
+.imageModal img{
+  width: 100%;
+  height: 85%;
+}
+
+.imageModal{
+  padding: 50px;
+  width: 60%;
+}
+
+.imageModal p{
+  text-align: center;
+  margin-top: 10%; 
+  font-size: 1.2em; 
+}
+
+.sum-event-modal .event-modal-card{
+  cursor: pointer;;
+}
+
+.sum-event-modal .event-modal-card.active{
+  cursor: pointer;
+  border: 5px solid var(--blue);
+  border-radius: 8px;
+}
+
+
+.sum-event-modal .event-modal-card:hover{
+  cursor: pointer;
+  background-color: var(--blue);
+  opacity: 50%;
+  color: var(--white);
+}
+
+
+
+/* Event Modal -------------------------------------------------------------------------------*/
 .content { 
   flex: 1; 
   display: flex;
@@ -108,6 +145,23 @@ width: 150px;
   padding: 5px;
 }
 
+.ts-event-modal-container { 
+  z-index: 1; 
+  position: relative; 
+  padding: 20px; 
+  flex: 1; 
+}
+
+.ts-event-modal {
+  display: flex;
+  flex-direction: column;
+  width: 370px;
+  background-color: transparent;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+  padding: 5px;
+}
+
 .event-modal-title {
   font-size: 24px;
   font-weight: bold;
@@ -152,12 +206,19 @@ width: 150px;
   /* margin-bottom: 4px; */
 }
 
+.ts-event-modal-card-title {
+  font-size: 16px;
+  font-weight: normal;
+  /* line-height: 22px; */
+  /* margin-bottom: 4px; */
+}
+
 .event-modal-card-text {
   font-size: 16px;
   /* line-height: 22px; */
 }
 
-/* SIDE BAR */
+/* SIDE BAR -------------------------------------------------------------------------------*/
 .sidebar {
   width: 235px;
   height: 100%; 

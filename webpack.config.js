@@ -6,7 +6,7 @@ module.exports = {
   entry: {
     index: './src/index.js', 
     event: './src/event.js', 
-    spirit: './src/spirits.js'
+    spirits: './src/spirits.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -24,10 +24,10 @@ module.exports = {
       chunks: ['event']
     }),
     new HtmlWebpackPlugin({
-      filename: 'spirit.html', 
+      filename: 'spirits.html', 
       template: './src/spirits.html', 
-      chunks: ['spirit']
+      chunks: ['spirits']
     })
   ],
-  watch: false
+  watch: true
 };
