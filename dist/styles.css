@@ -232,7 +232,7 @@ width: 150px;
 }
 
 .next-btn{
-  padding: 8px;
+  padding: 10px 20px;
   background-color: var(--blue);
   margin: 10px;
   opacity: 50%;
