@@ -18,117 +18,17 @@ initializeApp(firebaseConfig)
 
 // initialize services
 const db = getFirestore()
-const storage = getStorage();
 
 // get collection reference
 const colRef = collection(db, 'events')
 
-// Get the list element by start date order
-const q = query(colRef, orderBy("start", "asc"));
-const shardsCollection = collection(db, 'shards');
-
-// Function to initialize FullCalendar
-function initializeCalendar(eventsData) {
-  var calendarEl = document.getElementById('calendar');
-
-  var calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    aspectRatio: 1.8,
-    events: eventsData,
-    eventContent: function(info) {
-      var iconPath = info.event.extendedProps.icon;
-      if (iconPath) {
-        return {
-          html: `
-            <div class="event-icon-container">
-              <img src="${iconPath}" class="event-icon" />
-            </div>
-          `
-        };
-      } else {
-        // If no icon is provided, render the default title and time
-        return {
-          html: `<span class="fc-event-title">${info.event.title}</span>`
-        };
-      }
-    },
-    eventOrder: "description",
-  });
-  calendar.render();
-
-  // fiter
-  const categoryFilterDropdown = document.createElement('select');
-  categoryFilterDropdown.id = 'category-filter';
-  categoryFilterDropdown.innerHTML = `
-    <option value="">All Categories</option>
-    <option value="shard">Shard</option>
-    <option value="days-of-events">Days of Events</option>
-    <option value="travelling-spirits">Travelling Spirits</option>
-    <option value="seasons">Seasons</option>
-    <option value="hide">Hide Shards</option>
-  `;
-  const calendarHeader = document.querySelector('.fc-toolbar-chunk:nth-child(2)'); 
-  calendarHeader.appendChild(categoryFilterDropdown); 
-
-  categoryFilterDropdown.addEventListener('change', function() {
-    const selectedCategory = this.value.toLowerCase();
-    console.log(selectedCategory);
-
-    const filteredEvents = eventsData.filter(event => {
-      if (selectedCategory === 'hide') { 
-        return !event.category || !event.category.toLowerCase().includes('shard'); 
-      } else {
-        if (event.category) { 
-          return event.category.toLowerCase() === selectedCategory || selectedCategory === '';
-        } else {
-          return selectedCategory === ''; 
-        }
-      }
-    });
-    calendar.removeAllEventSources();
-    calendar.addEventSource(filteredEvents);
-  });
-}
 
 // Fetch events and shard events, then combine and initialize the calendar
 Promise.all([
   getDocs(query(colRef, orderBy("start", "asc"))), 
-  getDocs(shardsCollection) 
 ])
-.then(([eventsSnapshot, shardsSnapshot]) => {
+.then(([eventsSnapshot]) => {
   const events = [];
-  const shardEvents = [];
-
-  // Process shard events from the 'shards' collection
-  shardsSnapshot.docs.forEach((doc,shardIndex) => {
-    const title = doc.data().title;
-    const color = doc.data().color;
-    const datesString  = doc.data().dates;
-    const imageURL = doc.data().image;
-
-    const dates = datesString.split(',').map(date => parseInt(date.trim())); 
-    const month = doc.data().month;
-
-    dates.forEach(date => {
-      const startDate = new Date(`2024-${month}-${date}`);
-      const endDate = new Date(startDate);
-      endDate.setHours(23, 59, 59, 999);
-
-      // Apply PST time 
-      startDate.setHours(17, 30, 0); // 5:30 PM
-
-      shardEvents.push({
-        title: title,
-        start: startDate,
-        end: endDate,
-        color: color,
-        description: ``,
-        icon: imageURL,
-        className: doc.data().image ? 'has-image' : '',
-        category: doc.data().category || 'Default Category' 
-      });
-    });
-  });
 
   // Process events from the 'events' collection
   eventsSnapshot.docs.forEach(doc => {
@@ -172,22 +72,17 @@ Promise.all([
   });
 
   // Combine events and shard events
-  const allEvents = [...shardEvents, ...events];
+  const allEvents = [...events];
 
-  // Initialize FullCalendar with the combined events
-  // initializeCalendar(allEvents);
   showOngoingEvents(events);  
   showIncomingEvents(events);
   updateSummary(events);
-  displayReminders(allEvents);
 })
 .catch(error => {
   console.error("Error getting documents: ", error);
 }); 
 
 function updateSummary(eventsData, month = new Date().getMonth()) {
-  const eventModalContainer = document.querySelector('.sum-event-modal-container');
-  const eventModal = document.querySelector('.sum-event-modal');
 
   const legendContainer =  document.querySelector('.sum-event-modal');
   legendContainer.innerHTML = ""; 
@@ -430,195 +325,3 @@ function formatDate(date, format) {
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
 }
-
-function formatDate2(date, format) {
-  const options = {
-    month: 'long', 
-    day: 'numeric',
-    year: 'numeric',
-  };
-  return new Intl.DateTimeFormat('en-US', options).format(date);
-}
-
-// function displayReminders(eventsData) {
-
-//   const remindersContainer = document.getElementById("reminders");
-//   remindersContainer.innerHTML = ''; 
-
-//   // Get the current date and tomorrow's date
-//   const today = new Date();
-//   const tomorrow = new Date();
-//   tomorrow.setDate(today.getDate() + 1);
-
-//   // Filter events for ongoing and tomorrow's events
-//   const ongoingEvents = eventsData.filter(event => {
-//     const eventStart = new Date(event.start);
-//     const eventEnd = new Date(event.end);
-//     return today >= eventStart && today <= eventEnd;
-//   });
-
-//   // Filter events for tomorrow's events, excluding ongoing events
-//   const tomorrowEvents = eventsData.filter(event => {
-//     const eventStart = new Date(event.start);
-//     const eventEnd = new Date(event.end);
-//     return eventStart.getDate() === tomorrow.getDate() && eventStart.getMonth() === tomorrow.getMonth() && eventStart.getFullYear() === tomorrow.getFullYear() && !(today >= eventStart && today <= eventEnd); // Exclude ongoing events
-//   });
-
-//   // Date content --------------------------------------
-//   const dateSection = document.createElement('div');
-//   dateSection.classList.add('date-section');
-//   const tdy = document.createElement('h3');
-//   tdy.classList.add('todays');
-//   tdy.textContent = "Today is";
-//   dateSection.appendChild(tdy);
-//   const month = document.createElement('h2');
-//   month.classList.add('month');
-//   month.textContent = today.toLocaleString('default', { month: 'long' });
-//   dateSection.appendChild(month);
-//   const day = document.createElement('h2');
-//   day.classList.add('day');
-//   day.textContent = today.getDate();
-//   dateSection.appendChild(day);
-//   remindersContainer.appendChild(dateSection);
-
-//   // Reminder content --------------------------------------
-//   const contentSection = document.createElement('div');
-//   contentSection.classList.add('content-section');
-//   // image3.src = "skid2.png"; // Replace with your actual image URL
-//   // image3.alt = "Image 3";
-//   // image3.classList.add('date-image-3');
-//   // contentSection.appendChild(image3);
-
-//   // Container for image and header
-//   const headerContainer = document.createElement('div');
-//   headerContainer.classList.add('header-container');
-//   const header = document.createElement('h2');
-//   header.textContent = "Heads Up, Skids!";
-//   headerContainer.appendChild(header);
-//   contentSection.appendChild(headerContainer)
-//   remindersContainer.appendChild(contentSection);
-
-//   // Display ongoing events
-//   if (ongoingEvents.length > 0) {
-//     const onMessage = document.createElement('p');
-//     const onText = document.createElement('span');
-//     onText.textContent = '[Today]';
-//     onText.style.color = '#3D5300';
-//     onText.style.fontWeight = 'bold'
-
-//     onMessage.appendChild(onText);
-//     onMessage.appendChild(document.createTextNode(' ')); 
-//     onMessage.appendChild(document.createTextNode(ongoingEvents.map(event => event.title).join(', '))); 
-//     contentSection.appendChild(onMessage);
-//   }
-
-//   // Display tomorrow's events
-//   if (tomorrowEvents.length > 0) {
-//     const tomMessage = document.createElement('p');
-//     const tomText = document.createElement('span');
-//     tomText.textContent = '[Tomorrow]';
-//     tomText.style.color = '#556FB5';
-//     tomText.style.fontWeight = 'bold'
-
-//     tomMessage.appendChild(tomText);
-//     tomMessage.appendChild(document.createTextNode(' ')); 
-//     tomMessage.appendChild(document.createTextNode(tomorrowEvents.map(event => event.title).join(', '))); 
-//     contentSection.appendChild(tomMessage);
-//   }
-
-//   // Filter events ending by tomorrow
-//   const endingTomorrowEvents = eventsData.filter(event => {
-//     const eventEnd = new Date(event.end);
-//     return eventEnd.getDate() === tomorrow.getDate() && eventEnd.getMonth() === tomorrow.getMonth() && eventEnd.getFullYear() === tomorrow.getFullYear();
-//   });
-
-//   // If no reminders
-//   if (ongoingEvents.length === 0 && tomorrowEvents.length === 0) {
-//     const noReminders = document.createElement('p');
-//     noReminders.textContent = "Take a break from the hustle and bustle. Enjoy your day!";
-//     remindersContainer.appendChild(noReminders);
-//   } else if (tomorrowEvents.length === 0){
-//     const tomMessage = document.createElement('p');
-//     const tomText = document.createElement('span');
-//     tomText.textContent = '[Tomorrow]';
-//     tomText.style.color = '#556FB5';
-//     tomText.style.fontWeight = 'bold'
-
-//     tomMessage.appendChild(tomText);
-//     tomMessage.appendChild(document.createTextNode(' ')); 
-//     tomMessage.appendChild(document.createTextNode("No new events starting tomorrow!")); 
-//     contentSection.appendChild(tomMessage);
-//   }
-
-//   // Display events ending by tomorrow
-//   if (endingTomorrowEvents.length > 0) {
-//     const endingMessage = document.createElement('p');
-//     const endingText = document.createElement('span');
-//     endingText.textContent = '[Ending tomorrow]';
-//     endingText.style.color = '#E4508F';
-//     endingText.style.fontWeight = 'bold'
-
-//     endingMessage.appendChild(endingText);
-//     endingMessage.appendChild(document.createTextNode(' ')); 
-//     endingMessage.appendChild(document.createTextNode(endingTomorrowEvents.map(event => event.title).join(', '))); 
-//     contentSection.appendChild(endingMessage);
-//   }
-
-//   // Links --------------------------------------
-//   const linksSection = document.createElement('div');
-//   linksSection.classList.add('links-section');
-
-//   // Title for links
-//   const linksTitle = document.createElement('div');
-//   linksTitle.classList.add('links-title');
-//   const linksHeaderText = document.createElement('h4');
-//   linksHeaderText.textContent = "Visit these sites for more info";
-//   linksTitle.appendChild(linksHeaderText);
-//   linksSection.appendChild(linksTitle);
-//   const linkList = document.createElement('div');
-//   linkList.classList.add('links-list');
-
-//   const links = ['Shard', 'Clock', 'Planner', 'Wiki'];
-//   const linkImages = [
-//     "https://img.icons8.com/clouds/100/rhomboid-shape.png", // Shard image
-//     "https://img.icons8.com/clouds/100/apple-clock.png", // Clock image
-//     "https://img.icons8.com/clouds/100/planner.png", // Planner image
-//     "https://img.icons8.com/clouds/100/fandom.png", // Wiki image
-//   ];
-//   const linkUrls = [
-//     "https://sky-shards.pages.dev/en", // Shard URL
-//     "https://sky-clock.netlify.app/", // Clock URL
-//     "https://sky-planner.com/", // Planner URL
-//     "https://sky-children-of-the-light.fandom.com/wiki/Sky:_Children_of_the_Light_Wiki", // Wiki URL
-//   ];
-
-//   links.forEach((link, index) => {
-//     const linkContainer = document.createElement('div');
-//     linkContainer.classList.add('link-container');
-
-//     // Link element
-//     const linkElement = document.createElement('a');
-//     linkElement.href = linkUrls[index];
-//     linkElement.classList.add('link');
-//     linkElement.target = "_blank";
-
-//     // Image
-//     const linkImage = document.createElement('img');
-//     linkImage.src = linkImages[index];
-//     linkImage.alt = link;
-//     linkImage.classList.add('link-image');
-//     linkElement.appendChild(linkImage);
-
-//     // Link text
-//     const linkText = document.createElement('p');
-//     linkText.classList.add('linkText');
-//     linkText.textContent = link;
-//     linkElement.appendChild(linkText);
-
-//     linkContainer.appendChild(linkElement);
-//     linkList.appendChild(linkContainer);
-//   });
-
-//   linksSection.appendChild(linkList);
-//   remindersContainer.appendChild(linksSection);
-// }

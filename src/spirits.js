@@ -1,7 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
@@ -18,117 +17,14 @@ initializeApp(firebaseConfig)
 
 // initialize services
 const db = getFirestore()
-const storage = getStorage();
-
-// get collection reference
 const colRef = collection(db, 'events')
-
-// Get the list element by start date order
-const q = query(colRef, orderBy("start", "asc"));
-const shardsCollection = collection(db, 'shards');
-
-// Function to initialize FullCalendar
-function initializeCalendar(eventsData) {
-  var calendarEl = document.getElementById('calendar');
-
-  var calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    aspectRatio: 1.8,
-    events: eventsData,
-    eventContent: function(info) {
-      var iconPath = info.event.extendedProps.icon;
-      if (iconPath) {
-        return {
-          html: `
-            <div class="event-icon-container">
-              <img src="${iconPath}" class="event-icon" />
-            </div>
-          `
-        };
-      } else {
-        // If no icon is provided, render the default title and time
-        return {
-          html: `<span class="fc-event-title">${info.event.title}</span>`
-        };
-      }
-    },
-    eventOrder: "description",
-  });
-  calendar.render();
-
-  // fiter
-  const categoryFilterDropdown = document.createElement('select');
-  categoryFilterDropdown.id = 'category-filter';
-  categoryFilterDropdown.innerHTML = `
-    <option value="">All Categories</option>
-    <option value="shard">Shard</option>
-    <option value="days-of-events">Days of Events</option>
-    <option value="travelling-spirits">Travelling Spirits</option>
-    <option value="seasons">Seasons</option>
-    <option value="hide">Hide Shards</option>
-  `;
-  const calendarHeader = document.querySelector('.fc-toolbar-chunk:nth-child(2)'); 
-  calendarHeader.appendChild(categoryFilterDropdown); 
-
-  categoryFilterDropdown.addEventListener('change', function() {
-    const selectedCategory = this.value.toLowerCase();
-    console.log(selectedCategory);
-
-    const filteredEvents = eventsData.filter(event => {
-      if (selectedCategory === 'hide') { 
-        return !event.category || !event.category.toLowerCase().includes('shard'); 
-      } else {
-        if (event.category) { 
-          return event.category.toLowerCase() === selectedCategory || selectedCategory === '';
-        } else {
-          return selectedCategory === ''; 
-        }
-      }
-    });
-    calendar.removeAllEventSources();
-    calendar.addEventSource(filteredEvents);
-  });
-}
 
 // Fetch events and shard events, then combine and initialize the calendar
 Promise.all([
   getDocs(query(colRef, orderBy("start", "asc"))), 
-  getDocs(shardsCollection) 
 ])
-.then(([eventsSnapshot, shardsSnapshot]) => {
+.then(([eventsSnapshot]) => {
   const events = [];
-  const shardEvents = [];
-
-  // Process shard events from the 'shards' collection
-  shardsSnapshot.docs.forEach((doc,shardIndex) => {
-    const title = doc.data().title;
-    const color = doc.data().color;
-    const datesString  = doc.data().dates;
-    const imageURL = doc.data().image;
-
-    const dates = datesString.split(',').map(date => parseInt(date.trim())); 
-    const month = doc.data().month;
-
-    dates.forEach(date => {
-      const startDate = new Date(`2024-${month}-${date}`);
-      const endDate = new Date(startDate);
-      endDate.setHours(23, 59, 59, 999);
-
-      // Apply PST time 
-      startDate.setHours(17, 30, 0); // 5:30 PM
-
-      shardEvents.push({
-        title: title,
-        start: startDate,
-        end: endDate,
-        color: color,
-        description: ``,
-        icon: imageURL,
-        className: doc.data().image ? 'has-image' : '',
-        category: doc.data().category || 'Default Category' 
-      });
-    });
-  });
 
   // Process events from the 'events' collection
   eventsSnapshot.docs.forEach(doc => {
@@ -171,15 +67,7 @@ Promise.all([
     });
   });
 
-  // Combine events and shard events
-  const allEvents = [...shardEvents, ...events];
-
-  // Initialize FullCalendar with the combined events
-  // initializeCalendar(allEvents);
-  // showOngoingEvents(events);  
-  // showIncomingEvents(events);
   updateSummary(events);
-  displayReminders(allEvents);
 })
 .catch(error => {
   console.error("Error getting documents: ", error);

@@ -14,7 +14,9 @@ body {
   background-color: var(--bg);
   margin: 0;
   padding: 0;
-  display: flex; /* Use flexbox for the body */
+  display: flex; 
+  flex-direction: column; 
+  min-height: 100vh; 
 }
 
 header {
@@ -77,7 +79,6 @@ width: 150px;
   border-radius: 8px;
 }
 
-
 .sum-event-modal .event-modal-card:hover{
   cursor: pointer;
   background-color: var(--blue);
@@ -92,6 +93,8 @@ width: 150px;
   flex: 1; 
   display: flex;
   margin-left: 251px; 
+  padding-bottom: 100px;
+  flex-grow: 1;
 }
 
 .event-modal-container { 
@@ -229,7 +232,7 @@ width: 150px;
 }
 
 .next-btn{
-  padding: 10px 20px;
+  padding: 8px;
   background-color: var(--blue);
   margin: 10px;
   opacity: 50%;
@@ -331,6 +334,10 @@ width: 150px;
     height: 20px; 
   }
 
+  .fc .fc-daygrid-day-events {
+    margin-top: -10px;
+  }
+
   .fc-daygrid-event-dot {
     display: none;
   }
@@ -355,7 +362,7 @@ width: 150px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow: auto; /* Add overflow: auto; */
     height: 100%;
-    margin-right: 25px;
+    margin-right: 15px;
 }
 
   .calendar-header {
@@ -550,113 +557,6 @@ width: 150px;
     color: var(--blue);
   }
 
-
-
-/* REMINDER  ------------------------------------------------------------------------------*/
-  .reminders {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 20px 50px;
-    background-color: var(--blue); 
-    padding: 8px;
-    border-radius: 24px;
-  }
-
-  .date-section {
-    text-align: center;
-    background-color: var(--lightBlue);
-    color: var(--blue);
-    padding: 15px;
-    border-radius: 16px;
-    margin: 8px;
-    height: 150px;
-  }
-
-  .todays{
-    line-height: 0;
-  }
-
-  .content-section {
-    background-color: var(--lightBlue);
-    color: var(--black);
-    padding: 8px;
-    border-radius: 16px;
-    width: 65%;
-    margin: 8px;
-  }
-
-  .header-container {
-    display: flex;
-    font-size: 18px;
-    margin-left: 24px;
-    line-height: 0px;
-  }
-
-  .content-section h3 {
-    color: var(--black); 
-    font-size: 20px;
-  }
-
-  .content-section p {
-    margin-left: 24px;
-    font-size: 16px;
-  }
-
-  .header-image {
-    width: 60px; 
-    margin-right: 10px;
-  }
-
-  .links-section {
-    display: flex;
-    justify-content: space-around;
-    background-color: var(--lightBlue);
-    color: var(--black);
-    padding: 8px;
-    border-radius: 16px;
-    margin: 8px;
-    flex-direction: column;
-  }
-
-  .links-title {
-    text-align: center;
-    font-size: 16px;
-  }
-
-  .links-list {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-  }
-
-  .link-container {
-    width: 20%; 
-    text-align: center;
-  }
-
-  .link-image {
-    width: 100%;
-    height: 60px; /
-  }
-
-  .links-section a {
-    color: var(--black);
-    text-decoration: none;
-  }
-
-  .link-container:hover .link-image {
-    transform: scale(1.1); 
-    transition: transform 0.2s ease; 
-  }
-
-  .linkText {
-    font-size: 12px;
-    margin-top: -5px;
-  }
-
 /* CONTAINER  ------------------------------------------------------------------------*/
   .container {
     display: flex;
@@ -665,26 +565,7 @@ width: 150px;
     height: 100vh;
     justify-content: space-evenly;
     margin-top: 15px;
-    margin-bottom: 20px;
-  }
-
-  .top-container {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    flex-direction: row;
-  }
-
-  .side-container {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    height: 100%;
-    width: 700px;
-    flex-direction: column;
-    background-color: var(--blue);
-    margin: 0px 0px 0px 24px;
-    border-radius: 24px;
+    /* margin-bottom: 20px; */
   }
 
   .summary {
@@ -748,14 +629,6 @@ width: 150px;
 
   .buttons {
     display: flex;
-  }
-
-  .econtainer {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    flex-direction: column;
-    width: 100%;
   }
 
   .ongoing {
@@ -835,128 +708,17 @@ width: 150px;
     font-size: 14px;
   }
 
-/* NOTICE  --------------------------------------------------------------------------------*/
-  .warning{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 20px 50px;
-    background-color: var(--darkBlue);
-    padding: 8px;
-    border-radius: 24px;
-  }
-
-  .warning p {
-    color: var(--lightBlue);
-    line-height: 2em;
-    font-size: 21px;
-    margin: 24px;
-  }
-
-/* TS CONTAINER  --------------------------------------------------------------------------*/
-  .traveling-spirits{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin: 20px 50px;
-    background-color: var(--lightBlue); 
-    padding: 8px;
-    border-radius: 24px;
-  }
-
-  .ts-container{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    width: 100%;
-  }
-
-  .ts1{
-    background-color: var(--blue); 
-    padding: 8px;
-    border-radius: 24px;
-    width: 100%;
-    margin: 12px;
-  }
-
-  .ts2{
-    background-color: var(--blue); 
-    padding: 8px;
-    border-radius: 24px;
-    width: 100%;
-    margin: 12px;
-  }
-
-  .ts-container img{
-    width: 100%;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  .ts-container img:hover {
-    opacity: 0.7;
-  }
-
-  .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1;
-    padding-top: 20px; 
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; 
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.9); 
-  }
-
-  .modal-content {
-    margin: auto;
-    display: block;
-    width: 80%;
-    max-width: 700px;
-  }
-
-  .modal-content, #caption {  
-    animation-name: zoom;
-    animation-duration: 0.6s;
-  }
-
-  @keyframes zoom {
-    from {transform: scale(0.1)} 
-    to {transform: scale(1)}
-  }
-
-  .close {
-    position: absolute;
-    top: 15px;
-    right: 35px;
-    color: var(--darkBlue);
-    font-size: 40px;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-
-  .close:hover, .close:focus {
-    color: var(--lightBlue);
-    text-decoration: none;
-    cursor: pointer;
-  }
-
 /* FOOTER   --------------------------------------------------------------------------*/
   footer {
-    background-color: var(--darkBlue);
-    padding: 20px 0;
+    background-color: var(--white);
+    padding: 5px 0;
     text-align: center;
     font-family: var(--mainFont);
-    color: #eef7fc;
+    color: var(--black);
+    bottom: 0; 
+    width: 100%; 
+    z-index: 10; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   }
 
   .footer-container {
@@ -970,12 +732,11 @@ width: 150px;
   }
 
   .made-by, .copyright {
-    margin-bottom: 5px;
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .made-by a {
-    color: var(--lightBlue);
+    color: var(--black);
     text-decoration: none;
   }
 
@@ -985,122 +746,7 @@ width: 150px;
 
   .disclaimer {
     font-size: 12px;
-    color: var(--lightBlue);
-    margin-top: 10px;
-  }
-
-/* DAILIES --------------------------------------------------------------------------*/
-  .daily-container {
-    background-image: linear-gradient(to right top, #fedeff, #ecdfff, #d7e0ff, #c1e1ff, #aee2ff);
-    padding: 20px;
-    text-align: center;
-    margin: 20px 50px;
-    border-radius: 20px;
-  }
-
-  .daily-title {
-    font-size: 24px;
-    margin-bottom: 20px;
-  }
-
-  .daily-item-list {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-  }
-
-  .daily-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 25%; 
-    margin: 10px;
-    padding: 10px;
-    border: 1px solid --lightBlue;
-    border-radius: 20px;
-    background-color: var(--lightBlue);
-  }
-
-  .daily-item-text {
-    font-weight: bold;
-    margin-bottom: 10px;
-    height: 2rem;
-  }
-
-  .daily-item-image {
-    width: 100%;
-    height: 40vh;; 
-    border-radius: 20px;
-    transition: transform 0.2s ease; 
-    cursor: pointer; 
-  }
-
-  .daily-item-image:hover {
-    transform: scale(1.1); /* Zoom in on hover */
-  }
-
-  .daily-item-image.full-size {
-    width: 45%;
-    height: auto;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 100;
-    background-color: transparent;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  .daily-item-image.full-size::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.2); /* 20% opacity black background */
-    z-index: 99;
-    cursor: pointer;
-  }
-
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: white;
     color: var(--black);
-    padding: 5px 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 110;
-    display: none;
-  }
-
-  body.full-size-mode {
-    overflow: hidden; 
-  }
-
-  .daily-item-image.full-size {
-    pointer-events: auto;
-  }
-
-  .daily-item-image.full-size .close-button {
-    pointer-events: auto;
-  }
-
-  .has-image .fc-event-main {
-    background-color: transparent;
-  }
-
-  .has-image .event-icon-container {
-    margin-top: -25px !important;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   /* for tablet   -------------------------------------------------------------------------- */
@@ -1110,136 +756,9 @@ width: 150px;
 
   /* for mobile view   --------------------------------------------------------------------------*/
   @media (max-width: 768px) {
-
-    .daily-container {
-      background-image: linear-gradient(to right top, #fedeff, #ecdfff, #d7e0ff, #c1e1ff, #aee2ff);
-      padding: 20px;
-      text-align: center;
-      margin: 20px 10px; /* Center the container horizontally */
-      border-radius: 10px;
-    }
     
-    .daily-title {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    
-    .daily-item-list {
-      display: flex;
-      flex-direction: column; /* Arrange items in rows */
-    }
-    
-    .daily-item {
-      display: flex;
-      align-items: center; /* Vertically align items */
-      width: auto;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background-color: #fff;
-      margin-bottom: 10px; /* Add space between rows */
-    }
-    
-    .daily-item-image {
-      width: 10rem; /* Adjust image width as needed */
-      height: 10rem; /* Adjust image height as needed */
-      border-radius: 5px;
-      transition: transform 0.2s ease;
-      cursor: pointer;
-      margin-right: 10px; /* Add space between image and text */
-      margin-bottom: 10px;
-    }
-    
-    .daily-item-text {
-      font-weight: bold;
-      flex: 1; /* Allow the text to take up available space */
-    }
-
-    .close-button {
-      display: none;
-    }
-
-    .daily-item-image.full-size {
-      width: 100%;
-      height: auto;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 100;
-      background-color: transparent;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    
-
     body {
       font-size: 12px;
-    }
-
-    .reminders {
-      flex-direction: column;
-      margin: 20px 10px;
-    }
-
-    .content-section {
-      width: 90%;
-      font-size: 12px;
-    }
-
-    .content-section p {
-      font-size: 12px;
-      margin-left: 24px;
-    }
-
-    .date-section {
-      padding: 10px;
-      display: none;
-    }
-
-    .date-image-1 {
-      width: 30%;
-      position: absolute;
-      top: 27%;
-      left: 10%;
-      z-index: 1;
-  }
-
-  .date-image-2 {
-    width: 30%;
-    position: absolute;
-    top: 31%;
-    left: 57%;
-    z-index: 1;
-}
-
-  .date-image-3 {
-    width: 20%;
-    position: absolute;
-    top: 64%;
-    right: 14%;
-    z-index: 1;
-}
-
-    .date-image-4 {
-      width: 20%;
-      position: absolute;
-      top: 66%;
-      right: 69.5%;
-      z-index: 1;
-  }
-
-  .date-image-5 {
-    width: 25%;
-    position: absolute;
-    top: 90%;
-    right: 4%;
-    z-index: 1;
-}
-
-    .links-section {
-      width: 90%;
     }
 
     .calendar {
@@ -1287,83 +806,6 @@ width: 150px;
       height: 100%;
       margin: 10px;
       align-items: flex-start;
-    }
-
-    .side-container {
-      width: 100%;
-      height: auto; /* Adjust height to fit content */
-      margin: 24px 0px 24px 0px;
-    }
-
-    .legends {
-      width: 86%;
-      margin-left: 0px;
-    }
-
-    .legend-text {
-      font-size: 12px;
-    }
-
-    .top-container {
-      display: flex; 
-      flex-direction: column; 
-      align-items: flex-start; 
-      justify-content: center; 
-    }
-
-    .econtainer {
-      width: 100%;
-    }
-
-    .ongoing {
-      /* margin-left: 0px; */
-    }
-
-    .incoming {
-      /* margin-left: 0px; */
-    }
-
-    .summary {
-      /* margin-left: 0px; */
-      /* margin-top: 0px; */
-    }
-
-    .warning{
-      padding: 0;
-      margin: 10px;
-    }
-
-    .warning p{
-      font-size: 16px;
-    }
-
-    .traveling-spirits{
-      margin: 10px;
-      margin-top: 34px;
-    }
-
-    .ts-container{
-      flex-direction: column;
-      margin: 8px;
-    }
-
-    .ts1{
-      margin: 4px;
-      width: auto;
-    }
-
-    .ts2{
-      margin: 4px;
-      width: auto;
-    }
-
-    .modal{
-      padding-top: 150px;
-      width: 100%;
-    }
-
-    .modal-content{
-      width: 100%;
     }
 
     .sidebar {

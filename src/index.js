@@ -1,7 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
@@ -18,13 +17,9 @@ initializeApp(firebaseConfig)
 
 // initialize services
 const db = getFirestore()
-const storage = getStorage();
 
 // get collection reference
 const colRef = collection(db, 'events')
-
-// Get the list element by start date order
-const q = query(colRef, orderBy("start", "asc"));
 const shardsCollection = collection(db, 'shards');
 
 // Function to initialize FullCalendar
