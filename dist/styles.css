@@ -1,17 +1,20 @@
 
 :root {
-  --blue: #72b9dd;
+  --blue: #3658f8;
   --darkBlue: #4284a6;
   --lightBlue: #eef7fc;
   --black: #333333  ;
   --mainFont: 'Roboto Serif', serif;
+  --bg: #F3F4F6;
+  --white: #FFFFFF;
 }
 
 body {
-    font-family: var(--mainFont);
-    background-color: var(--black);
-    margin: 0;
-    padding: 0;
+  font-family: var(--mainFont);
+  background-color: var(--bg);
+  margin: 0;
+  padding: 0;
+  display: flex; /* Use flexbox for the body */
 }
 
 header {
@@ -45,6 +48,167 @@ width: 150px;
   width: 60px;
   height: 60px;
   animation: spin 1s linear infinite;
+}
+
+/* Event Modal */
+.content { 
+  flex: 1; 
+  display: flex;
+  margin-left: 251px; 
+}
+
+.event-modal-container { 
+  z-index: 1; 
+  position: relative; 
+  padding: 20px; 
+  flex: 1; 
+}
+
+.event-modal {
+  display: flex;
+  flex-direction: column;
+  width: 370px;
+  background-color: transparent;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+  padding: 5px;
+}
+
+.on-event-modal-container { 
+  z-index: 1; 
+  position: relative; 
+  padding: 20px; 
+  flex: 1; 
+}
+
+.on-event-modal {
+  display: flex;
+  flex-direction: column;
+  width: 370px;
+  background-color: transparent;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+  padding: 5px;
+}
+
+.sum-event-modal-container { 
+  z-index: 1; 
+  position: relative; 
+  padding: 20px; 
+  flex: 1; 
+}
+
+.sum-event-modal {
+  display: flex;
+  flex-direction: column;
+  width: 370px;
+  background-color: transparent;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+  padding: 5px;
+}
+
+.event-modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.event-modal-card {
+  width: 350px;
+  height: 72px;
+  background-color: #FFFFFF;
+  border: 1px solid #F4F7FE;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.event-modal-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 16px;
+}
+
+.event-line {
+  width: 8px; 
+  height: 48px; 
+  margin-right: 16px; 
+}
+
+.event-modal-card-title {
+  font-size: 16px;
+  font-weight: bold;
+  /* line-height: 22px; */
+  /* margin-bottom: 4px; */
+}
+
+.sum-event-modal-card-title {
+  font-size: 16px;
+  font-weight: normal;
+  /* line-height: 22px; */
+  /* margin-bottom: 4px; */
+}
+
+.event-modal-card-text {
+  font-size: 16px;
+  /* line-height: 22px; */
+}
+
+/* SIDE BAR */
+.sidebar {
+  width: 235px;
+  height: 100%; 
+  background-color: var(--white);
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 0;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 10; 
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 35px 10px 30px;
+  height: 44px;
+  border-bottom: 1px solid #eee;
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.sidebar-item:hover {
+  background-color: var(--blue);
+  color: var(--white);
+}
+
+.sidebar-item.active {
+  background-color: var(--blue);
+  opacity: 50%;
+  color: var(--white);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  padding: 10px 35px 10px 30px;
+  height: 44px;
+  border-bottom: 1px solid #eee;
+}
+
+.logo img {
+  margin-right: 10px; /* Adjust spacing as needed */
+  width: 48px;
+  background-color: var(--blue);
+}
+
+.logo-text {
+  font-weight: bold; /* Optional for logo text style */
 }
 
 /* CALENDAR -------------------------------------------------------------------------------*/
@@ -94,7 +258,7 @@ width: 150px;
   }
 
   .fc {
-    width: 900px;
+    width: 800px;
     height:700px;
   }
 
@@ -103,26 +267,26 @@ width: 150px;
   }
 
   .calendar {
-      background-color: var(--blue);
-      padding: 15px;
-      border-radius: 24px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      height: 100%;
-  }
+    background-color: var(--white);
+    padding: 20px;
+    border-radius: 24px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: auto; /* Add overflow: auto; */
+    height: 100%;
+}
 
   .calendar-header {
       display: flex;
       justify-content: space-around;
       margin-bottom: 20px;
-      color: var(--lightBlue);
+      color: var(--black);
   }
 
   .calendar-header div {
       text-align: center;
       width: 14.28%; 
       padding: 5px;
-      background-color: var(--lightBlue);
+      background-color: var(--black);
       border-radius: 3px;
   }
 
@@ -133,7 +297,7 @@ width: 150px;
   }
 
   .calendar-cell {
-      background-color: var(--lightBlue);
+      background-color: var(--white);
       padding: 10px;
       text-align: center;
       border-radius: 3px;
@@ -243,11 +407,11 @@ width: 150px;
   }
 
   .fc-day-grid-container .fc-day-top .fc-day-number {
-    background-color: rgba(255, 255, 255, 0.7); 
+    background-color: var(--black)
   }
 
   .fc .fc-view-harness {
-    background-color: var(--lightBlue);
+    background-color: var(--white);
     border-radius: 16px;
   }
 
@@ -281,7 +445,7 @@ width: 150px;
   }
 
   .fc-day-today {
-    background: var(--darkBlue) !important;
+    background: var(--blue) !important;
     border: none !important;
   } 
 
@@ -290,17 +454,17 @@ width: 150px;
   }
 
   .fc .fc-toolbar-title {
-    color: var(--lightBlue);
+    color: var(--black);
   }
 
   .fc .fc-button-primary {
     background-color: var(--lightBlue);
-    border-color: var(--darkBlue);
+    border-color: var(--blue);
     border-radius: 16px;
   }
 
   .fc .fc-button .fc-icon {
-    color: var(--darkBlue);
+    color: var(--blue);
   }
 
 
@@ -410,14 +574,15 @@ width: 150px;
     margin-top: -5px;
   }
 
-/* SIDE CONTAINER  ------------------------------------------------------------------------*/
+/* CONTAINER  ------------------------------------------------------------------------*/
   .container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     justify-content: space-evenly;
-    margin: 20px 50px
+    margin-top: 15px;
+    margin-bottom: 20px;
   }
 
   .top-container {
