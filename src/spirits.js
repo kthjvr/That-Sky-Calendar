@@ -304,6 +304,7 @@ function updateSummary(eventsData, month = new Date().getMonth()) {
         imageModal.innerHTML = '';
         const image = document.createElement('img');
         image.src = matchingEvent.image;
+        image.alt = "Sky: Cotl, travelling spirit";
         imageModal.appendChild(image);
         imageModal.style.display = 'block'; 
       });
