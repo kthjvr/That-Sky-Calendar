@@ -36,7 +36,7 @@ function initializeCalendar(eventsData) {
         return {
           html: `
             <div class="event-icon-container">
-              <img src="${iconPath}" class="event-icon" />
+              <img src="${iconPath}" class="event-icon" alt="sky: cotl, shards" />
             </div>
           `
         };
@@ -120,7 +120,7 @@ Promise.all([
         description: ``,
         icon: imageURL,
         className: doc.data().image ? 'has-image' : '',
-        category: doc.data().category || 'Default Category' 
+        category: doc.data().category || 'Default Category',
       });
     });
   });
