@@ -329,14 +329,18 @@ width: 150px;
     z-index: -1;    
   }
 
+  .event-icon-container{
+    margin-top: -20px;
+  }
+
   .event-icon {
     width: 20px; 
     height: 20px; 
   }
 
-  .fc .fc-daygrid-day-events {
+  /* .fc .fc-daygrid-day-events {
     margin-top: -10px;
-  }
+  } */
 
   .fc-daygrid-event-dot {
     display: none;
