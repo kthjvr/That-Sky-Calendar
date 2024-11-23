@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/x-icon" href="logo.jpg">
+    <link rel="icon" type="image/x-icon" href="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/logo.jpg?alt=media&token=6e89f223-9f46-40f0-91b4-3386643c9cb9">
 
     <meta name="google-site-verification" content="wE5_GjQhxEZxniT4nB-VI50OlKfUy2C_BrV6rbvkXAE" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DRC19V15XY"></script>
-    
+    <meta name="application-name" content="Sky Calendar">
     <meta name="description" content=" A community-driven resource for Sky: Children of the Light players, featuring a detailed event calendar and helpful information.">
-    <meta name="keywords" content="Sky: Children of the Light, Sky, thatgamecompany, event calendar, game events, seasonal events, Sky events, Sky calendar, Sky game, Sky guide, Sky resources, Sky community, Sky events list, Sky event schedule, Sky event dates, Sky upcoming events, Sky seasonal events, Sky daily activities, Sky celebrations">
+    <meta name="keywords" content="Sky: Children of the Light, Sky, thatgamecompany, event calendar, seasonal events, sky cotl events, sky cotl calendar, Sky cotl game, Sky cotl guide, Sky cotl resources, Sky community, Sky events list, Sky event schedule, Sky cotl event dates, Sky cotl upcoming events, Sky cotl seasonal events, Sky cotl daily activities, Sky cotl celebrations">
 
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -30,28 +30,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap" rel="stylesheet">
     
     <title>That Sky Events</title>
-    <script defer src="index.bundle.js"></script>
-</head>
+
+<script defer src="index.bundle.js"></script></head>
+
 <body>
 
+  <!-- LOADING OVERLAY -->
   <div class="overlay">
     <div class="loader"></div>
   </div>
 
+  <!-- NAV BAR -->
   <div class="sidebar">
     <div class="logo">
-      <img src="logo.jpg" alt="Sky Events Logo">
-      <span class="logo-text">Sky Events</span>
+      <img src="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/logo.jpg?alt=media&token=6e89f223-9f46-40f0-91b4-3386643c9cb9" alt="Sky Events Logo">
+      <!-- <span class="logo-text">Sky Events</span> -->
     </div>
     <div class="sidebar-items">
-      <a href="index.html" class="sidebar-item active">Calendar</a>
-      <a href="event.html" class="sidebar-item">Events Summary</a>
-      <a href="spirits.html" class="sidebar-item">Traveling Spirits</a>
+      <a href="#cal" class="sidebar-item active"><img class="icon" src="https://img.icons8.com/arcade/64/tear-off-calendar.png" alt="sky calendar"></a>
+      <a href="#events" class="sidebar-item"><img class="icon" src="https://img.icons8.com/arcade/64/confetti.png" alt=""></a>
+      <a href="#traveling" class="sidebar-item"><img class="icon" src="https://img.icons8.com/arcade/64/sparkling.png" alt="Sky traveling spirit"></a>
     </div>
   </div>
 
+  <!--  -->
   <div class="content">
-    <div class="event-modal-container">
+    
+  </div>
+
+  <div class="zoom cloud" style="background-image: url('/assets/clouds.png'); background-size: cover; z-index: -1;"></div>
+  <div class="initial-content"  style="margin-top: -150px;">
+    <div class="event-modal-container" id="cal">
       <div class="event-modal" id="incoming">
         <h2 class="event-modal-title">Upcoming Events</h2>
       </div>
@@ -62,13 +71,62 @@
     </div>
   </div>
 
+  <div class="zoom cloud" style="background-image: url('/assets/clouds.png'); background-size: cover;"></div>
+ 
+
+  <div class="content zoom" id="events" style="margin-top: -150px;">
+    
+    <div class="on-event-modal-container">
+      <div class="on-event-modal" id="ongoing">
+        <h2 class="event-modal-title">Ongoing Events</h2>
+      </div>
+    </div>
+
+    <div class="sum-event-modal-container">
+      <div class="sum-event-modal" id="summary">
+        <h2 class="event-modal-title">Summary of Events</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="zoom cloud" style="background-image: url('/assets/clouds.png'); background-size: cover;"></div>
+
+  <div class="content zoom" id="traveling" style="margin-top: -150px;">
+
+    <div class="ts-event-modal-container">
+      <div class="ts-event-modal" id="spirits">
+        <h2 class="event-modal-title">Summary of TS</h2>
+      </div>
+    </div>
+  
+    <div class="imageModal" id="imageModal">
+      <p>Click any events to preview the spirits.</p>
+    </div>
+  </div>
+
+
     <script>
+      // ---------------------------------- FOR LOADER
       setTimeout(function() {
         document.querySelector('.overlay').style.opacity = 0;
         setTimeout(function() {
         document.querySelector('.overlay').style.display = 'none';
-        }, 500);
+        }, 800);
       }, 800);
+
+      // ---------------------------------- FOR FADE IN FROM BELOW
+      const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('animation-zoom'); 
+              return;
+            }
+            entry.target.classList.remove('animation-zoom'); 
+          });
+        });
+      const squares = document.querySelectorAll('.zoom');
+      squares.forEach((element) => observer.observe(element));
+
     </script>
 
 </body>
@@ -76,7 +134,7 @@
 <footer>
   <div class="footer-container">
     <div class="footer-content">
-      <p class="made-by">Made by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank">Kathy</a> &copy; 2023 ThatSkyEvents. All rights reserved.</p>
+      <p class="made-by">Made by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank">Kathy</a> &copy; 2024 ThatSkyEvents. All rights reserved.</p>
     </div>
     <p class="disclaimer">Disclaimer: This site is a community resource for players of Sky: Children of the Light, not officially endorsed by tgc.</p>
   </div>

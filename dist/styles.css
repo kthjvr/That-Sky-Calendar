@@ -52,15 +52,45 @@ width: 150px;
   animation: spin 1s linear infinite;
 }
 
+.zoom {
+  opacity: 0;
+  transform: translate(0, 10vh);
+  transition: all 1s;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zoom {
+    transition: opacity 1s ease, transform 1s ease;
+    -webkit-transition: opacity 1s ease, transform 1s ease;
+    -moz-transition: opacity 1s ease, transform 1s ease;
+    -ms-transition: opacity 1s ease, transform 1s ease;
+    -o-transition: opacity 1s ease, transform 1s ease;
+}
+}
+
+.animation-zoom {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.icon{
+  width: 32x;
+  height: 32px;
+}
+
+.cloud {
+  height: 302px;
+}
 /* Traveling spirits -------------------------------------------------------------------------------*/
 .imageModal img{
   width: 100%;
-  height: 85%;
+  height: 100%;
 }
 
 .imageModal{
   padding: 50px;
-  width: 60%;
+  width: 834px;
+  height: 712px;
 }
 
 .imageModal p{
@@ -69,17 +99,17 @@ width: 150px;
   font-size: 1.2em; 
 }
 
-.sum-event-modal .event-modal-card{
+.ts-event-modal .event-modal-card{
   cursor: pointer;;
 }
 
-.sum-event-modal .event-modal-card.active{
+.ts-event-modal .event-modal-card.active{
   cursor: pointer;
   border: 5px solid var(--blue);
   border-radius: 8px;
 }
 
-.sum-event-modal .event-modal-card:hover{
+.ts-event-modal .event-modal-card:hover{
   cursor: pointer;
   background-color: var(--blue);
   opacity: 50%;
@@ -92,8 +122,16 @@ width: 150px;
 .content { 
   flex: 1; 
   display: flex;
-  margin-left: 251px; 
-  padding-bottom: 100px;
+  margin-left: 130px; 
+  /* padding-bottom: 100px; */
+  flex-grow: 1;
+}
+
+.initial-content { 
+  flex: 1; 
+  display: flex;
+  margin-left: 130px; 
+  /* padding-bottom: 100px; */
   flex-grow: 1;
 }
 
@@ -138,7 +176,7 @@ width: 150px;
   flex: 1; 
 }
 
-.sum-event-modal {
+.ts-event-modal {
   display: flex;
   flex-direction: column;
   width: 370px;
@@ -161,7 +199,6 @@ width: 150px;
   width: 370px;
   background-color: transparent;
   border-radius: 8px;
-  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
   padding: 5px;
 }
 
@@ -172,7 +209,7 @@ width: 150px;
 }
 
 .event-modal-card {
-  width: 350px;
+  width: 400px;
   height: 72px;
   background-color: #FFFFFF;
   border: 1px solid #F4F7FE;
@@ -182,6 +219,19 @@ width: 150px;
   align-items: center;
   margin-bottom: 12px;
 }
+
+.on-event-modal-card {
+  width: 400px;
+  height: 72px;
+  background-color: #FFFFFF;
+  border: 1px solid #F4F7FE;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 
 .event-modal-icon {
   width: 24px;
@@ -241,9 +291,17 @@ width: 150px;
   color: var(--white);
 }
 
+.next-btn:hover {
+  opacity: 100%;
+}
+
+.back-btn:hover {
+  opacity: 100%;
+}
+
 /* SIDE BAR -------------------------------------------------------------------------------*/
 .sidebar {
-  width: 235px;
+  width: 100px;
   height: 100%; 
   background-color: var(--white);
   position: fixed;
@@ -366,7 +424,8 @@ width: 150px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow: auto; /* Add overflow: auto; */
     height: 100%;
-    margin-right: 15px;
+    /* margin-right: 15px; */
+    margin-left: -17%;
 }
 
   .calendar-header {
@@ -767,6 +826,7 @@ width: 150px;
 
     .calendar {
       overflow: hidden;
+      margin-left: 0%;
     }
 
     .calendar-header div {
@@ -785,8 +845,9 @@ width: 150px;
     }
 
     .fc {
-      width: 100%;
-      height: 91vh;
+      width: 96%;
+      height: 93vh;
+      margin-left: 12px;
     }
 
     .fc .fc-toolbar-title {
@@ -810,6 +871,7 @@ width: 150px;
       height: 100%;
       margin: 10px;
       align-items: flex-start;
+      width: 95%;
     }
 
     .sidebar {
@@ -836,7 +898,6 @@ width: 150px;
   }
     
     .sidebar-item {
-      display: flex;
       align-items: center;
       padding: 10px;
       height: 18px;
@@ -846,6 +907,9 @@ width: 150px;
       font-size: 16px;
       font-weight: normal;
       flex: 1; 
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
     }
     
     .sidebar-item:hover {
@@ -857,6 +921,8 @@ width: 150px;
       background-color: var(--blue);
       opacity: 50%;
       color: var(--white);
+      display: flex;
+      justify-content: center;
     }
     
     .logo {
@@ -887,21 +953,34 @@ width: 150px;
       flex-direction: column;
       padding-top: 100px;
     }
+
+    .initial-content { 
+      flex: 1; 
+      display: flex;
+      margin-left: 0; 
+      margin-top: 20px;
+      flex-direction: column;
+      padding-top: 100px;
+      flex-direction: column-reverse;
+    }
     
     .event-modal-container { 
       z-index: 1; 
       position: relative; 
       padding: 15px; 
       flex: 1; 
+      display: flex;
+      justify-content: center;
     }
     
     .event-modal {
       display: flex;
       flex-direction: column;
-      width: 370px;
+      width: 100%;
       background-color: transparent;
       border-radius: 8px;
       padding: 5px;
+      align-items: center;
     }
     
     .on-event-modal-container { 
@@ -909,15 +988,18 @@ width: 150px;
       position: relative; 
       padding: 20px; 
       flex: 1; 
+      display: flex;
+      justify-content: center;
     }
     
     .on-event-modal {
       display: flex;
       flex-direction: column;
-      width: 370px;
+      width: 100%;
       background-color: transparent;
       border-radius: 8px;
       padding: 5px;
+      align-items: center;
     }
     
     .sum-event-modal-container { 
@@ -925,15 +1007,18 @@ width: 150px;
       position: relative; 
       padding: 20px; 
       flex: 1; 
+      display: flex;
+      justify-content: center;
     }
     
     .sum-event-modal {
       display: flex;
       flex-direction: column;
-      width: 370px;
+      width: 100%;
       background-color: transparent;
       border-radius: 8px;
       padding: 5px;
+      align-items: center;
     }
     
     .ts-event-modal-container { 
@@ -946,7 +1031,7 @@ width: 150px;
     .ts-event-modal {
       display: flex;
       flex-direction: column;
-      width: 370px;
+      width: 100%;
       background-color: transparent;
       border-radius: 8px;
       padding: 5px;
@@ -958,7 +1043,7 @@ width: 150px;
     }
     
     .event-modal-card {
-      width: 350px;
+      width: 85%;
       height: 72px;
       background-color: #FFFFFF;
       border: 1px solid #F4F7FE;
@@ -966,6 +1051,11 @@ width: 150px;
       padding: 12px;
       display: flex;
       align-items: center;
+      margin: 4px;
+    }
+
+    .cloud {
+      height: 80px;
     }
     
     .event-modal-icon {
@@ -1003,17 +1093,18 @@ width: 150px;
 
     .imageModal img{
       width: 100%;
-      height: 100%;
+      height: 50%;
     }
     
     .imageModal{
-      padding: 50px;
+      padding: 0px 50px 20px;
       width: 75%;
+      height: 100%;
     }
     
     .imageModal p{
       text-align: center;
-      margin-top: -10%; 
+      margin-top: 5%; 
       font-size: 1.2em; 
     }
     
@@ -1025,6 +1116,18 @@ width: 150px;
       cursor: pointer;
       border: 5px solid var(--blue);
       border-radius: 8px;
+    }
+
+    .on-event-modal-card {
+      width: 85%;
+      height: 72px;
+      background-color: #FFFFFF;
+      border: 1px solid #F4F7FE;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      margin: 4px;
     }
 
   }

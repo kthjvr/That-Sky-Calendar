@@ -32,26 +32,35 @@
     <title>That Sky Events</title>
 
 </head>
+
 <body>
 
+  <!-- LOADING OVERLAY -->
   <div class="overlay">
     <div class="loader"></div>
   </div>
 
+  <!-- NAV BAR -->
   <div class="sidebar">
     <div class="logo">
       <img src="https://firebasestorage.googleapis.com/v0/b/that-sky-calendar-ffd49.appspot.com/o/logo.jpg?alt=media&token=6e89f223-9f46-40f0-91b4-3386643c9cb9" alt="Sky Events Logo">
-      <span class="logo-text">Sky Events</span>
+      <!-- <span class="logo-text">Sky Events</span> -->
     </div>
     <div class="sidebar-items">
-      <a href="index.html" class="sidebar-item active">Calendar</a>
-      <a href="event.html" class="sidebar-item">Events Summary</a>
-      <a href="spirits.html" class="sidebar-item">Traveling Spirits</a>
+      <a href="#cal" class="sidebar-item active"><img class="icon" src="https://img.icons8.com/arcade/64/tear-off-calendar.png" alt="sky calendar"></a>
+      <a href="#events" class="sidebar-item"><img class="icon" src="https://img.icons8.com/arcade/64/confetti.png" alt=""></a>
+      <a href="#traveling" class="sidebar-item"><img class="icon" src="https://img.icons8.com/arcade/64/sparkling.png" alt="Sky traveling spirit"></a>
     </div>
   </div>
 
+  <!--  -->
   <div class="content">
-    <div class="event-modal-container">
+    
+  </div>
+
+  <div class="zoom cloud" style="background-image: url('/assets/clouds.png'); background-size: cover; z-index: -1;"></div>
+  <div class="initial-content"  style="margin-top: -150px;">
+    <div class="event-modal-container" id="cal">
       <div class="event-modal" id="incoming">
         <h2 class="event-modal-title">Upcoming Events</h2>
       </div>
@@ -62,13 +71,62 @@
     </div>
   </div>
 
+  <div class="zoom cloud" style="background-image: url('/assets/clouds.png'); background-size: cover;"></div>
+ 
+
+  <div class="content zoom" id="events" style="margin-top: -150px;">
+    
+    <div class="on-event-modal-container">
+      <div class="on-event-modal" id="ongoing">
+        <h2 class="event-modal-title">Ongoing Events</h2>
+      </div>
+    </div>
+
+    <div class="sum-event-modal-container">
+      <div class="sum-event-modal" id="summary">
+        <h2 class="event-modal-title">Summary of Events</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="zoom cloud" style="background-image: url('/assets/clouds.png'); background-size: cover;"></div>
+
+  <div class="content zoom" id="traveling" style="margin-top: -150px;">
+
+    <div class="ts-event-modal-container">
+      <div class="ts-event-modal" id="spirits">
+        <h2 class="event-modal-title">Summary of TS</h2>
+      </div>
+    </div>
+  
+    <div class="imageModal" id="imageModal">
+      <p>Click any events to preview the spirits.</p>
+    </div>
+  </div>
+
+
     <script>
+      // ---------------------------------- FOR LOADER
       setTimeout(function() {
         document.querySelector('.overlay').style.opacity = 0;
         setTimeout(function() {
         document.querySelector('.overlay').style.display = 'none';
-        }, 500);
+        }, 800);
       }, 800);
+
+      // ---------------------------------- FOR FADE IN FROM BELOW
+      const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('animation-zoom'); 
+              return;
+            }
+            entry.target.classList.remove('animation-zoom'); 
+          });
+        });
+      const squares = document.querySelectorAll('.zoom');
+      squares.forEach((element) => observer.observe(element));
+
     </script>
 
 </body>
