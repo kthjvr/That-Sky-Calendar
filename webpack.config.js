@@ -29,5 +29,5 @@ module.exports = {
       chunks: ['spirits']
     })
   ],
-  watch: true
+  watch: false
 };
