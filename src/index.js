@@ -174,7 +174,10 @@ Promise.all([
   updateSummary(events);
   showOngoingEvents(events);
   showIncomingEvents(events);
-  updateSpirits(events)
+  updateSpirits(events);
+  showNewsEvents(events);
+  console.log(events);
+  
 })
 .catch(error => {
   console.error("Error getting documents: ", error);
@@ -550,5 +553,178 @@ function updateSpirits(eventsData, month = new Date().getMonth()) {
     const noEventsMessage = document.createElement("p");
     noEventsMessage.textContent = "No events found for this month.";
     legendContainer.appendChild(noEventsMessage);
+  }
+}
+
+function timeUntil(targetTime) {
+  const now = new Date();
+  const timeDiff = targetTime - now;
+  return timeDiff;
+}
+
+function formatCountdown(milliseconds) {
+  const seconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  const remainingSeconds = seconds % 60;
+  const remainingMinutes = minutes % 60;
+  const remainingHours = hours % 24;
+
+  let countdown = "";
+  if (days > 0) countdown += `${days}d `;
+  if (remainingHours > 0) countdown += `${remainingHours}h `;
+  if (remainingMinutes > 0) countdown += `${remainingMinutes}m `;
+  countdown += `${remainingSeconds}s`;
+  return countdown;
+}
+
+function calculateRecurringEventTimes(event, today) {
+  const times = [];
+  for (let i = 0; i < 24; i += 2) {
+      const hours = i;
+      const startMinutes = parseInt(event.startTime.slice(3));
+      const endMinutes = parseInt(event.endTime.slice(3));
+
+      const startTime = new Date(today);
+      startTime.setHours(hours, startMinutes, 0);
+
+      const endTime = new Date(today);
+      endTime.setHours(hours, endMinutes, 0);
+
+      if (startTime > today) {
+          times.push({ start: startTime, end: endTime });
+      }
+  }
+  return times;
+}
+
+// Function to fetch events from Firebase
+// Function to fetch events from Firebase
+async function fetchEvents() {
+  try {
+      const eventsSnapshot = await getDocs(query(collection(db, 'events'), orderBy("start", "asc")));
+      return eventsSnapshot.docs.map(doc => ({
+          id: doc.id, //Include the document ID
+          ...doc.data(),
+          start: doc.data().start ? new Date(doc.data().start) : null, //Handle null start dates
+          end: doc.data().end ? new Date(doc.data().end) : null,     //Handle null end dates
+      }));
+  } catch (error) {
+      console.error("Error fetching events:", error);
+      return []; // Return an empty array if there's an error
+  }
+}
+
+// Function to display events with countdown
+function showNewsEvents(eventsData) {
+  const eventModal = document.querySelector('.news-modal');
+  // eventModal.innerHTML = ''; // Clear previous content
+
+  const today = new Date();
+  const ongoingEvents = [];
+  const incomingEvents = [];
+
+  eventsData.forEach(event => {
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+
+      if (today >= eventStart && today <= eventEnd) {
+          ongoingEvents.push(event);
+      } else if (today < eventStart && today < eventEnd) { //Check if event is in the future
+          incomingEvents.push(event);
+      }
+  });
+
+  function displayEvents(eventsToDisplay) {
+    if (eventsToDisplay.length > 0) {
+        eventsToDisplay.forEach(event => {
+              const eventModalCard = document.createElement('div');
+              eventModalCard.classList.add('event-modal-card');
+
+              const eventLine = document.createElement('div');
+              eventLine.classList.add('event-line');
+              eventLine.style.backgroundColor = event.color;
+              eventModalCard.appendChild(eventLine);
+
+              const eventDetails = document.createElement('div');
+              eventDetails.classList.add('event-details');
+
+              const eventTitle = document.createElement('h3');
+              eventTitle.classList.add('event-modal-card-title');
+              eventTitle.textContent = event.title;
+              eventDetails.appendChild(eventTitle);
+
+              const eventDates = document.createElement('p');
+              eventDates.classList.add('event-modal-card-text');
+              const uniqueId = `countdown-${event.title.replace(/ /g, '_')}`;
+              eventDates.id = uniqueId;
+
+              const timeUntilStart = event.start ? timeUntil(event.start) : 0;
+              const timeUntilEnd = event.end ? timeUntil(event.end) : 0;
+
+              const startLabel = timeUntilStart <= 0 ? 'Starts: Ongoing' : 'Starts in: ';
+              const endLabel = timeUntilStart <= 0 ? 'Ends in: ' : 'Ends in: '; //Correct label
+
+              setTimeout(() => {
+                  updateCountdown(uniqueId, event.start, startLabel); //Correct label
+                  if (timeUntilStart <= 0) { //Only update end countdown if started
+                      updateCountdown(uniqueId, event.end, endLabel);
+                  }
+              }, 0);
+
+              eventDetails.appendChild(eventDates);
+              eventModalCard.appendChild(eventDetails);
+              eventModal.appendChild(eventModalCard);
+          });
+      } else {
+          const noEventsMessage = document.createElement('p');
+          noEventsMessage.textContent = "There are no events.";
+          eventModal.appendChild(noEventsMessage);
+      }
+  }
+
+  // Display ongoing and incoming events
+  displayEvents(ongoingEvents);
+  displayEvents(incomingEvents);
+}
+
+// Function to update the countdown (timer effect)
+function updateCountdown(elementId, targetDate, label) {
+  if (!targetDate) return;
+
+  const countdownElement = document.getElementById(elementId);
+  let intervalId = setInterval(function() {
+      const distance = targetDate.getTime() - new Date().getTime();
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      let countdown = "";
+      if (days > 0) countdown += `${days}d `;
+      if (hours > 0) countdown += `${hours}h `;
+      if (minutes > 0) countdown += `${minutes}m `;
+      countdown += `${seconds}s`;
+
+      if (distance <= 0) {
+          clearInterval(intervalId);
+          countdownElement.textContent = `${label}Ongoing`;
+      } else {
+          countdownElement.textContent = `${label}${countdown}`;
+      }
+  }, 1000);
+}
+
+// Main function to fetch data, combine, and update
+async function updateCalendar() {
+  try {
+      const events = await fetchEvents(); 
+      //No need to process shard events here if you only want ongoing and upcoming events from 'events' collection
+      showNewsEvents(events); 
+  } catch (error) {
+      console.error("Error updating calendar:", error);
   }
 }

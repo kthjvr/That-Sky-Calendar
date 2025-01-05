@@ -152,6 +152,22 @@ width: 150px;
   padding: 5px;
 }
 
+.news-modal {
+  display: flex;
+  flex-direction: column;
+  width: 370px;
+  background-color: transparent;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+  padding: 5px;
+}
+
+.news-modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
 .on-event-modal-container { 
   z-index: 1; 
   position: relative; 
