@@ -180,6 +180,13 @@ width: 150px;
   flex: 1; 
 }
 
+.up-event-modal-container { 
+  z-index: 1; 
+  position: relative; 
+  padding: 20px; 
+  flex: 1; 
+}
+
 .on-event-modal {
   display: flex;
   flex-direction: column;
