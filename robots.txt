@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thatskyevents.netlify.app/sitemap.xml

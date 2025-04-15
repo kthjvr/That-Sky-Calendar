@@ -28,7 +28,10 @@ function initializeCalendar(eventsData) {
 
   var calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
-    aspectRatio: 1.8,
+    fixedWeekCount: false,
+    // dayMaxEventRows: true, 
+    aspectRatio: 1.35,
+    height: 'auto',
     events: eventsData,
     eventContent: function(info) {
       var iconPath = info.event.extendedProps.icon;
@@ -201,7 +204,7 @@ function updateSummary(eventsData, month = new Date().getMonth()) {
   // Add next and previous buttons
   const nextButton = document.createElement("button");
   nextButton.classList.add("next-btn")
-  nextButton.textContent = ">";
+  nextButton.textContent = "Next";
   nextButton.addEventListener("click", () => {
     month = (month + 1) % 12; // Cycle through months
     updateSummary(eventsData, month);
@@ -209,7 +212,7 @@ function updateSummary(eventsData, month = new Date().getMonth()) {
 
   const previousButton = document.createElement("button");
   previousButton.classList.add("back-btn")
-  previousButton.textContent = "<";
+  previousButton.textContent = "Previous";
   previousButton.addEventListener("click", () => {
     month = (month - 1 + 12) % 12; // Cycle through months
     updateSummary(eventsData, month);
@@ -444,7 +447,7 @@ function updateSpirits(eventsData, month = new Date().getMonth()) {
   // Add next and previous buttons
   const nextButton = document.createElement("button");
   nextButton.classList.add("next-btn")
-  nextButton.textContent = ">";
+  nextButton.textContent = "Next";
   nextButton.addEventListener("click", () => {
     month = (month + 1) % 12; // Cycle through months
     updateSpirits(eventsData, month);
@@ -452,7 +455,7 @@ function updateSpirits(eventsData, month = new Date().getMonth()) {
 
   const previousButton = document.createElement("button");
   previousButton.classList.add("back-btn")
-  previousButton.textContent = "<";
+  previousButton.textContent = "Previous";
   previousButton.addEventListener("click", () => {
     month = (month - 1 + 12) % 12; // Cycle through months
     updateSpirits(eventsData, month);
@@ -728,3 +731,110 @@ async function updateCalendar() {
       console.error("Error updating calendar:", error);
   }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Create mobile menu button for small screens
+  if (window.innerWidth <= 480) {
+    const mobileMenuButton = document.createElement('div');
+    mobileMenuButton.className = 'mobile-menu-button';
+    mobileMenuButton.innerHTML = '<span></span>';
+    document.body.appendChild(mobileMenuButton);
+    
+    // Add event listener to mobile menu button
+    mobileMenuButton.addEventListener('click', function() {
+      const sidebar = document.querySelector('.sidebar');
+      const content = document.querySelector('.content');
+      const footer = document.querySelector('footer');
+      
+      this.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      content.classList.toggle('sidebar-open');
+      footer.classList.toggle('sidebar-open');
+    });
+  }
+  
+  // Make sure footer position is correct
+  function adjustFooter() {
+    const footer = document.querySelector('footer');
+    const content = document.querySelector('.content');
+    const lastCloud = document.querySelector('.cloud:last-of-type');
+    
+    if (lastCloud && footer) {
+      const lastCloudBottom = lastCloud.getBoundingClientRect().bottom;
+      const viewportHeight = window.innerHeight;
+      
+      if (lastCloudBottom < viewportHeight) {
+        footer.style.position = 'relative';
+      } else {
+        footer.style.position = 'relative';
+      }
+    }
+  }
+  
+  // Call on page load and resize
+  window.addEventListener('load', adjustFooter);
+  window.addEventListener('resize', adjustFooter);
+  
+  // Add active class to sidebar items on click
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(item => {
+    item.addEventListener('click', function() {
+      // Remove active class from all items
+      sidebarItems.forEach(i => i.classList.remove('active'));
+      // Add active class to clicked item
+      this.classList.add('active');
+      
+      // On mobile, close the sidebar after clicking a menu item
+      if (window.innerWidth <= 480) {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('.content');
+        const footer = document.querySelector('footer');
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        
+        sidebar.classList.remove('active');
+        content.classList.remove('sidebar-open');
+        footer.classList.remove('sidebar-open');
+        mobileMenuButton.classList.remove('active');
+      }
+    });
+  });
+
+  // Smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const targetId = this.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+  
+  // Existing loader code
+  setTimeout(function() {
+    document.querySelector('.overlay').style.opacity = 0;
+    setTimeout(function() {
+      document.querySelector('.overlay').style.display = 'none';
+    }, 2500);
+  }, 2500);
+  
+  // Existing IntersectionObserver code
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animation-zoom');
+        return;
+      }
+      entry.target.classList.remove('animation-zoom');
+    });
+  });
+  
+  const squares = document.querySelectorAll('.zoom');
+  squares.forEach((element) => observer.observe(element));
+});
