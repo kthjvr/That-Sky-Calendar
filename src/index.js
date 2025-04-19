@@ -607,63 +607,6 @@ function timeUntil(targetTime) {
   return timeDiff;
 }
 
-function formatCountdown(milliseconds) {
-  const seconds = Math.floor(milliseconds / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  const remainingSeconds = seconds % 60;
-  const remainingMinutes = minutes % 60;
-  const remainingHours = hours % 24;
-
-  let countdown = "";
-  if (days > 0) countdown += `${days}d `;
-  if (remainingHours > 0) countdown += `${remainingHours}h `;
-  if (remainingMinutes > 0) countdown += `${remainingMinutes}m `;
-  countdown += `${remainingSeconds}s`;
-  return countdown;
-}
-
-function calculateRecurringEventTimes(event, today) {
-  const times = [];
-  for (let i = 0; i < 24; i += 2) {
-    const hours = i;
-    const startMinutes = parseInt(event.startTime.slice(3));
-    const endMinutes = parseInt(event.endTime.slice(3));
-
-    const startTime = new Date(today);
-    startTime.setHours(hours, startMinutes, 0);
-
-    const endTime = new Date(today);
-    endTime.setHours(hours, endMinutes, 0);
-
-    if (startTime > today) {
-      times.push({ start: startTime, end: endTime });
-    }
-  }
-  return times;
-}
-
-// Function to fetch events from Firebase
-// Function to fetch events from Firebase
-async function fetchEvents() {
-  try {
-    const eventsSnapshot = await getDocs(
-      query(collection(db, "events"), orderBy("start", "asc"))
-    );
-    return eventsSnapshot.docs.map((doc) => ({
-      id: doc.id, //Include the document ID
-      ...doc.data(),
-      start: doc.data().start ? new Date(doc.data().start) : null, //Handle null start dates
-      end: doc.data().end ? new Date(doc.data().end) : null, //Handle null end dates
-    }));
-  } catch (error) {
-    console.error("Error fetching events:", error);
-    return []; // Return an empty array if there's an error
-  }
-}
-
 // Function to display events with countdown
 function showNewsEvents(eventsData) {
   const eventModal = document.querySelector(".news-modal");
@@ -769,17 +712,6 @@ function updateCountdown(elementId, targetDate, label) {
       countdownElement.textContent = `${label}${countdown}`;
     }
   }, 1000);
-}
-
-// Main function to fetch data, combine, and update
-async function updateCalendar() {
-  try {
-    const events = await fetchEvents();
-    //No need to process shard events here if you only want ongoing and upcoming events from 'events' collection
-    showNewsEvents(events);
-  } catch (error) {
-    console.error("Error updating calendar:", error);
-  }
 }
 
 function displayEventNotices(eventsData) {
@@ -987,7 +919,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function () {
       document.querySelector(".overlay").style.display = "none";
     }, 2500);
-  }, 2500);
+  }, 500);
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
