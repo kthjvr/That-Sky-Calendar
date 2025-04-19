@@ -918,7 +918,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".overlay").style.opacity = 0;
     setTimeout(function () {
       document.querySelector(".overlay").style.display = "none";
-    }, 2500);
+    }, 500);
   }, 500);
 
   const observer = new IntersectionObserver((entries) => {

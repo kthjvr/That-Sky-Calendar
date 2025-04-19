@@ -35,39 +35,42 @@ module.exports = {
       }
     }
   },
-  rules: [
-    {
-      test: /\.(png|jpe?g|gif|svg)$/i,
-      use: [
-        'file-loader',
-        {
-          loader: 'image-webpack-loader',
-          options: {
-            mozjpeg: { progressive: true },
-            optipng: { enabled: false },
-            pngquant: { quality: [0.65, 0.90], speed: 4 },
-            gifsicle: { interlaced: false }
+  module: {
+    rules: [
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        use: [
+          'file-loader',
+          {
+            loader: 'image-webpack-loader',
+            options: {
+              mozjpeg: { progressive: true },
+              optipng: { enabled: false },
+              pngquant: { quality: [0.65, 0.90], speed: 4 },
+              gifsicle: { interlaced: false }
+            }
           }
-        }
-      ]
-    },
-    {
-      test: /\.(mp4|webm)$/i,
-      use: [
-        'file-loader',
-        {
-          loader: 'video-webpack-loader',
-          options: {
-            quality: 'high',
-            format: 'mp4',
-            codecs: {
-              video: 'h264',
-              audio: 'aac'
-            },
+        ]
+      },
+      {
+        test: /\.(mp4|webm)$/i,
+        use: [
+          'file-loader',
+          {
+            loader: 'video-webpack-loader',
+            options: {
+              quality: 'high',
+              format: 'mp4',
+              codecs: {
+                video: 'h264',
+                audio: 'aac'
+              },
+            }
           }
-        }
-      ]
-    }
-  ],
+        ]
+      }
+    ]
+  },
+  
   watch: false
 };

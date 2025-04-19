@@ -11,8 +11,10 @@
     "author": "Kathy",
     "license": "ISC",
     "devDependencies": {
+        "file-loader": "^6.2.0",
         "html-loader": "^5.1.0",
         "html-webpack-plugin": "^5.6.0",
+        "image-webpack-loader": "^8.1.0",
         "postcss": "^8.4.47",
         "postcss-cli": "^11.0.0",
         "webpack": "^5.97.1",
