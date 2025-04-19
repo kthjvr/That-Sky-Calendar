@@ -15,17 +15,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #4f86e8;
-    --secondary-color: #2a5cbc;
+    --primary-color: #6198ff;
+    --secondary-color: #3c74db;
     --light-blue: #59c0e2;
-    --text-color: #e0e0e0;
+    --text-color: #333;
     --light-text: #f0f0f0;
-    --background-light: #1a1a2e;
-    --card-background: rgba(30, 35, 50, 0.85);
-    --body-background: #121212;
-    --nav-background: rgba(25, 25, 35, 0.9);
-    --border-color: #3a3a4a;
-    --hover-background: #2a2a40;
+    --background-light: #f4f7fe;
+    --card-background: rgba(255, 255, 255, 0.85);
+    --body-background: rgba(255, 255, 255, 0.85);
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 }
@@ -313,6 +310,7 @@ body {
   margin: 0 auto;
   text-align: center;
   box-shadow: var(--shadow);
+  height: 50%;
 }
 
 .imageModal img {
@@ -486,6 +484,41 @@ body {
   .container {
     width: 100%;
   }
+
+  .cloud {
+    min-height: auto;
+    padding-bottom: 40px;
+  }
+
+  .page2-content {
+    width: 100%;
+  }
+
+  .event-modal,
+  .on-event-modal,
+  .sum-event-modal,
+  .ts-event-modal {
+    width: 100%;
+   }
+}
+
+@media (max-width: 860px) {
+  .cloud {
+    min-height: auto;
+    padding-bottom: 40px;
+  }
+
+  .page2-content {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .event-modal,
+  .on-event-modal,
+  .sum-event-modal,
+  .ts-event-modal {
+    width: 100%;
+   }
 }
 
 @media (max-width: 768px) {
@@ -534,6 +567,24 @@ body {
   .banner-section {
     padding: 40px 20px;
   }
+
+  .cloud {
+    min-height: auto;
+    padding-bottom: 40px;
+  }
+
+  .page2-content {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .event-modal,
+  .on-event-modal,
+  .sum-event-modal,
+  .ts-event-modal {
+    width: 100%;
+   }
+
 }
 
 @media (max-width: 576px) {
@@ -749,9 +800,9 @@ body {
 }
 
 #category-filter {
-  background-color: var(--lightBlue);
-  border-color: var(--lightBlue);
-  color: var(--blue);
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--light-text);
   border-bottom-left-radius: 0px;
   border-top-left-radius: 0px;
   border: 1px solid transparent;

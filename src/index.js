@@ -78,7 +78,7 @@ function initializeCalendar(eventsData) {
 
   categoryFilterDropdown.addEventListener("change", function () {
     const selectedCategory = this.value.toLowerCase();
-    console.log(selectedCategory);
+    // console.log(selectedCategory);
 
     const filteredEvents = eventsData.filter((event) => {
       if (selectedCategory === "hide") {
@@ -151,7 +151,7 @@ Promise.all([
 
       // Get the user's timezone
       const userTimezone = moment.tz.guess();
-      console.log("User's Timezone:", userTimezone);
+      // console.log("User's Timezone:", userTimezone);
 
       // Convert start and end times to moment objects (already in LA time)
       const startMoment = moment(start).tz("America/Los_Angeles");
@@ -193,7 +193,7 @@ Promise.all([
     updateSpirits(events);
     showNewsEvents(events);
     displayEventNotices(events);
-    console.log(events);
+    // console.log(events);
   })
   .catch((error) => {
     console.error("Error getting documents: ", error);
@@ -785,21 +785,27 @@ async function updateCalendar() {
 function displayEventNotices(eventsData) {
   const noticeContainer = document.querySelector(".event-notices");
 
-  // Create notice container if it doesn't exist
-  if (!noticeContainer) {
-    const bannerCta = document.querySelector(".banner-cta");
-    const noticesSection = document.createElement("div");
-    noticesSection.innerHTML = `
-      <div class="heads-up">
-        <h2>Heads Up!</h2>
-        <div class="event-notices"></div>
-      </div>
-    `;
-    bannerCta.after(noticesSection);
-  }
+  // // Create notice container if it doesn't exist
+  // if (!noticeContainer) {
+  //   const bannerCta = document.querySelector(".banner-cta");
+  //   const noticesSection = document.createElement("div");
+  //   noticesSection.innerHTML = `
+  //     <div class="heads-up">
+  //       <h2>Heads Up!</h2>
+  //       <div class="event-notices"></div>
+  //     </div>
+  //   `;
+  //   bannerCta.after(noticesSection);
+  // }
 
   const eventNotices = document.querySelector(".event-notices");
   eventNotices.innerHTML = "";
+
+  const noticesSection = document.createElement("div");
+  noticesSection.innerHTML = `
+      <h2 class="event-notice-title">Heads Up!</h2>
+  `;
+  eventNotices.appendChild(noticesSection);
 
   const today = new Date();
   const upcomingEvents = [];
