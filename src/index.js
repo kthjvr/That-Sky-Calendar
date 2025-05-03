@@ -717,19 +717,6 @@ function updateCountdown(elementId, targetDate, label) {
 function displayEventNotices(eventsData) {
   const noticeContainer = document.querySelector(".event-notices");
 
-  // // Create notice container if it doesn't exist
-  // if (!noticeContainer) {
-  //   const bannerCta = document.querySelector(".banner-cta");
-  //   const noticesSection = document.createElement("div");
-  //   noticesSection.innerHTML = `
-  //     <div class="heads-up">
-  //       <h2>Heads Up!</h2>
-  //       <div class="event-notices"></div>
-  //     </div>
-  //   `;
-  //   bannerCta.after(noticesSection);
-  // }
-
   const eventNotices = document.querySelector(".event-notices");
   eventNotices.innerHTML = "";
 
@@ -784,6 +771,13 @@ function displayEventNotices(eventsData) {
       );
       eventNotices.appendChild(noticeElement);
     });
+  } else if (upcomingEvents.length === 0){
+    const noticeElement = createNoticeElement_empty(
+      "upcoming",
+      "https://img.icons8.com/?size=100&id=3ovMFy5JDSWq&format=png&color=000000",
+      "Relax! No events are starting or ending within the next 4 days.",
+    );
+    eventNotices.appendChild(noticeElement);
   }
 
   // Create notices for ending events
@@ -826,6 +820,21 @@ function createNoticeElement(event, className, iconSrc, labelText, timeText) {
     </div>
   `;
 
+  return noticeDiv;
+}
+
+function createNoticeElement_empty(className, iconSrc, labelText) {
+  const noticeDiv = document.createElement("div");
+  noticeDiv.className = `event-notice ${className}`;
+
+  noticeDiv.innerHTML = `
+    <div class="notice-icon">
+      <img src="${iconSrc}" alt="${className} event icon">
+    </div>
+    <div class="notice-text">
+      <p>${labelText}</p>
+    </div>
+  `;
   return noticeDiv;
 }
 
@@ -933,4 +942,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const squares = document.querySelectorAll(".zoom");
   squares.forEach((element) => observer.observe(element));
+
+  var modal = document.getElementById("game-modal");
+
+  // Get the button that opens the modal
+  var btn = document.getElementById("open-game-modal");
+
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+
+  // When the user clicks on the button, open the modal
+  btn.onclick = function() {
+    modal.style.display = "block";
+  }
+
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
 });

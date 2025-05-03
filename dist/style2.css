@@ -312,6 +312,10 @@ p {
   line-height: 24px;
 }
 
+.summary-heading{
+  color: var(--secondary-color);
+}
+
 .event-modal-title {
   color: var(--secondary-color);
   margin-bottom: 15px;
@@ -1079,6 +1083,92 @@ p {
 .notice-text strong {
   font-weight: bold;
   color: #2c3e50;
+}
+
+.game-container {
+  text-align: center;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 500px;
+  border-top: 8px solid #4CAF50;
+}
+
+.game-container h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.game-description{
+  font-size: 14px;
+  line-height: 1.5;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.game-container button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.game-container button:hover {
+  background-color: #45a049;
+}
+
+/* Modal styles */
+.game-modal {
+  display: none; 
+  position: fixed; 
+  z-index: 1000; 
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  /* overflow: auto;  */
+  background-color: rgba(0,0,0,0.5); 
+}
+
+.modal-content {
+  background-color: #fff; 
+  margin: 1% auto; 
+  padding: 12px;
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); 
+  max-width: 600px; 
+  width: 100%; 
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer; 
+  margin-bottom: 10px; 
+}
+
+.close:hover {
+  color: #000; 
+}
+
+.modal-content iframe {
+  border: none; 
+  width: 100%;
+  height: 100vh; 
+  border-radius: 5px; 
 }
 
 .mb-1 {
