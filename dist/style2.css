@@ -13,7 +13,7 @@
   --transition-speed: 0.3s;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --primary-color: #6198ff;
     --secondary-color: #3c74db;
@@ -25,13 +25,13 @@
     --body-background: rgba(255, 255, 255, 0.85);
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
-}
+} */
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Roboto Serif", serif;
+  font-family: "Inter", sans-serif;
 }
 
 html,
@@ -115,7 +115,7 @@ p {
   top: 0;
   width: var(--sidebar-width);
   height: 100%;
-  background: linear-gradient(to bottom, #c6f1f7, #53c9f7);
+  background: linear-gradient(to bottom, var(--background-light), var(--light-blue));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -802,6 +802,23 @@ p {
 
 /* Mobile sidebar toggle functionality */
 @media (max-width: 480px) {
+  .credit-lists{
+    font-size: small;
+  }
+
+  #modalTitle {
+    font-size: x-large;
+  }
+
+  #modalDescription {
+    font-size: large;
+  }
+
+  .modal-content{
+    width: 85% !important;
+    margin-top: 32px !important;
+  }
+
   .sidebar {
     transform: translateX(-100%);
   }
@@ -1169,6 +1186,30 @@ p {
   width: 100%;
   height: 100vh; 
   border-radius: 5px; 
+}
+
+.calendar-info-note {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  text-align: center;
+  z-index: 10;
+  margin-bottom: 12px;
+  text-align: justify;
+}
+
+.calendar-info-note p{
+  font-size: medium;
+  font-weight: bolder;
+}
+
+.calendar-info-note ul{
+  margin: 0 10%;
+  margin-top: 12px;
 }
 
 .mb-1 {

@@ -35,7 +35,6 @@ function initializeCalendar(eventsData) {
   var calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "dayGridMonth",
     fixedWeekCount: false,
-    // dayMaxEventRows: true,
     aspectRatio: 1.35,
     height: "auto",
     events: eventsData,
@@ -57,10 +56,13 @@ function initializeCalendar(eventsData) {
       }
     },
     eventOrder: "description",
+    eventClick: function(info) {
+      openEventModal(info.event);
+    }
   });
   calendar.render();
 
-  // fiter
+  // filter
   const categoryFilterDropdown = document.createElement("select");
   categoryFilterDropdown.id = "category-filter";
   categoryFilterDropdown.innerHTML = `
@@ -99,6 +101,7 @@ function initializeCalendar(eventsData) {
     calendar.removeAllEventSources();
     calendar.addEventSource(filteredEvents);
   });
+  
 }
 
 // Fetch events and shard events, then combine and initialize the calendar
@@ -157,7 +160,7 @@ Promise.all([
       const startMoment = moment(start).tz("America/Los_Angeles");
       const endMoment = moment(end).tz("America/Los_Angeles");
 
-      // Set the start time to 1:00 AM PDT
+      // Set the start time to 12:00 AM PDT
       startMoment.hour(24).minute(0).second(0);
 
       // Set the end time to 23:59 in LA
@@ -177,7 +180,10 @@ Promise.all([
         end: formattedEndDate,
         color: doc.data().color,
         description: doc.data().description,
+        images: doc.data().images,
+        blogUrl: doc.data().blogUrl,
         image: doc.data().image,
+        credits: doc.data().credits,
         category: doc.data().category || "Default Category",
       });
     });
@@ -456,6 +462,24 @@ function formatDate(date, format) {
     hour12: true,
   };
   return new Intl.DateTimeFormat("en-US", options).format(date);
+}
+
+function formatDate_withTZ(date, format) {
+  const options = {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "numeric",
+    hour12: true,
+  };
+  const formattedDate = new Intl.DateTimeFormat("en-US", options).format(date);
+
+  // Get GMT offset and location name
+  const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone; // Get timezone name
+
+  // Construct the final string
+  return `${formattedDate} (${timezoneName})`;
 }
 
 function updateSpirits(eventsData, month = new Date().getMonth()) {
@@ -814,9 +838,7 @@ function createNoticeElement(event, className, iconSrc, labelText, timeText) {
       <img src="${iconSrc}" alt="${className} event icon">
     </div>
     <div class="notice-text">
-      <p><strong>${labelText}</strong> " <u>${event.title}</u> " ${timeText} ${
-    event.description ? event.description : ""
-  }</p>
+      <p><strong>${labelText}</strong> <u>${event.title}</u> ${timeText}</p>
     </div>
   `;
 
@@ -968,3 +990,287 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 });
+
+
+// for event pop up
+const modalHTML = `
+<div id="eventModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <!-- Image Carousel -->
+    <div class="carousel">
+      <div class="carousel-images"></div>
+      <button class="carousel-btn prev">❮</button>
+      <button class="carousel-btn next">❯</button>
+    </div>
+
+    <div class="credits-section">
+      <span class="credits-list">Credits: </span>
+    </div>
+
+    <h2 id="modalTitle"></h2>
+    <div id="modalDates">
+      <p id="modalStart"></p>
+      <p id="modalEnd"></p>
+    </div>
+    <div id="modalDescription"></div>
+    <a id="modalCta" class="cta-btn" title="Sky Blog">
+    </a>
+  </div>
+</div>
+`;
+document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+function openEventModal(event) {
+  const modal = document.getElementById('eventModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDateStart = document.getElementById('modalStart');
+  const modalDateEnd = document.getElementById('modalEnd');
+  const modalDescription = document.getElementById('modalDescription');
+  const modalCta = document.getElementById('modalCta');
+  const carouselImagesContainer = document.querySelector('.carousel-images');
+  const creditList = document.querySelector(".credits-list");
+
+  const date = new Date();
+  const formattedStart = formatDate_withTZ(event.start, "short");
+  const formattedEnd = formatDate_withTZ(event.end, "short");
+
+  // Clear previous carousel images
+  carouselImagesContainer.innerHTML = '';
+  console.log("Event extended props:", event.extendedProps);
+
+  // Populate modal with event data
+  if (event.extendedProps.credits) {
+    creditList.textContent = "Credits: "+event.extendedProps.credits;
+  } else {
+    creditList.textContent = "Credits: We're working on gathering information for you. Check back soon!";
+  }
+  
+  const title = event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, '');
+  modalTitle.textContent = title;
+  modalDateStart.textContent = formattedStart+ " - " +formattedEnd;
+  modalDescription.innerHTML = event.extendedProps.description || 'The story behind this event is still unfolding...';
+
+  // Set CTA link
+  if (event.extendedProps.blogUrl) {
+    modalCta.target = '_blank';
+    modalCta.textContent = 'Read More';
+    modalCta.href = event.extendedProps.blogUrl;
+    modalCta.style.display = 'inline-block';
+  } else {
+    modalCta.style.display = 'none';
+  }
+
+  // Add images to carousel if available
+  if (event.extendedProps.images) {
+    // Create an array of image URLs (handle both string and array input)
+    const imageUrls = event.extendedProps.images.includes(',')
+    ? event.extendedProps.images.split(/,|\|/).map(url => url.trim())
+    : [event.extendedProps.images];
+
+    imageUrls.forEach((imageUrl, index) => {
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.alt = `${event.title} image ${index + 1}`;
+      img.className = index === 0 ? 'active' : '';
+      carouselImagesContainer.appendChild(img);
+    });
+
+    // Show carousel controls if multiple images
+    const carouselBtns = document.querySelectorAll('.carousel-btn');
+    carouselBtns.forEach(btn => {
+      btn.style.display = imageUrls.length > 1 ? 'block' : 'none';
+    });
+  } else {
+    // If no images, add a placeholder
+    const img = document.createElement('img');
+    img.src = 'https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/not%20available?updatedAt=1744181831782';
+    img.alt = 'Event placeholder image';
+    img.className = 'active';
+    carouselImagesContainer.appendChild(img);
+
+    // Hide carousel controls
+    document.querySelectorAll('.carousel-btn').forEach(btn => {
+      btn.style.display = 'none';
+    });
+  }
+
+  // Show the modal
+  modal.style.display = 'block';
+}
+
+// set up carousel navigation
+document.querySelector('.carousel-btn.prev').addEventListener('click', function() {
+  navigateCarousel(-1);
+});
+
+document.querySelector('.carousel-btn.next').addEventListener('click', function() {
+  navigateCarousel(1);
+});
+
+function navigateCarousel(direction) {
+  const images = document.querySelectorAll('.carousel-images img');
+  if (images.length <= 1) return;
+
+  let activeIndex = -1;
+  images.forEach((img, index) => {
+    if (img.classList.contains('active')) {
+      activeIndex = index;
+      img.classList.remove('active');
+    }
+  });
+
+  if (activeIndex === -1) return;
+
+  // Calculate new index with wraparound
+  let newIndex = (activeIndex + direction + images.length) % images.length;
+  images[newIndex].classList.add('active');
+}
+
+document.querySelector('.close-modal').addEventListener('click', function(event) {
+  document.getElementById('eventModal').style.display = 'none';
+});
+
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('eventModal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+const modalCSS = `
+<style>
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  overflow-y: scroll;
+}
+
+.modal-content {
+  background-color: white;
+  margin: auto;
+  padding: 20px;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 8px;
+  position: relative;
+  margin-top: 5%;
+}
+
+#modalDates {
+  margin-bottom: 10px;
+}
+
+#modalDates p{
+  font-size: 14px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.credits-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.camera-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.credits-list{
+  font-size: 12px;
+}
+
+.carousel {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.carousel-images {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.carousel-images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.carousel-images img.active {
+  display: block;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.carousel-btn.prev {
+  left: 10px;
+}
+
+.carousel-btn.next {
+  right: 10px;
+}
+
+#modalTitle {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+#modalDescription {
+  margin-bottom: 20px;
+  text-align: justify;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.cta-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color:rgb(16, 167, 236);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  z-index: 1000;
+  cursor: pointer;
+}
+</style>
+`;
+
+document.head.insertAdjacentHTML('beforeend', modalCSS);
+
+
