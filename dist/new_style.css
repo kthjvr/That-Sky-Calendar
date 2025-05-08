@@ -982,6 +982,14 @@ body {
     font-size: 14px;
   }
 
+  #modalDescription{
+    font-size: 14px;
+  }
+
+  #modalTitle{
+    font-size: 16px;
+  }
+
   .section-title {
     margin-left: 0;
     text-align: center;
