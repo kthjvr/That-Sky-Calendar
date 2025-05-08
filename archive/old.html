@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>That Sky Events - Calendar for Sky: Children of the Light</title>
+  <meta name="description" content="Your complete community-driven calendar for Sky: Children of the Light featuring upcoming events, traveling spirits, seasonal celebrations, and daily quests.">
+  <meta name="color-scheme" content="light">
+
+  <!-- Open Graph Meta Tags (for social sharing) -->
+  <meta property="og:title" content="That Sky Events Calendar">
+  <meta property="og:description" content="Stay updated with Sky: Children of the Light events, traveling spirits, and seasonal celebrations.">
+  <meta property="og:image" content="https://thatskyevents.netlify.app/assets/preview-skycotl.png">
+  <meta property="og:url" content="https://thatskyevents.netlify.app/">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="That Sky Events Calendar">
+  <meta name="twitter:description" content="Stay updated with Sky: Children of the Light events, traveling spirits, and seasonal celebrations.">
+  <meta name="twitter:image" content="https://thatskyevents.netlify.app/assets/preview-skycotl.png">
+
+  <!-- Canonical URL (especially important if you have multiple versions of pages) -->
+  <meta rel="canonical" href="https://thatskyevents.netlify.app/">
+
+  <meta name="google-site-verification" content="wE5_GjQhxEZxniT4nB-VI50OlKfUy2C_BrV6rbvkXAE" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DRC19V15XY"></script>
+  
+  <meta name="application-name" content="That Sky Events Calendar">
+  <meta name="description" content="Stay updated with Sky: Children of the Light events, traveling spirits, and seasonal celebrations.">
+  <meta name="keywords" content="Sky: Children of the Light, Sky, thatgamecompany, event calendar, seasonal events, sky cotl events, sky cotl calendar, Sky cotl game, Sky cotl guide, Sky cotl resources, Sky community, Sky events list, Sky event schedule, Sky cotl event dates, Sky cotl upcoming events, Sky cotl seasonal events, Sky cotl daily activities, Sky cotl celebrations">
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-DRC19V15XY');
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "That Sky Events",
+      "url": "https://thatskyevents.netlify.app/",
+      "description": "Community calendar for Sky: Children of the Light events",
+    }
+  </script>
+
+  <link rel="stylesheet" href="style2.css">
+  <link rel="icon" type="image/x-icon" href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705">
+
+  <!-- CALENDAR -->
+  <script defer src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+
+</head>
+
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div class="overlay">
+    <div class="loader"></div>
+  </div>
+
+  <div class="page-wrapper">
+    <!-- NAV BAR -->
+    <div class="sidebar">
+      <div class="logo">
+        <img
+          src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705"
+          alt="That Sky Events Calendar Logo - Sky: Children of the Light">
+        <!-- <span class="logo-text">Sky Events</span> -->
+      </div>
+      <div class="sidebar-items">
+        <a href="#cal" class="sidebar-item active"><img class="icon"
+            src="https://img.icons8.com/arcade/64/tear-off-calendar.png" alt="sky calendar"></a>
+        <a href="#events" class="sidebar-item"><img class="icon" src="https://img.icons8.com/arcade/64/confetti.png"
+            alt=""></a>
+        <a href="#traveling" class="sidebar-item"><img class="icon" src="https://img.icons8.com/arcade/64/sparkling.png"
+            alt="Sky traveling spirit"></a>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+
+      <!-- Banner Section -->
+      <div class="cloud" style="
+      position: relative;
+      width: 100%;
+      ">
+        <video autoplay muted loop playsinline style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1; /* Places video behind content */
+      ">
+          <source src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/sky-background.mp4?updatedAt=1744633435177"
+            type="video/mp4">
+          <!-- Optional fallback for browsers that don't support video -->
+          Your browser does not support the video tag.
+        </video>
+        <div class="banner-section">
+          <div class="banner-content">
+            <h1 class="banner-title">That Sky Events</h1>
+            <p class="banner-subtitle">Your Community Calendar for Sky: Children of the Light</p>
+            <div class="banner-description">
+              <p>Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.
+              </p>
+              <div class="banner-features">
+                <div class="feature">
+                  <img class="feature-icon" src="https://img.icons8.com/arcade/64/tear-off-calendar.png"
+                    alt="calendar icon">
+                  <span>Event Schedule</span>
+                </div>
+                <div class="feature">
+                  <img class="feature-icon" src="https://img.icons8.com/arcade/64/sparkling.png"
+                    alt="traveling spirit icon">
+                  <span>Traveling Spirits</span>
+                </div>
+                <div class="feature">
+                  <img class="feature-icon" src="https://img.icons8.com/arcade/64/confetti.png" alt="seasons icon">
+                  <span>Seasonal Events</span>
+                </div>
+              </div>
+            </div>
+            <div class="banner-cta">
+              <button class="cta-button"
+                onclick="document.getElementById('calendar').scrollIntoView({behavior: 'smooth'})">
+                View Calendar
+              </button>
+            </div>
+            <div>
+              <div class="event-notices">
+                <h2 class="event-notice-title">Heads Up!</h2>
+                <div class="event-notice upcoming">
+                  <div class="notice-icon">
+                    <img src="https://img.icons8.com/arcade/64/alarm-clock.png" alt="upcoming event icon">
+                  </div>
+                  <div class="notice-text">
+                    <p><strong>Coming Soon:</strong> The "Days of Fortune" event begins in 3 days! Get ready to collect lanterns and special cosmetics.</p>
+                  </div>
+                </div>
+                <div class="event-notice ending">
+                  <div class="notice-icon">
+                    <img src="https://img.icons8.com/?size=100&id=nAUzMOXuNH4e&format=png&color=000000" alt="ending event icon">
+                  </div>
+                  <div class="notice-text">
+                    <p><strong>Last Chance:</strong> The "Season of Belonging" event ends in 3 days. Complete your quests and collect remaining seasonal candles!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="game-container">
+                <h2>Fancy a game?</h2>
+                <p class="game-description">Challenge yourself with a round of memory game!  Click to play.</p>
+                <button id="open-game-modal">Play Game</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cloud" style="
+          position: relative;
+          width: 100%;
+          /* padding-top: 60px; */
+        ">
+        <video autoplay muted loop playsinline style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* Places video behind content */
+          ">
+          <source src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/sky-background.mp4?updatedAt=1744633435177"
+            type="video/mp4">
+          <!-- Optional fallback for browsers that don't support video -->
+          Your browser does not support the video tag.
+        </video>
+        <div class="initial-content zoom">
+          <div class="event-modal-container" id="cal">
+            <div class="calendar-info-note">
+              <p>Note: Explore more details about events by clicking on them in the calendar!</p>
+              <ul>
+                <li>This feature is currently available for events starting May 2025.</li>
+                <li>Previous months' events may have limited information.</li>
+              </ul>
+            </div>
+            <div class="news-modal">
+              <h2 class="news-modal-title">News</h2>
+            </div>
+          </div>
+
+          <div class="container">
+            <div id='calendar' class="calendar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cloud" style="
+        position: relative;
+        width: 100%;
+        /* padding-top: 60px; */
+      ">
+        <video autoplay muted loop playsinline style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          z-index: -1; /* Places video behind content */
+        ">
+          <source src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/sky-background.mp4?updatedAt=1744633435177"
+            type="video/mp4">
+          <!-- Optional fallback for browsers that don't support video -->
+          Your browser does not support the video tag.
+        </video>
+        <div class="page2-content zoom" id="events" style="z-index: 10;">
+          <div class="up-event-modal-container">
+            <div class="event-modal" id="incoming">
+              <h2 class="event-modal-title">Upcoming Events</h2>
+            </div>
+          </div>
+
+          <div class="on-event-modal-container">
+            <div class="on-event-modal" id="ongoing">
+              <h2 class="event-modal-title">Ongoing Events</h2>
+            </div>
+          </div>
+
+          <div class="sum-event-modal-container">
+            <div class="sum-event-modal" id="summary">
+              <h2 class="event-modal-title">Summary of Events</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cloud" style="
+        position: relative;
+        width: 100%;
+        /* padding-top: 150px; */
+      ">
+        <video autoplay muted loop playsinline style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          z-index: -1; /* Places video behind content */
+        ">
+          <source src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/stars-background.mp4?updatedAt=1744634070102"
+            type="video/mp4">
+          <!-- Optional fallback for browsers that don't support video -->
+          Your browser does not support the video tag.
+        </video>
+        <div class="page2-content zoom" id="traveling">
+
+          <div class="ts-event-modal-container">
+            <div class="ts-event-modal" id="spirits">
+              <h2 class="event-modal-title">Summary of TS</h2>
+            </div>
+          </div>
+
+          <div class="imageModal" id="imageModal">
+            <p>Click any events to preview the spirits.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-container">
+          <div class="footer-top">
+            <div class="footer-message">
+              <h3>Need assistance?</h3>
+              <p>I'm here to help! Contact me for any questions, requests, or website navigation issues.</p>
+            </div>
+      
+            <!-- Social Media Links -->
+            <div class="social-links">
+              <a href="https://discordapp.com/users/kx.linaa" target="_blank" class="social-icon" aria-label="Discord">
+                <img src="https://img.icons8.com/?size=100&id=LIGCjf5dKGrN&format=png&color=000000" alt="Discord icon">
+                <span class="social-name">Discord</span>
+              </a>
+              <a href="https://www.instagram.com/thatgrumpycatto/" target="_blank" class="social-icon" aria-label="Instagram">
+                <img src="https://img.icons8.com/?size=100&id=bh8L0hocH1mA&format=png&color=000000" alt="Instagram icon">
+                <span class="social-name">Instagram</span>
+              </a>
+            </div>
+          </div>
+          
+          <div class="footer-divider"></div>
+          
+          <div class="footer-bottom">
+            <p class="made-by">Made with <span class="heart">♥</span> by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank">Kathy</a> &copy; 2024 ThatSkyEvents. All rights reserved.</p>
+            <p class="disclaimer">Disclaimer: This site is a community resource for players of Sky: Children of the Light, not officially endorsed by tgc.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-modal" class="game-modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <iframe src="https://flip-a-doodle-doo.netlify.app/" title="Embedded Site" width="800" height="600"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
