@@ -68,6 +68,26 @@ function initializeCalendar(eventsData) {
   addCategoryFilter(calendar, eventsData);
 }
 
+// Google calendar integration
+function generateGoogleCalendarLink(event) {
+  const maxDescriptionLength = 300;
+  let description = event.extendedProps.description || "Join us in Sky!";
+  if (description.length > maxDescriptionLength) {
+    description = description.slice(0, maxDescriptionLength) + '...';
+  }
+  description = encodeURIComponent(description);
+
+  const title = encodeURIComponent(event.title || "Sky Event");
+  const location = encodeURIComponent("Sky: Children of the Light");
+
+  const start = new Date(event.start).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const end = new Date(event.end).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
+}
+
+
+
 // Add category filter to calendar
 function addCategoryFilter(calendar, eventsData) {
   const categoryFilterDropdown = document.createElement("select");
@@ -339,9 +359,9 @@ function updatePreviewPanel(event) {
     return;
   }
 
-  const start = new Date(event.start);
-  const end = new Date(event.end);
-  const dateRange = formatDateRange(start, end);
+  const start = formatDate_withTZ(event.start, "short");
+  const end = formatDate_withTZ(event.end, "short");
+  const dateRange = start + " - " + end;
   const title = event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
 
   // Determine badge text based on category
@@ -352,6 +372,8 @@ function updatePreviewPanel(event) {
     badgeText = "SEASON";
   } else if (badgeText.toUpperCase().includes("TRAVELLING-SPIRITS")) {
     badgeText = "TS";
+  } else if (badgeText.toUpperCase().includes("SPECIAL-EVENT")) {
+    badgeText = "SPECIAL";
   }
 
   // Create preview panel content
@@ -364,7 +386,7 @@ function updatePreviewPanel(event) {
     <div class="credits-section">
       <span class="credits-list">Credits: ${event.credits || "Kathy"}</span>
     </div>
-    <div class="days-badge">${badgeText}</div>
+    <div class="days-badge">${badgeText.toUpperCase()}</div>
     <h2>${title}</h2>
     <p class="date">${dateRange}</p>
     <p class="description">${event.description || "No description available"}</p>
@@ -467,27 +489,21 @@ function fetchEvents() {
     .then(([eventsSnapshot]) => {
       allEvents = [];
 
-      // Process events from the 'events' collection
+      const userTimezone = moment.tz.guess();
+
       eventsSnapshot.docs.forEach(doc => {
-        const start = new Date(doc.data().start);
-        const end = new Date(doc.data().end);
+        const startRaw = doc.data().start;
+        const endRaw = doc.data().end;
 
-        // Get the user's timezone
-        const userTimezone = moment.tz.guess();
+        // Create moment objects in America/Los_Angeles timezone
+        let startMomentLA = moment.tz(startRaw, "America/Los_Angeles").startOf('day');
+        let endMomentLA = moment.tz(doc.data().end, "YYYY-MM-DD", "America/Los_Angeles").endOf('day');
 
-        // Convert times to moment objects (already in LA time)
-        const startMoment = moment(start).tz("America/Los_Angeles");
-        const endMoment = moment(end).tz("America/Los_Angeles");
+        // Convert to user's local timezone for display or storage
+        const startLocalTime = startMomentLA.clone().tz(userTimezone);
+        const endLocalTime = endMomentLA.clone().tz(userTimezone);
 
-        // Set the times properly
-        startMoment.hour(24).minute(0).second(0);
-        endMoment.hour(23).minute(59).second(59);
-
-        // Convert to user's timezone
-        const startLocalTime = startMoment.clone().tz(userTimezone);
-        const endLocalTime = endMoment.clone().tz(userTimezone);
-
-        // Create a unique ID for the event
+        // Create event object
         const eventId = doc.id || generateEventId(doc.data().title);
 
         allEvents.push({
@@ -515,6 +531,7 @@ function fetchEvents() {
       document.getElementById("upcoming-content").innerHTML = errorMessage;
     });
 }
+
 
 // Process events after fetching
 function processEvents() {
@@ -637,6 +654,20 @@ function displayEventsOverview(eventsToDisplay, container) {
       }
     }, 0);
 
+    eventModalCard.addEventListener("click", function () {
+      openEventModal({
+        title: event.title,
+        start: new Date(event.start),
+        end: new Date(event.end),
+        extendedProps: {
+          credits: event.credits,
+          description: event.description,
+          blogUrl: event.blogUrl,
+          images: event.images
+        }
+      });
+    });
+
     eventContent.appendChild(eventDates);
     eventModalCard.appendChild(eventContent);
     container.appendChild(eventModalCard);
@@ -653,7 +684,10 @@ function formatBadgeText(category) {
   } else if (badgeText.toUpperCase().includes("TRAVELLING-SPIRITS")) {
     return "TS";
   }
-  return badgeText;
+  else if (badgeText.toUpperCase().includes("SPECIAL-EVENT")) {
+    return "SPECIAL";
+  }
+  return badgeText.toUpperCase();
 }
 
 // Calculate time until a target time
@@ -699,6 +733,7 @@ function openEventModal(event) {
   const modalDateEnd = document.getElementById("modalEnd");
   const modalDescription = document.getElementById("modalDescription");
   const modalCta = document.getElementById("modalCta");
+  const modalGoogleCalendar = document.getElementById("modalGoogleCalendar");
   const carouselImagesContainer = document.querySelector(".carousel-images");
   const creditList = document.querySelector(".credits-list");
 
@@ -721,6 +756,13 @@ function openEventModal(event) {
   modalDateStart.textContent = formattedStart + " - " + formattedEnd;
   modalDescription.innerHTML = event.extendedProps.description || 
     "The story behind this event is still unfolding...";
+
+  const calendarLink = generateGoogleCalendarLink(event);
+  modalGoogleCalendar.href = calendarLink;
+  modalGoogleCalendar.target = "_blank";
+  modalGoogleCalendar.rel = "noopener noreferrer";
+  modalGoogleCalendar.textContent = "Add to Google Calendar";
+  modalGoogleCalendar.classList.add("calendar-link-btn");
 
   // Set CTA link if available
   if (event.extendedProps.blogUrl) {
@@ -932,35 +974,24 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
   .then(([eventsSnapshot]) => {
     const events = [];
 
-    // Process events from the 'events' collection
+    const moment = require("moment");
+    require("moment-timezone");
+
+    // Get the user's timezone once
+    const userTimezone = moment.tz.guess();
+
     eventsSnapshot.docs.forEach((doc) => {
-      const start = new Date(doc.data().start);
-      const end = new Date(doc.data().end);
+      // Dates stored as plain strings like "2025-06-09"
+      const startRaw = doc.data().start;
+      const endRaw = doc.data().end;
 
-      const moment = require("moment");
-      require("moment-timezone");
+      // Interpret raw dates as LA time and set to full day range
+      const startMomentLA = moment.tz(startRaw, "YYYY-MM-DD", "America/Los_Angeles").startOf("day");
+      const endMomentLA = moment.tz(endRaw, "YYYY-MM-DD", "America/Los_Angeles").endOf("day");
 
-      // Get the user's timezone
-      const userTimezone = moment.tz.guess();
-      // console.log("User's Timezone:", userTimezone);
-
-      // Convert start and end times to moment objects (already in LA time)
-      const startMoment = moment(start).tz("America/Los_Angeles");
-      const endMoment = moment(end).tz("America/Los_Angeles");
-
-      // Set the start time to 12:00 AM PDT
-      startMoment.hour(24).minute(0).second(0);
-
-      // Set the end time to 23:59 in LA
-      endMoment.hour(23).minute(59).second(59);
-
-      // Convert the LA times to the user's timezone``
-      const startLocalTime = startMoment.clone().tz(userTimezone);
-      const endLocalTime = endMoment.clone().tz(userTimezone);
-
-      // Convert back to Date objects
-      const formattedStartDate = startLocalTime.toDate();
-      const formattedEndDate = endLocalTime.toDate();
+      // Convert to user's local timezone
+      const startLocalTime = startMomentLA.clone().tz(userTimezone);
+      const endLocalTime = endMomentLA.clone().tz(userTimezone);
 
       // Create a unique ID for the event
       const eventId = doc.id || generateEventId(doc.data().title);
@@ -968,8 +999,8 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
       events.push({
         id: eventId,
         title: doc.data().title,
-        start: formattedStartDate,
-        end: formattedEndDate,
+        start: startLocalTime.toDate(),
+        end: endLocalTime.toDate(),
         color: doc.data().color,
         description: doc.data().description,
         images: doc.data().images,
@@ -980,11 +1011,10 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
       });
     });
 
-    // Initialize FullCalendar with the combined events
+    // Initialize FullCalendar with the processed events
     initializeCalendar(events);
     displayEventNotices(events);
     showQuickOverview(events);
-
   })
   .catch((error) => {
     console.error("Error getting documents: ", error);
@@ -997,8 +1027,8 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
       document.querySelector(".overlay").style.opacity = 0;
       setTimeout(function () {
         document.querySelector(".overlay").style.display = "none";
-      }, 500);
-    }, 500);
+      }, 2500);
+    }, 2500);
   
     var modal = document.getElementById("game-modal");
     var btn = document.getElementById("open-game-modal");
@@ -1088,8 +1118,14 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         <p id="modalEnd"></p>
       </div>
       <div id="modalDescription"></div>
-      <a id="modalCta" class="cta-btn" title="Sky Blog">
-      </a>
+      <div class="modal-cta-container">
+        <a id="modalGoogleCalendar" class="cta-btn calendar-link-btn" title="Add to Google Calendar">
+          Add to Google Calendar
+        </a>
+        <a id="modalCta" class="cta-btn" title="Sky Blog">
+          Sky Blog
+        </a>
+      </div>
     </div>
     </div>`;
     document.body.insertAdjacentHTML("beforeend", modalHTML);
@@ -1245,9 +1281,34 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         width: 100%;
         text-align: center;
       }
+
+      .cta-btn:hover {
+        background: #3367d6;
+      }
+
+      .modal-cta-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .modal-cta-container .cta-btn {
+        flex: 1;
+        width: auto;
+        text-align: center;
+        padding: 10px 0;
+      }
+
+      .calendar-link-btn {
+        background: #4285F4;
+      }
+
+      .calendar-link-btn:hover {
+        background: #3367d6;
+      }
+
       </style>
     `;
 
     document.head.insertAdjacentHTML("beforeend", modalCSS);
 });
-  

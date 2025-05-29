@@ -270,6 +270,7 @@ body {
   overflow: hidden;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
 }
 
 .event-card-overview:hover {
@@ -363,7 +364,7 @@ body {
 }
 
 .fc .fc-button-primary {
-  background-color: var(--primary-color);
+  background-color: var(--secondary-color);
   border-color: var(--primary-color);
   margin: 1px;
 }
@@ -416,7 +417,7 @@ body {
 }
 
 #category-filter {
-  background-color: var(--primary-color);
+  background-color: var(--secondary-color);
   border-color: var(--primary-color);
   color: var(--light-text);
   border-bottom-left-radius: 0px;
@@ -645,6 +646,7 @@ body {
 .days-badge {
   display: inline-block;
   margin-top: 10px;
+  margin-bottom: 10px;
   background-color: var(--secondary-color);
   color: white;
   font-size: 0.7rem;
@@ -988,6 +990,10 @@ body {
 
   #modalTitle{
     font-size: 16px;
+  }
+
+  .cta-btn{
+    font-size: 14px;
   }
 
   .section-title {
