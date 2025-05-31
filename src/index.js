@@ -41,31 +41,44 @@ function initializeCalendar(eventsData) {
     aspectRatio: 1.35,
     height: "auto",
     events: eventsData,
+
+    // Enhanced event display with time
     eventContent: function (info) {
       const iconPath = info.event.extendedProps.icon;
       if (iconPath) {
         return {
           html: `
             <div class="event-icon-container">
-              <img src="${iconPath}" class="event-icon" alt="sky: cotl, shards" />
+              <img src="${iconPath}" class="event-icon" alt="event icon" />
             </div>
           `,
         };
       } else {
         return {
-          html: `<span class="fc-event-title">${info.event.title}</span>`,
+          html: `
+            <div class="event-content">
+              <span class="fc-event-title">${info.event.title}</span>
+            </div>
+          `,
         };
       }
     },
-    eventOrder: "description",
+
+    eventOrder: "start",
     eventClick: function (info) {
       openEventModal(info.event);
     },
-  });
-  calendar.render();
 
-  // Add category filter dropdown
+    // Show different views based on your needs
+    headerToolbar: {
+      right: 'prev,next today',
+    }
+  });
+
+  calendar.render();
   addCategoryFilter(calendar, eventsData);
+  console.log(eventsData);
+  
 }
 
 // Google calendar integration
@@ -95,6 +108,7 @@ function addCategoryFilter(calendar, eventsData) {
   categoryFilterDropdown.title = "category-filter";
   categoryFilterDropdown.innerHTML = `
     <option value="">All Categories</option>
+    <option value="special-event">Special Events</option>
     <option value="shard">Shard</option>
     <option value="days-of-events">Days of Events</option>
     <option value="travelling-spirits">Travelling Spirits</option>
@@ -413,11 +427,24 @@ function populatePreviewCarousel(event) {
         : [event.images];
 
     imageUrls.forEach((imageUrl, index) => {
+      const imgContainer = document.createElement("div");
+      imgContainer.className = "image-container";
+      
       const img = document.createElement("img");
       img.src = imageUrl;
       img.alt = `${event.title} image ${index + 1}`;
       img.className = index === 0 ? "active" : "";
-      carouselImagesContainer.appendChild(img);
+      
+      // Add zoom button
+      const zoomBtn = document.createElement("button");
+      zoomBtn.className = "zoom-btn";
+      zoomBtn.innerHTML = "🔍"; // You can use an icon instead
+      zoomBtn.title = "Enlarge image";
+      zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
+      
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(zoomBtn);
+      carouselImagesContainer.appendChild(imgContainer);
     });
 
     // Show/hide carousel controls based on image count
@@ -427,11 +454,23 @@ function populatePreviewCarousel(event) {
     });
   } else {
     // Add placeholder image if no images provided
+    const imgContainer = document.createElement("div");
+    imgContainer.className = "image-container";
+    
     const img = document.createElement("img");
     img.src = "https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/not%20available?updatedAt=1744181831782";
     img.alt = "Event placeholder image";
     img.className = "active";
-    carouselImagesContainer.appendChild(img);
+    
+    const zoomBtn = document.createElement("button");
+    zoomBtn.className = "zoom-btn";
+    zoomBtn.innerHTML = "🔍";
+    zoomBtn.title = "Enlarge image";
+    zoomBtn.onclick = () => openImageZoom(img.src, img.alt);
+    
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(zoomBtn);
+    carouselImagesContainer.appendChild(imgContainer);
 
     // Hide carousel controls
     document.querySelectorAll(".carousel-btn-panel").forEach(btn => {
@@ -439,14 +478,14 @@ function populatePreviewCarousel(event) {
     });
   }
 }
-
 // Navigate carousel in the preview panel
 function navigateCarouselPanel(direction) {
-  const images = document.querySelectorAll(".carousel-images-panel img");
-  if (images.length <= 1) return;
+  const imageContainers = document.querySelectorAll(".carousel-images-panel .image-container");
+  if (imageContainers.length <= 1) return;
 
   let activeIndex = -1;
-  images.forEach((img, index) => {
+  imageContainers.forEach((container, index) => {
+    const img = container.querySelector("img");
     if (img.classList.contains("active")) {
       activeIndex = index;
       img.classList.remove("active");
@@ -456,8 +495,71 @@ function navigateCarouselPanel(direction) {
   if (activeIndex === -1) return;
 
   // Calculate new index with wraparound
-  let newIndex = (activeIndex + direction + images.length) % images.length;
-  images[newIndex].classList.add("active");
+  let newIndex = (activeIndex + direction + imageContainers.length) % imageContainers.length;
+  const newImg = imageContainers[newIndex].querySelector("img");
+  newImg.classList.add("active");
+}
+
+// Open image in zoom overlay
+function openImageZoom(imageSrc, imageAlt) {
+  // Create zoom overlay if it doesn't exist
+  let zoomOverlay = document.getElementById("imageZoomOverlay");
+  if (!zoomOverlay) {
+    zoomOverlay = createZoomOverlay();
+  }
+  
+  const zoomImg = zoomOverlay.querySelector(".zoom-image");
+  zoomImg.src = imageSrc;
+  zoomImg.alt = imageAlt;
+  
+  // Show overlay
+  zoomOverlay.style.display = "flex";
+  document.body.style.overflow = "hidden"; // Prevent background scrolling
+}
+
+// Create zoom overlay element
+function createZoomOverlay() {
+  const overlay = document.createElement("div");
+  overlay.id = "imageZoomOverlay";
+  overlay.className = "image-zoom-overlay";
+  
+  overlay.innerHTML = `
+    <div class="zoom-container">
+      <button class="zoom-close-btn">&times;</button>
+      <img class="zoom-image" src="" alt="" />
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  // Add event listeners
+  const closeBtn = overlay.querySelector(".zoom-close-btn");
+  closeBtn.onclick = closeImageZoom;
+  
+  // Close on overlay click (but not on image click)
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      closeImageZoom();
+    }
+  };
+  
+  // Close on ESC key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.style.display === "flex") {
+      closeImageZoom();
+    }
+  });
+  
+  return overlay;
+}
+
+// Close image zoom
+function closeImageZoom() {
+  const zoomOverlay = document.getElementById("imageZoomOverlay");
+  if (zoomOverlay) {
+    zoomOverlay.style.display = "none";
+    document.body.style.overflow = "";
+  }
 }
 
 // Add event listeners to event cards
@@ -494,16 +596,26 @@ function fetchEvents() {
       eventsSnapshot.docs.forEach(doc => {
         const startRaw = doc.data().start;
         const endRaw = doc.data().end;
+        const startTime = doc.data().startTime;
 
-        // Create moment objects in America/Los_Angeles timezone
-        let startMomentLA = moment.tz(startRaw, "America/Los_Angeles").startOf('day');
-        let endMomentLA = moment.tz(doc.data().end, "YYYY-MM-DD", "America/Los_Angeles").endOf('day');
+        let startMomentLA, endMomentLA;
 
-        // Convert to user's local timezone for display or storage
+        if (startTime) {
+          startMomentLA = moment.tz(`${startRaw} ${startTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
+          const endTime = doc.data().endTime;
+          if (endTime) {
+            endMomentLA = moment.tz(`${endRaw} ${endTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
+          } else {
+            endMomentLA = startMomentLA.clone().add(1, 'hour');
+          }
+        } else {
+          // No time specified - all day event
+          startMomentLA = moment.tz(startRaw, "America/Los_Angeles").startOf('day');
+          endMomentLA = moment.tz(endRaw, "YYYY-MM-DD", "America/Los_Angeles").endOf('day');
+        }
         const startLocalTime = startMomentLA.clone().tz(userTimezone);
         const endLocalTime = endMomentLA.clone().tz(userTimezone);
 
-        // Create event object
         const eventId = doc.id || generateEventId(doc.data().title);
 
         allEvents.push({
@@ -511,6 +623,7 @@ function fetchEvents() {
           title: doc.data().title,
           start: startLocalTime.toDate(),
           end: endLocalTime.toDate(),
+          allDay: startTime,
           color: doc.data().color,
           description: doc.data().description,
           images: doc.data().images,
@@ -531,7 +644,6 @@ function fetchEvents() {
       document.getElementById("upcoming-content").innerHTML = errorMessage;
     });
 }
-
 
 // Process events after fetching
 function processEvents() {
@@ -725,20 +837,20 @@ function updateCountdown(elementId, targetDate, label) {
   }, 1000);
 }
 
-// Open event modal with detailed information
 function openEventModal(event) {
   const modal = document.getElementById("eventModal");
   const modalTitle = document.getElementById("modalTitle");
   const modalDateStart = document.getElementById("modalStart");
-  const modalDateEnd = document.getElementById("modalEnd");
   const modalDescription = document.getElementById("modalDescription");
   const modalCta = document.getElementById("modalCta");
   const modalGoogleCalendar = document.getElementById("modalGoogleCalendar");
   const carouselImagesContainer = document.querySelector(".carousel-images");
   const creditList = document.querySelector(".credits-list");
 
-  const formattedStart = formatDate_withTZ(event.start, "short");
-  const formattedEnd = formatDate_withTZ(event.end, "short");
+  let formattedStart, formattedEnd;
+
+  formattedStart = formatDate_withTZ(event.start);
+  formattedEnd = formatDate_withTZ(event.end);
 
   // Clear previous carousel images
   carouselImagesContainer.innerHTML = "";
@@ -750,10 +862,11 @@ function openEventModal(event) {
 
   // Clean title from emojis
   const title = event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
-  
+
   // Populate modal data
   modalTitle.textContent = title;
   modalDateStart.textContent = formattedStart + " - " + formattedEnd;
+
   modalDescription.innerHTML = event.extendedProps.description || 
     "The story behind this event is still unfolding...";
 
@@ -792,11 +905,24 @@ function populateModalCarousel(event) {
       : [event.extendedProps.images];
 
     imageUrls.forEach((imageUrl, index) => {
+      const imgContainer = document.createElement("div");
+      imgContainer.className = "image-container";
+      
       const img = document.createElement("img");
       img.src = imageUrl;
       img.alt = `${event.title} image ${index + 1}`;
       img.className = index === 0 ? "active" : "";
-      carouselImagesContainer.appendChild(img);
+      
+      // Add zoom button
+      const zoomBtn = document.createElement("button");
+      zoomBtn.className = "zoom-btn";
+      zoomBtn.innerHTML = "🔍"; // You can use an icon instead
+      zoomBtn.title = "Enlarge image";
+      zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
+      
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(zoomBtn);
+      carouselImagesContainer.appendChild(imgContainer);
     });
 
     // Show/hide carousel controls
@@ -806,11 +932,23 @@ function populateModalCarousel(event) {
     });
   } else {
     // Add placeholder image
+    const imgContainer = document.createElement("div");
+    imgContainer.className = "image-container";
+    
     const img = document.createElement("img");
     img.src = "https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/not%20available?updatedAt=1744181831782";
     img.alt = "Event placeholder image";
     img.className = "active";
-    carouselImagesContainer.appendChild(img);
+    
+    const zoomBtn = document.createElement("button");
+    zoomBtn.className = "zoom-btn";
+    zoomBtn.innerHTML = "🔍";
+    zoomBtn.title = "Enlarge image";
+    zoomBtn.onclick = () => openImageZoom(img.src, img.alt);
+    
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(zoomBtn);
+    carouselImagesContainer.appendChild(imgContainer);
 
     // Hide carousel controls
     document.querySelectorAll(".carousel-btn").forEach(btn => {
@@ -822,17 +960,17 @@ function populateModalCarousel(event) {
 // Format date with timezone
 function formatDate_withTZ(date, format) {
   const options = {
-    month: "short",
+    month: "long",
     day: "numeric",
     year: "numeric",
     hour: "2-digit",
-    minute: "numeric",
+    minute: "2-digit",
     hour12: true,
   };
   const formattedDate = new Intl.DateTimeFormat("en-US", options).format(date);
   const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  return `${formattedDate} (${timezoneName})`;
+  return `${formattedDate}`;
 }
 
 // Navigate carousel in the modal
@@ -981,19 +1119,28 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
     const userTimezone = moment.tz.guess();
 
     eventsSnapshot.docs.forEach((doc) => {
-      // Dates stored as plain strings like "2025-06-09"
       const startRaw = doc.data().start;
       const endRaw = doc.data().end;
+      const startTime = doc.data().startTime;
 
-      // Interpret raw dates as LA time and set to full day range
-      const startMomentLA = moment.tz(startRaw, "YYYY-MM-DD", "America/Los_Angeles").startOf("day");
-      const endMomentLA = moment.tz(endRaw, "YYYY-MM-DD", "America/Los_Angeles").endOf("day");
+      let startMomentLA, endMomentLA;
 
-      // Convert to user's local timezone
+      if (startTime) {
+        startMomentLA = moment.tz(`${startRaw} ${startTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
+        const endTime = doc.data().endTime;
+        if (endTime) {
+          endMomentLA = moment.tz(`${endRaw} ${endTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
+        } else {
+          endMomentLA = startMomentLA.clone().add(1, 'hour');
+        }
+      } else {
+        // No time specified - all day event (your current logic)
+        startMomentLA = moment.tz(startRaw, "America/Los_Angeles").startOf('day');
+        endMomentLA = moment.tz(endRaw, "YYYY-MM-DD", "America/Los_Angeles").endOf('day');
+      }
       const startLocalTime = startMomentLA.clone().tz(userTimezone);
       const endLocalTime = endMomentLA.clone().tz(userTimezone);
 
-      // Create a unique ID for the event
       const eventId = doc.id || generateEventId(doc.data().title);
 
       events.push({
@@ -1001,6 +1148,7 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         title: doc.data().title,
         start: startLocalTime.toDate(),
         end: endLocalTime.toDate(),
+        allDay: startTime,
         color: doc.data().color,
         description: doc.data().description,
         images: doc.data().images,
