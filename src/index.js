@@ -99,6 +99,23 @@ function generateGoogleCalendarLink(event) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
 }
 
+function generateGoogleCalendarLink_previewPanel(event) {
+  const maxDescriptionLength = 300;
+  let description = event.description || "Join us in Sky!";
+  if (description.length > maxDescriptionLength) {
+    description = description.slice(0, maxDescriptionLength) + '...';
+  }
+  description = encodeURIComponent(description);
+
+  const title = encodeURIComponent(event.title || "Sky Event");
+  const location = encodeURIComponent("Sky: Children of the Light");
+
+  const start = new Date(event.start).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const end = new Date(event.end).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
+}
+
 
 
 // Add category filter to calendar
@@ -390,6 +407,14 @@ function updatePreviewPanel(event) {
     badgeText = "SPECIAL";
   }
 
+  const calendarLink = generateGoogleCalendarLink_previewPanel(event);
+
+  // Generate CTA button
+  const ctaButtonHTML = event.blogUrl ?
+    `<a id="modalCta" class="cta-btn" title="Sky Blog" href="${event.blogUrl}" target="_blank" rel="noopener noreferrer">
+      Read More
+    </a>` : '';
+
   // Create preview panel content
   previewPanel.innerHTML = `
     <div class="carousel">
@@ -404,6 +429,12 @@ function updatePreviewPanel(event) {
     <h2>${title}</h2>
     <p class="date">${dateRange}</p>
     <p class="description">${event.description || "No description available"}</p>
+    <div class="modal-cta-container">
+      <a id="modalGoogleCalendar" class="cta-btn calendar-link-btn" title="Add to Google Calendar" href="${calendarLink}" rel="noopener noreferrer" target="_blank">
+        Add to Google Calendar
+      </a>
+      ${ctaButtonHTML}
+    </div>
   `;
 
   // Populate carousel with images
@@ -438,10 +469,10 @@ function populatePreviewCarousel(event) {
       // Add zoom button
       const zoomBtn = document.createElement("button");
       zoomBtn.className = "zoom-btn";
-      zoomBtn.innerHTML = "🔍"; // You can use an icon instead
+      zoomBtn.innerHTML = "⛶";
       zoomBtn.title = "Enlarge image";
       zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
-      
+
       imgContainer.appendChild(img);
       imgContainer.appendChild(zoomBtn);
       carouselImagesContainer.appendChild(imgContainer);
@@ -464,10 +495,10 @@ function populatePreviewCarousel(event) {
     
     const zoomBtn = document.createElement("button");
     zoomBtn.className = "zoom-btn";
-    zoomBtn.innerHTML = "🔍";
+    zoomBtn.innerHTML = "⛶";
     zoomBtn.title = "Enlarge image";
-    zoomBtn.onclick = () => openImageZoom(img.src, img.alt);
-    
+    zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
+
     imgContainer.appendChild(img);
     imgContainer.appendChild(zoomBtn);
     carouselImagesContainer.appendChild(imgContainer);
@@ -478,6 +509,7 @@ function populatePreviewCarousel(event) {
     });
   }
 }
+
 // Navigate carousel in the preview panel
 function navigateCarouselPanel(direction) {
   const imageContainers = document.querySelectorAll(".carousel-images-panel .image-container");
@@ -502,19 +534,30 @@ function navigateCarouselPanel(direction) {
 
 // Open image in zoom overlay
 function openImageZoom(imageSrc, imageAlt) {
-  // Create zoom overlay if it doesn't exist
   let zoomOverlay = document.getElementById("imageZoomOverlay");
   if (!zoomOverlay) {
     zoomOverlay = createZoomOverlay();
   }
   
   const zoomImg = zoomOverlay.querySelector(".zoom-image");
+  const zoomContainer = zoomOverlay.querySelector(".zoom-image-container");
+  
   zoomImg.src = imageSrc;
   zoomImg.alt = imageAlt;
   
+  // Reset zoom and position
+  resetImageZoom(zoomContainer, zoomImg);
+  
   // Show overlay
   zoomOverlay.style.display = "flex";
-  document.body.style.overflow = "hidden"; // Prevent background scrolling
+  document.body.style.overflow = "hidden";
+  
+  // Initialize zoom controls after image loads
+  zoomImg.onload = () => {
+    initializeZoomControls(zoomContainer, zoomImg);
+    // Start with image fitted to container (original size)
+    fitImageToContainer(zoomContainer, zoomImg);
+  };
 }
 
 // Create zoom overlay element
@@ -525,18 +568,212 @@ function createZoomOverlay() {
   
   overlay.innerHTML = `
     <div class="zoom-container">
-      <button class="zoom-close-btn">&times;</button>
-      <img class="zoom-image" src="" alt="" />
+      <div class="zoom-header">
+        <div class="zoom-controls">
+          <button class="zoom-btn-control" id="zoomOut">−</button>
+          <span class="zoom-level">100%</span>
+          <button class="zoom-btn-control" id="zoomIn">+</button>
+          <button class="zoom-btn-control" id="resetZoom">Reset</button>
+        </div>
+        <button class="zoom-close-btn">&times;</button>
+      </div>
+      <div class="zoom-instructions">
+        Use mouse wheel to zoom • Click and drag to pan • Pinch to zoom on mobile
+      </div>
+      <div class="zoom-image-container">
+        <img class="zoom-image" src="" alt="" />
+      </div>
     </div>
   `;
   
   document.body.appendChild(overlay);
   
+  // Add CSS styles
+  addZoomStyles();
+  
   // Add event listeners
+  setupZoomEventListeners(overlay);
+  
+  return overlay;
+}
+
+// Add CSS styles for the zoom overlay
+function addZoomStyles() {
+  if (document.getElementById('zoomStyles')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'zoomStyles';
+  style.textContent = `
+    .image-zoom-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .zoom-container {
+      width: 95%;
+      height: 95%;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .zoom-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #2a2a2a;
+      border-bottom: 1px solid #444;
+    }
+    
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .zoom-btn-control {
+      background: #4a4a4a;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      min-width: 40px;
+      transition: background 0.2s;
+    }
+    
+    .zoom-btn-control:hover {
+      background: #5a5a5a;
+    }
+    
+    .zoom-level {
+      color: white;
+      font-weight: bold;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    .zoom-close-btn {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    .zoom-close-btn:hover {
+      background: #ff6666;
+    }
+    
+    .zoom-image-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .zoom-image-container:active {
+      cursor: grabbing;
+    }
+    
+    .zoom-image {
+      max-width: 100%;
+      max-height: 100%;
+      transition: transform 0.1s ease-out;
+      user-select: none;
+      -webkit-user-drag: none;
+      object-fit: contain;
+    }
+    
+    /* Zoom button styles */
+    .zoom-btn {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+    
+    .zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+      transform: scale(1.1);
+    }
+    
+    .zoom-instructions {
+      padding: 10px 20px;
+      background: #2a2a2a;
+      color: #ccc;
+      text-align: center;
+      font-size: 14px;
+      border-top: 1px solid #444;
+    }
+    
+    @media (max-width: 768px) {
+      .zoom-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+      }
+      
+      .zoom-controls {
+        gap: 5px;
+      }
+      
+      .zoom-btn-control {
+        padding: 6px 10px;
+        font-size: 14px;
+        min-width: 35px;
+      }
+      
+      .zoom-instructions {
+        font-size: 12px;
+        padding: 8px 15px;
+      }
+    }
+  `;
+  
+  document.head.appendChild(style);
+}
+
+// Setup event listeners for zoom functionality
+function setupZoomEventListeners(overlay) {
   const closeBtn = overlay.querySelector(".zoom-close-btn");
   closeBtn.onclick = closeImageZoom;
   
-  // Close on overlay click (but not on image click)
+  // Close on overlay click
   overlay.onclick = (e) => {
     if (e.target === overlay) {
       closeImageZoom();
@@ -549,8 +786,177 @@ function createZoomOverlay() {
       closeImageZoom();
     }
   });
+}
+
+// Initialize zoom controls for an image
+function initializeZoomControls(container, img) {
+  let scale = 1;
+  let translateX = 0;
+  let translateY = 0;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
   
-  return overlay;
+  document.getElementById('zoomIn').onclick = () => {
+    scale = Math.min(scale * 1.2, 5); // Max 5x zoom
+    updateImageTransform();
+    updateZoomInfo(scale);
+  };
+  
+  document.getElementById('zoomOut').onclick = () => {
+    scale = Math.max(scale / 1.2, 0.1); // Min 0.1x zoom
+    updateImageTransform();
+    updateZoomInfo(scale);
+  };
+  
+  document.getElementById('resetZoom').onclick = () => {
+    fitImageToContainer(container, img);
+  };
+  
+  // Mouse wheel zoom
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.min(Math.max(scale * delta, 0.1), 5);
+    
+    // Zoom towards mouse position
+    const scaleDiff = newScale - scale;
+    translateX -= (mouseX - translateX) * scaleDiff / scale;
+    translateY -= (mouseY - translateY) * scaleDiff / scale;
+    
+    scale = newScale;
+    updateImageTransform();
+    updateZoomInfo(scale);
+  });
+  
+  // Mouse drag to pan
+  container.addEventListener('mousedown', startDrag);
+  container.addEventListener('mousemove', drag);
+  container.addEventListener('mouseup', endDrag);
+  container.addEventListener('mouseleave', endDrag);
+  
+  // Touch events for mobile
+  container.addEventListener('touchstart', handleTouchStart, { passive: false });
+  container.addEventListener('touchmove', handleTouchMove, { passive: false });
+  container.addEventListener('touchend', handleTouchEnd);
+  
+  let lastTouchDistance = 0;
+  
+  function startDrag(e) {
+    isDragging = true;
+    startX = e.clientX - translateX;
+    startY = e.clientY - translateY;
+    container.style.cursor = 'grabbing';
+  }
+  
+  function drag(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    translateX = e.clientX - startX;
+    translateY = e.clientY - startY;
+    updateImageTransform();
+  }
+  
+  function endDrag() {
+    isDragging = false;
+    container.style.cursor = 'grab';
+  }
+  
+  function handleTouchStart(e) {
+    if (e.touches.length === 2) {
+      lastTouchDistance = getTouchDistance(e.touches);
+    } else if (e.touches.length === 1) {
+      startDrag({
+        clientX: e.touches[0].clientX,
+        clientY: e.touches[0].clientY
+      });
+    }
+  }
+  
+  function handleTouchMove(e) {
+    e.preventDefault();
+    
+    if (e.touches.length === 2) {
+      // Pinch to zoom
+      const currentDistance = getTouchDistance(e.touches);
+      if (lastTouchDistance > 0) {
+        const scaleChange = currentDistance / lastTouchDistance;
+        scale = Math.min(Math.max(scale * scaleChange, 0.1), 5);
+        updateImageTransform();
+        updateZoomInfo(scale);
+      }
+      lastTouchDistance = currentDistance;
+    } else if (e.touches.length === 1 && isDragging) {
+      // Single finger drag
+      drag({
+        clientX: e.touches[0].clientX,
+        clientY: e.touches[0].clientY,
+        preventDefault: () => {}
+      });
+    }
+  }
+  
+  function handleTouchEnd() {
+    endDrag();
+    lastTouchDistance = 0;
+  }
+  
+  function getTouchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  
+  function updateImageTransform() {
+    img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+  }
+  
+  // Store functions for reset
+  container._resetZoom = () => {
+    fitImageToContainer(container, img);
+  };
+  
+  container._updateScale = (newScale) => {
+    scale = newScale;
+  };
+}
+
+// Fit image to original size
+function fitImageToContainer(container, img) {
+  const containerRect = container.getBoundingClientRect();
+  const imgRect = img.getBoundingClientRect();
+  
+  // Calculate scale to fit image in container
+  const scaleX = img.naturalWidth;
+  const scaleY = img.naturalHeight;
+  const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond original size
+  
+  // Reset position and apply scale
+  img.style.transform = `translate(0px, 0px) scale(${scale})`;
+  
+  // Update internal scale tracking
+  if (container._updateScale) {
+    container._updateScale(scale);
+  }
+  
+  updateZoomInfo(scale);
+}
+
+// Reset image zoom to fit container
+function resetImageZoom(container, img) {
+  fitImageToContainer(container, img);
+}
+
+// Update zoom percentage display
+function updateZoomInfo(scale) {
+  const zoomLevel = document.querySelector('.zoom-level');
+  if (zoomLevel) {
+    zoomLevel.textContent = Math.round(scale * 100) + '%';
+  }
 }
 
 // Close image zoom
@@ -580,6 +986,8 @@ function addEventListenersToCards() {
       
       if (event) {
         updatePreviewPanel(event);
+        console.log(event);
+        
       }
     });
   });
@@ -856,7 +1264,7 @@ function openEventModal(event) {
   carouselImagesContainer.innerHTML = "";
 
   // Populate credits
-  creditList.textContent = event.extendedProps.credits 
+  creditList.textContent = event.extendedProps.credits
     ? "Credits: " + event.extendedProps.credits
     : "Credits: We're working on gathering information for you. Check back soon!";
 
@@ -916,10 +1324,10 @@ function populateModalCarousel(event) {
       // Add zoom button
       const zoomBtn = document.createElement("button");
       zoomBtn.className = "zoom-btn";
-      zoomBtn.innerHTML = "🔍"; // You can use an icon instead
+      zoomBtn.innerHTML = "⛶";
       zoomBtn.title = "Enlarge image";
       zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
-      
+
       imgContainer.appendChild(img);
       imgContainer.appendChild(zoomBtn);
       carouselImagesContainer.appendChild(imgContainer);
@@ -942,10 +1350,10 @@ function populateModalCarousel(event) {
     
     const zoomBtn = document.createElement("button");
     zoomBtn.className = "zoom-btn";
-    zoomBtn.innerHTML = "🔍";
+    zoomBtn.innerHTML = "⛶";
     zoomBtn.title = "Enlarge image";
-    zoomBtn.onclick = () => openImageZoom(img.src, img.alt);
-    
+    zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
+
     imgContainer.appendChild(img);
     imgContainer.appendChild(zoomBtn);
     carouselImagesContainer.appendChild(imgContainer);
@@ -1438,13 +1846,13 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         display: flex;
         gap: 1rem;
         margin-top: 1rem;
+        width: 100%;
       }
 
       .modal-cta-container .cta-btn {
         flex: 1;
         width: auto;
         text-align: center;
-        padding: 10px 0;
       }
 
       .calendar-link-btn {

@@ -171,7 +171,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
-  width: 100%;
+  width: auto;
   max-width: 1360px;
   margin-top: 1rem;
   margin-left: 64px;
@@ -922,7 +922,7 @@ body {
 .zoom-btn {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 0px;
   background: rgba(0, 0, 0, 0.7);
   color: white;
   border: none;
@@ -983,8 +983,8 @@ body {
 
 .zoom-close-btn {
   position: absolute;
-  top: -15px;
-  right: -15px;
+  top: 0px;
+  right: 0px;
   background: rgba(255, 255, 255, 0.9);
   color: black;
   border: none;
@@ -999,11 +999,34 @@ body {
   justify-content: center;
   z-index: 10000;
   transition: all 0.3s ease;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
 }
 
 .zoom-close-btn:hover {
   background: white;
   transform: scale(1.1);
+}
+
+.modal-cta-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cta-btn {
+  display: inline-block;
+  background-color: var(--secondary-color);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  z-index: 1000;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
 }
 
 @media (max-width: 768px) {
@@ -1026,8 +1049,6 @@ body {
   }
   
   .zoom-close-btn {
-    top: -10px;
-    right: -10px;
     width: 35px;
     height: 35px;
     font-size: 20px;
