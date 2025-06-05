@@ -128,7 +128,7 @@ body {
   color: var(--light-text);
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
   text-align: left;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
   margin-left: 64px;
 }
 
@@ -221,8 +221,8 @@ body {
 }
 
 .notice-icon img {
-  width: 40px;
-  height: 40px;
+    width: 32px;
+    height: 32px;
 }
 
 .notice-text {
@@ -1030,6 +1030,27 @@ body {
 }
 
 @media (max-width: 768px) {
+
+  .info-container.game h2{
+    line-height: 8px;
+  }
+
+  .hero-content{
+    margin-bottom: 0.5rem;
+  }
+
+  button#open-game-modal{
+    font-size: small;
+  }
+
+  .info-section{
+    font-size: small;
+  }
+
+  .notice-icon img{
+    width: 32px;
+    height: 32px;
+  }
 
   .image-zoom-overlay{
     align-items: flex-center;
