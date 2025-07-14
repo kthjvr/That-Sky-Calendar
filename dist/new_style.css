@@ -151,7 +151,6 @@ body {
   text-decoration: none;
   border-radius: var(--border-radius);
   font-weight: 600;
-  transition: all var(--transition-speed);
   border: none;
   cursor: pointer;
   font-size: 1rem;
@@ -159,6 +158,7 @@ body {
   -moz-transition: all var(--transition-speed);
   -ms-transition: all var(--transition-speed);
   -o-transition: all var(--transition-speed);
+  transition: all var(--transition-speed);
 }
 
 .cta-button:hover {
@@ -405,7 +405,6 @@ body {
 .calendar {
   background-color: var(--card-background);
   padding: 20px;
-  border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   height: auto;
   min-height: 500px;
@@ -414,6 +413,7 @@ body {
   -moz-border-radius: var(--border-radius);
   -ms-border-radius: var(--border-radius);
   -o-border-radius: var(--border-radius);
+  border-radius: var(--border-radius);
 }
 
 #category-filter {
@@ -430,6 +430,7 @@ body {
   line-height: 2;
   padding: 0.5em;
   text-align: center;
+  -webkit-user-select: none;
   user-select: none;
   vertical-align: middle;
   cursor: pointer;
@@ -593,7 +594,6 @@ body {
 .event-card {
   height: 90px;
   background-color: var(--card-background);
-  border-radius: 12px;
   margin-bottom: 15px;
   padding-right: 15px;
   display: flex;
@@ -606,6 +606,7 @@ body {
   -moz-border-radius: 12px;
   -ms-border-radius: 12px;
   -o-border-radius: 12px;
+  border-radius: 12px;
 }
 
 .event-card:hover,
@@ -988,7 +989,6 @@ body {
   background: rgba(255, 255, 255, 0.9);
   color: black;
   border: none;
-  border-radius: 50%;
   width: 40px;
   height: 40px;
   font-size: 24px;
@@ -1003,6 +1003,7 @@ body {
   -moz-border-radius: 50%;
   -ms-border-radius: 50%;
   -o-border-radius: 50%;
+  border-radius: 50%;
 }
 
 .zoom-close-btn:hover {
@@ -1187,7 +1188,6 @@ body {
   .event-card-overview {
     height: 90px;
     background-color: #f0f6ff;
-    border-radius: 12px;
     padding-right: 15px;
     display: flex;
     align-items: center;
@@ -1199,6 +1199,7 @@ body {
     -moz-border-radius: 12px;
     -ms-border-radius: 12px;
     -o-border-radius: 12px;
+    border-radius: 12px;
     width: 100%;
     max-width: 350px;
   }
