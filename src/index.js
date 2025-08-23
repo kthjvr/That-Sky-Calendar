@@ -6,7 +6,13 @@ import {
   getDocs,
   query,
   orderBy,
+  where,
+  serverTimestamp,
+  onSnapshot,
+  addDoc
 } from "firebase/firestore";
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getDatabase, ref, onValue, push } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
@@ -20,9 +26,171 @@ const firebaseConfig = {
 
 // Initialize Firebase services
 initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 const colRef = collection(db, "events");
 const shardsCollection = collection(db, "shards");
+
+// for push notif
+const messaging = getMessaging(app);
+const database = getDatabase();
+
+async function requestNotificationPermission() {
+  try {
+    const permission = await Notification.requestPermission();
+    
+    if (permission === 'granted') {
+      const token = await getToken(messaging, {
+        vapidKey: 'BConeDXrXIm-QKaYoWthQG9PVrnOpjV4ABDHEO50d-DzdgCMCpiNOfHd2T5q6UQC6upzZylGDG-GBj-F_bR4Ic0'
+      });
+      console.log('FCM Token:', token);
+      
+      // Store token
+      await storeUserToken(token);
+      
+      return token;
+    } else {
+      console.log('Notification permission denied');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting notification permission:', error);
+    return null;
+  }
+}
+
+async function storeUserToken(token) {
+  try {
+    // Check if token already exists to prevent duplicates
+    const tokensRef = collection(db, 'fcmTokens');
+    const tokenQuery = query(tokensRef, where('token', '==', token));
+    const querySnapshot = await getDocs(tokenQuery);
+    
+    if (querySnapshot.empty) {
+      // Token doesn't exist, store it
+      await addDoc(collection(db, 'fcmTokens'), {
+        token: token,
+        createdAt: serverTimestamp(),
+        active: true,
+        userAgent: navigator.userAgent,
+        lastUsed: serverTimestamp()
+      });
+      console.log('New token stored successfully');
+    } else {
+      // Token exists, update lastUsed timestamp
+      const existingDoc = querySnapshot.docs[0];
+      await updateDoc(doc(db, 'fcmTokens', existingDoc.id), {
+        lastUsed: serverTimestamp(),
+        active: true
+      });
+      console.log('Existing token updated');
+    }
+  } catch (error) {
+    console.error('Error storing token:', error);
+  }
+}
+
+function setupEventListener() {
+  // Get timestamp of when user last checked (to avoid old notifications)
+  const lastCheckTime = localStorage.getItem('lastEventCheck');
+  const checkTime = lastCheckTime ? new Date(parseInt(lastCheckTime)) : new Date();
+  
+  // Query for events created after last check
+  const eventsRef = collection(db, 'events');
+  const recentEventsQuery = query(
+    eventsRef, 
+    where('createdAt', '>', checkTime),
+    orderBy('createdAt', 'desc')
+  );
+  
+  // Listen for new events in real-time
+  onSnapshot(recentEventsQuery, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === 'added') {
+        const eventData = change.doc.data();
+        const eventId = change.doc.id;
+        
+        // Show notification for new event (foreground only)
+        showLocalNotification({
+          id: eventId,
+          title: eventData.title,
+          description: eventData.description,
+          date: eventData.date,
+          ...eventData
+        });
+        
+        // Update last check time
+        localStorage.setItem('lastEventCheck', Date.now().toString());
+      }
+    });
+  });
+}
+
+function showLocalNotification(event) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const notification = new Notification(`New Sky Event: ${event.title}`, {
+      body: `${event.description} - ${event.date}`,
+      icon: 'https://img.icons8.com/?size=100&id=61187&format=png&color=000000',
+      tag: event.id,
+      requireInteraction: true
+    });
+    
+    notification.onclick = function() {
+      window.focus();
+      notification.close();
+    };
+  }
+}
+
+onMessage(messaging, (payload) => {
+  console.log('Message received in foreground:', payload);
+  
+  const { title, body } = payload.notification;
+  showLocalNotification({
+    title: title,
+    description: body,
+    id: payload.data?.eventId || 'notification'
+  });
+});
+
+onTokenRefresh(messaging, async () => {
+  try {
+    const newToken = await getToken(messaging, {
+      vapidKey: 'Bg' // Replace with your actual VAPID key
+    });
+    console.log('Token refreshed:', newToken);
+    await storeUserToken(newToken);
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Register service worker first
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      console.log('Service Worker registered:', registration);
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
+  }
+  
+  await requestNotificationPermission();
+  setupEventListener();
+  
+  // Add subscribe button functionality
+  const subscribeBtn = document.getElementById('subscribe-notifications');
+  if (subscribeBtn) {
+    subscribeBtn.addEventListener('click', async () => {
+      const token = await requestNotificationPermission();
+      if (token) {
+        subscribeBtn.textContent = 'Notifications Enabled ✓';
+        subscribeBtn.disabled = true;
+      }
+    });
+  }
+});
 
 // Global variables
 let allEvents = [];

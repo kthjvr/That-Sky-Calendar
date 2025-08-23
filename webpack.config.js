@@ -1,23 +1,34 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-
+const { watch } = require('fs');
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: {
     index: './src/index.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js',
+    publicPath: '/', // ensures paths resolve correctly
   },
   plugins: [
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: './src/index.html',
-      chunks: ['index']
+      chunks: ['index'],
     }),
   ],
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'dist'),
+    },
+    compress: true,
+    port: 9000,
+    open: true,
+    hot: true,
+    watchFiles: ['src/**/*'], // auto-refresh on HTML/CSS/JS changes
+  },
   optimization: {
     splitChunks: {
       chunks: 'all',
@@ -25,15 +36,15 @@ module.exports = {
       cacheGroups: {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
-          priority: -10
+          priority: -10,
         },
         default: {
           minChunks: 2,
           priority: -20,
-          reuseExistingChunk: true
-        }
-      }
-    }
+          reuseExistingChunk: true,
+        },
+      },
+    },
   },
   module: {
     rules: [
@@ -47,10 +58,10 @@ module.exports = {
               mozjpeg: { progressive: true },
               optipng: { enabled: false },
               pngquant: { quality: [0.65, 0.90], speed: 4 },
-              gifsicle: { interlaced: false }
-            }
-          }
-        ]
+              gifsicle: { interlaced: false },
+            },
+          },
+        ],
       },
       {
         test: /\.(mp4|webm)$/i,
@@ -63,14 +74,14 @@ module.exports = {
               format: 'mp4',
               codecs: {
                 video: 'h264',
-                audio: 'aac'
+                audio: 'aac',
               },
-            }
-          }
-        ]
-      }
-    ]
+            },
+          },
+        ],
+      },
+    ],
   },
-  
-  watch: false
+
+  watch: true
 };

@@ -1009,6 +1009,7 @@ p {
   line-height: 2;
   padding: 0.5em;
   text-align: center;
+  -webkit-user-select: none;
   user-select: none;
   vertical-align: middle;
   cursor: pointer;
