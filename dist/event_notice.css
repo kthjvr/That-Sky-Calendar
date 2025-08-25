@@ -1,0 +1,416 @@
+/* ===============================
+   Heads Up Cards (Event Notices)
+   =============================== */
+
+.event-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-md);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.event-notice:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.event-notice::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+  transition: opacity var(--transition-base);
+}
+
+.event-notice:hover::before {
+  opacity: 0.05;
+}
+
+/* ===============================
+   Notice Types & Colors
+   =============================== */
+
+/* Upcoming Events (Green - Calm) */
+.event-notice.upcoming {
+  border-left-color: var(--color-ts);
+  background: linear-gradient(135deg, 
+    rgba(205, 234, 192, 0.05) 0%, 
+    var(--color-surface) 100%);
+}
+
+.event-notice.upcoming::before {
+  background: var(--color-ts);
+}
+
+.event-notice.upcoming .notice-icon {
+  background: rgba(205, 234, 192, 0.15);
+  border: 1px solid rgba(205, 234, 192, 0.3);
+}
+
+/* Starting Soon (Blue - Informative) */
+.event-notice.starting {
+  border-left-color: var(--color-accent);
+  background: linear-gradient(135deg, 
+    rgba(163, 196, 243, 0.05) 0%, 
+    var(--color-surface) 100%);
+}
+
+.event-notice.starting::before {
+  background: var(--color-accent);
+}
+
+.event-notice.starting .notice-icon {
+  background: rgba(163, 196, 243, 0.15);
+  border: 1px solid rgba(163, 196, 243, 0.3);
+}
+
+/* Ending Soon (Pink - Gentle Urgency) */
+.event-notice.ending {
+  border-left-color: var(--color-season);
+  background: linear-gradient(135deg, 
+    rgba(252, 213, 206, 0.05) 0%, 
+    var(--color-surface) 100%);
+}
+
+.event-notice.ending::before {
+  background: var(--color-season);
+}
+
+.event-notice.ending .notice-icon {
+  background: rgba(252, 213, 206, 0.15);
+  border: 1px solid rgba(252, 213, 206, 0.3);
+}
+
+/* Special Events (Teal - Unique) */
+.event-notice.special {
+  border-left-color: var(--color-special);
+  background: linear-gradient(135deg, 
+    rgba(190, 225, 230, 0.05) 0%, 
+    var(--color-surface) 100%);
+}
+
+.event-notice.special::before {
+  background: var(--color-special);
+}
+
+.event-notice.special .notice-icon {
+  background: rgba(190, 225, 230, 0.15);
+  border: 1px solid rgba(190, 225, 230, 0.3);
+}
+
+/* Warning/Alert (Yellow - Attention) */
+.event-notice.warning {
+  border-left-color: var(--color-warning);
+  background: linear-gradient(135deg, 
+    rgba(255, 224, 102, 0.05) 0%, 
+    var(--color-surface) 100%);
+}
+
+.event-notice.warning::before {
+  background: var(--color-warning);
+}
+
+.event-notice.warning .notice-icon {
+  background: rgba(255, 224, 102, 0.15);
+  border: 1px solid rgba(255, 224, 102, 0.3);
+}
+
+/* No Events (Neutral - Calm) */
+.event-notice.neutral {
+  border-left-color: var(--color-shards);
+  background: linear-gradient(135deg, 
+    rgba(240, 239, 235, 0.05) 0%, 
+    var(--color-surface) 100%);
+}
+
+.event-notice.neutral::before {
+  background: var(--color-shards);
+}
+
+.event-notice.neutral .notice-icon {
+  background: rgba(240, 239, 235, 0.2);
+  border: 1px solid rgba(240, 239, 235, 0.4);
+}
+
+/* ===============================
+   Notice Icon Container
+   =============================== */
+
+.notice-icon {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.notice-icon img {
+  width: 24px;
+  height: 24px;
+  opacity: 0.8;
+  transition: all var(--transition-fast);
+  filter: grayscale(20%);
+}
+
+.event-notice:hover .notice-icon {
+  transform: scale(1.05);
+}
+
+.event-notice:hover .notice-icon img {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+/* ===============================
+   Notice Text Content
+   =============================== */
+
+.notice-text {
+  flex: 1;
+  font-family: var(--font-body);
+}
+
+.notice-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.notice-text .notice-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.notice-text .notice-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ===============================
+   Notice Container
+   =============================== */
+
+.notices-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Multiple notices in a row for desktop */
+.notices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ===============================
+   Animation Variants
+   =============================== */
+
+.event-notice.fade-in {
+  animation: var(--animation-fade-up);
+}
+
+.event-notice.slide-in {
+  animation: slideInLeft 0.4s ease-out forwards;
+}
+
+.event-notice.pulse {
+  animation: gentlePulse 2s ease-in-out infinite;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-sm);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* ===============================
+   Dismissible Notice (Optional)
+   =============================== */
+
+.event-notice.dismissible {
+  padding-right: 60px;
+}
+
+.notice-dismiss {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  opacity: 0.6;
+}
+
+.notice-dismiss:hover {
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.notice-dismiss::before {
+  content: '×';
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--color-text-muted);
+  line-height: 1;
+}
+
+/* ===============================
+   Dark Mode Support
+   =============================== */
+
+[data-theme="dark"] .event-notice {
+  background: var(--color-surface);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .event-notice.upcoming {
+  background: linear-gradient(135deg, 
+    rgba(74, 107, 58, 0.1) 0%, 
+    var(--color-surface) 100%);
+}
+
+[data-theme="dark"] .event-notice.starting {
+  background: linear-gradient(135deg, 
+    rgba(122, 163, 216, 0.1) 0%, 
+    var(--color-surface) 100%);
+}
+
+[data-theme="dark"] .event-notice.ending {
+  background: linear-gradient(135deg, 
+    rgba(139, 75, 71, 0.1) 0%, 
+    var(--color-surface) 100%);
+}
+
+[data-theme="dark"] .event-notice.special {
+  background: linear-gradient(135deg, 
+    rgba(74, 114, 122, 0.1) 0%, 
+    var(--color-surface) 100%);
+}
+
+[data-theme="dark"] .notice-dismiss {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .notice-dismiss:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ===============================
+   Responsive Design
+   =============================== */
+
+@media (max-width: 768px) {
+  .event-notice {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  
+  .notice-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .notice-icon img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .notice-text p {
+    font-size: 0.9rem;
+  }
+  
+  .notices-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-notice {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .notice-text .notice-title {
+    font-size: 1rem;
+  }
+  
+  .notice-text p {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===============================
+   Utility Classes
+   =============================== */
+
+.notice-bold {
+  font-weight: 600;
+}
+
+.notice-muted {
+  color: var(--color-text-muted);
+}
+
+.notice-accent {
+  color: var(--color-accent);
+}
+
+.notice-hidden {
+  display: none;
+}
+
+.notice-compact {
+  padding: var(--spacing-sm) var(--spacing-md);
+}
