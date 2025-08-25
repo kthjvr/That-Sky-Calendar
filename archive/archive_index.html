@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>That Sky Events - Calendar for Sky: Children of the Light</title>
+  <meta name="description"
+    content="Your complete community-driven calendar for Sky: Children of the Light featuring upcoming events, traveling spirits, seasonal celebrations, and daily quests.">
+  <meta name="color-scheme" content="light">
+
+  <!-- Open Graph Meta Tags (for social sharing) -->
+  <meta property="og:title" content="That Sky Events Calendar">
+  <meta property="og:description"
+    content="Stay updated with Sky: Children of the Light events, traveling spirits, and seasonal celebrations.">
+  <meta property="og:image" content="https://thatskyevents.netlify.app/assets/preview-skycotl.png">
+  <meta property="og:url" content="https://thatskyevents.netlify.app/">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="That Sky Events Calendar">
+  <meta name="twitter:description"
+    content="Stay updated with Sky: Children of the Light events, traveling spirits, and seasonal celebrations.">
+  <meta name="twitter:image" content="https://thatskyevents.netlify.app/assets/preview-skycotl.png">
+
+  <!-- Canonical URL -->
+  <meta rel="canonical" href="https://thatskyevents.netlify.app/">
+
+  <meta name="google-site-verification" content="wE5_GjQhxEZxniT4nB-VI50OlKfUy2C_BrV6rbvkXAE" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DRC19V15XY"></script>
+
+  <meta name="application-name" content="That Sky Events Calendar">
+  <meta name="description"
+    content="Stay updated with Sky: Children of the Light events, traveling spirits, and seasonal celebrations.">
+  <meta name="keywords"
+    content="Sky: Children of the Light, Sky, thatgamecompany, event calendar, seasonal events, sky cotl events, sky cotl calendar, Sky cotl game, Sky cotl guide, Sky cotl resources, Sky community, Sky events list, Sky event schedule, Sky cotl event dates, Sky cotl upcoming events, Sky cotl seasonal events, Sky cotl daily activities, Sky cotl celebrations">
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-DRC19V15XY');
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "That Sky Events",
+      "url": "https://thatskyevents.netlify.app/",
+      "description": "Community calendar for Sky: Children of the Light events",
+    }
+  </script>
+
+  <!-- CSS and ICO -->
+  <link rel="stylesheet" href="style2.css">
+  <link rel="icon" type="image/x-icon"
+    href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705">
+
+  <!-- CALENDAR -->
+  <script defer src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+
+</head>
+
+<body>
+  <!-- LOADING OVERLAY -->
+  <div class="overlay">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <!-- Logo -->
+      <a href="/" class="logo-link">
+        <img 
+          class="logo" 
+          src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" 
+          alt="That Sky Events Calendar Logo - Sky: Children of the Light">
+      </a>
+
+      <!-- Hamburger Button -->
+      <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <!-- Navigation Links (Desktop + Mobile Drawer) -->
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/calendar">Calendar</a></li>
+        <li><a href="/events">Events</a></li>
+        <li><a href="/spirits">Traveling Spirits</a></li>
+        <li><a href="/about">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Overlay for mobile drawer -->
+  <div class="nav-overlay"></div>
+
+  <!-- Hero Banner -->
+  <section class="hero-banner">
+    <div class="hero-background"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <h1 class="hero-title">That Sky Events</h1>
+      <p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.</p>
+      <a href="#calendar" class="cta-button">Jump to calendar</a>
+    </div>
+
+    <div class="info-section">
+      <div class="info-container">
+        <h2>Heads Up</h2>
+      </div>
+      <div class="info-container game">
+        <h2>Fancy a game?</h2>
+        <p class="game-description">Challenge yourself with a round of memory game! Click to play.</p>
+        <button id="open-game-modal">Play Game</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Quick Overview Section -->
+  <section class="quick-overview">
+    <h2 class="section-title">Quick Overview</h2>
+    <div class="event-cards-overview">
+    </div>
+  </section>
+
+  <section id="calendarSection">
+    <div class="calendar-info">
+      <div style="margin-right: 10px;">
+        <img src="https://img.icons8.com/?size=100&id=63308&format=png&color=000000" alt="Calendar Icon"
+          style="width: 30px; height: 30px;">
+      </div>
+      <div>
+        <p style="margin: 0;">Click on the events inside the calendar to see more details.</p>
+      </div>
+    </div>
+    <div id='calendar' class="calendar"></div>
+  </section>
+
+  <section>
+    <div class="tab-container">
+      <div class="tabs2">
+        <div class="tabs">
+          <button class="tab active" data-tab="all">All</button>
+          <button class="tab" data-tab="in-progress">In progress</button>
+          <button class="tab" data-tab="upcoming">Upcoming</button>
+        </div>
+      </div>
+
+      <div class="content-container">
+        <!-- Left side: Events list -->
+        <div class="events-list">
+          <div id="all" class="tab-pane">
+            <div class="month-pagination">
+              <button id="prev-month" disabled>Prev</button>
+              <span id="current-month-year">Loading...</span>
+              <button id="next-month" disabled>Next</button>
+            </div>
+            <div id="all-events-content" class="tab-content-inner">
+              <div class="loading">Loading events...</div>
+            </div>
+          </div>
+
+          <div id="in-progress" class="tab-pane">
+            <div class="loading">Loading events...</div>
+          </div>
+
+          <div id="upcoming" class="tab-pane active">
+            <div class="loading">Loading events...</div>
+          </div>
+        </div>
+
+        <!-- Right side: Preview panel -->
+        <div class="preview-panel">
+          <div class="loading">Select an event to view details</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="game-modal" class="game-modal" hidden>
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <iframe src="https://echoes-of-light.netlify.app/" title="Embedded Site" width="800" height="600"></iframe>
+    </div>
+  </div>
+
+  <!-- Scroll to Top Button -->
+  <button id="scrollTopBtn" aria-label="Scroll to top">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+
+  <!-- 🌌 Footer Section -->
+  <footer class="footer">
+    <div class="footer-container">
+      <!-- Left Section -->
+      <div class="footer-left">
+        <a href="/" class="footer-logo-link">
+          <img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo">
+        </a>
+        <p class="footer-text">
+          Made with ❤️ by 
+          <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank" rel="noopener" class="footer-link">Kathy</a>  
+          © 2024 ThatSkyEvents. All rights reserved.
+        </p>
+        <p class="footer-disclaimer">
+          Disclaimer: This site is a community resource for players of <em>Sky: Children of the Light</em>, not officially endorsed by TGC.
+        </p>
+      </div>
+
+      <!-- Right Section -->
+      <div class="footer-right">
+        <h2 class="footer-title">Need assistance?</h2>
+        <p class="footer-help-text">
+          I’m here to help! Contact me for any questions, requests, or navigation issues.
+        </p>
+
+        <!-- Social Links -->
+        <div class="social-links">
+          <a rel="noopener" href="https://discordapp.com/users/kx.linaa" target="_blank" class="social-icon">
+            <img src="https://img.icons8.com/?size=100&id=LIGCjf5dKGrN&format=png&color=000000" alt="Discord icon">
+            <span>Discord</span>
+          </a>
+          <a rel="noopener" href="https://www.instagram.com/thatgrumpycatto/" target="_blank" class="social-icon">
+            <img src="https://img.icons8.com/?size=100&id=bh8L0hocH1mA&format=png&color=000000" alt="Instagram icon">
+            <span>Instagram</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+
+    // menu toggle
+    const menuToggle = document.querySelector(".menu-toggle");
+    const navLinks = document.querySelector(".nav-links");
+    const navOverlay = document.querySelector(".nav-overlay");
+
+    function toggleMenu() {
+      const isOpen = navLinks.classList.toggle("active");
+      navOverlay.classList.toggle("active", isOpen);
+      menuToggle.setAttribute("aria-expanded", isOpen);
+    }
+
+    menuToggle.addEventListener("click", toggleMenu);
+    navOverlay.addEventListener("click", toggleMenu);
+
+    // scroll to top button
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 200) {
+        scrollTopBtn.classList.add("show");
+      } else {
+        scrollTopBtn.classList.remove("show");
+      }
+    });
+
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
+  </script>
+
+
+
+
+</body>
+
+</html>
