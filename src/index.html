@@ -54,7 +54,13 @@
   </script>
 
   <!-- CSS and ICO -->
-  <link rel="stylesheet" href="new_style.css">
+  <link rel="stylesheet" href="style2.css">
+  <link rel="stylesheet" href="event_card.css">
+  <link rel="stylesheet" href="event_notice.css">
+  <link rel="stylesheet" href="calendar.css">
+  <link rel="stylesheet" href="modal.css">
+  <link rel="stylesheet" href="event_list.css">
+
   <link rel="icon" type="image/x-icon"
     href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705">
 
@@ -67,27 +73,71 @@
 
 <body>
   <!-- LOADING OVERLAY -->
-  <div class="overlay">
+  <!-- <div class="overlay">
     <div class="loader"></div>
-  </div>
+  </div> -->
 
   <!-- Navigation Bar -->
   <nav class="navbar">
-    <img class="logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.png?updatedAt=1746713822214" alt="That Sky Events Calendar Logo - Sky: Children of the Light">
+    <div class="nav-container">
+      <!-- Logo -->
+      <a href="/" class="logo-link">
+        <img 
+          class="logo" 
+          src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" 
+          alt="That Sky Events Calendar Logo - Sky: Children of the Light">
+      </a>
+
+      <!-- Hamburger Button -->
+      <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <!-- Navigation Links (Desktop + Mobile Drawer) -->
+      <ul class="nav-links">
+        <button class="close-btn" aria-label="Close menu">&times;</button>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#calendarSection">Calendar</a></li>
+        <li><a href="/events">Events</a></li>
+        <li><a href="/spirits">Traveling Spirits</a></li>
+        <li><a href="/about">About</a></li>
+        <li>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+            </svg>
+          </button>
+        </li>
+      </ul>
+
+    </div>
   </nav>
 
+  <!-- Overlay for mobile drawer -->
+  <div class="nav-overlay"></div>
+
   <!-- Hero Banner -->
-  <section class="hero-banner">
+  <section class="hero-banner" id="home">
     <div class="hero-background"></div>
     <div class="hero-overlay"></div>
+
     <div class="hero-content">
       <h1 class="hero-title">That Sky Events</h1>
-      <p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the
-        world of Sky.</p>
+      <p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.</p>
       <a href="#calendar" class="cta-button">Jump to calendar</a>
     </div>
 
-    <!-- Info Containers now inside hero banner -->
     <div class="info-section">
       <div class="info-container">
         <h2>Heads Up</h2>
@@ -100,10 +150,19 @@
     </div>
   </section>
 
+  <!-- Scroll to Top Button -->
+  <button id="scrollTopBtn" aria-label="Scroll to top">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
   <!-- Quick Overview Section -->
-  <section class="quick-overview">
+  <section class="quick-overview" id="quick-overview">
     <h2 class="section-title">Quick Overview</h2>
-    <div class="event-cards-overview">
+    <div class="event-cards-overview" id="event-cards-container">
+      <!-- Loading state (initially shown) -->
+      <div class="loading-spinner"></div>
     </div>
   </section>
 
@@ -120,92 +179,244 @@
     <div id='calendar' class="calendar"></div>
   </section>
 
-  <section>
-    <div class="tab-container">
-      <div class="tabs2">
-        <div class="tabs">
-          <button class="tab active" data-tab="all">All</button>
-          <button class="tab" data-tab="in-progress">In progress</button>
-          <button class="tab" data-tab="upcoming">Upcoming</button>
-        </div>
+    <!-- Event Cards Container -->
+  <div class="events-grid" id="eventsGrid">
+  </div>
+
+
+  <!-- Modal HTML Structure -->
+  <div class="modal-overlay" id="eventModal">
+      <div class="event-modal">
+          <div class="modal-header">
+              <div class="modal-image-container" id="modalImageContainer">
+                  <!-- Image carousel will be inserted here -->
+              </div>
+              <button class="modal-close" id="closeModal">&times;</button>
+              <div class="modal-badge" id="modalBadge"><!-- Badge text --></div>
+          </div>
+          <div class="modal-body">
+              <h2 class="modal-title" id="modalTitle">Event Title</h2>
+              
+              <div class="quick-info-summary" id="quickInfoSummary">
+                  <!-- Quick info will be populated by JavaScript -->
+              </div>
+              
+              <div class="modal-description" id="modalDescription">
+                  <!-- Description will be populated by JavaScript -->
+              </div>
+              
+              <div class="modal-note" id="modalNote">
+                  <!-- Note/Reminder will be populated by JavaScript -->
+              </div>
+              
+              <div class="modal-actions">
+                  <button class="modal-btn share" id="modalShareBtn">
+                      <span class="btn-icon">📤</span>
+                      Share Event
+                  </button>
+                  <button class="modal-btn calendar" id="modalCalendarBtn">
+                      <span class="btn-icon">📅</span>
+                      Add to Calendar
+                  </button>
+              </div>
+          </div>
       </div>
+  </div>
 
-      <div class="content-container">
-        <!-- Left side: Events list -->
-        <div class="events-list">
-          <div id="all" class="tab-pane">
-            <div class="month-pagination">
-              <button id="prev-month" disabled>Prev</button>
-              <span id="current-month-year">Loading...</span>
-              <button id="next-month" disabled>Next</button>
-            </div>
-            <div id="all-events-content" class="tab-content-inner">
-              <div class="loading">Loading events...</div>
-            </div>
-          </div>
-
-          <div id="in-progress" class="tab-pane">
-            <div class="loading">Loading events...</div>
-          </div>
-
-          <div id="upcoming" class="tab-pane active">
-            <div class="loading">Loading events...</div>
-          </div>
-        </div>
-
-        <!-- Right side: Preview panel -->
-        <div class="preview-panel">
-          <div class="loading">Select an event to view details</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div id="game-modal" class="game-modal" hidden>
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <iframe src="https://echoes-of-light.netlify.app/" title="Embedded Site" width="800" height="600"></iframe>
-    </div>
+  <!-- Zoom Modal -->
+  <div class="zoom-modal" id="zoomModal">
+      <!-- Zoom content will be inserted here -->
   </div>
 
   <!-- Footer Section -->
   <footer class="footer">
     <div class="footer-container">
-      <!-- Left Section with Copyright and Disclaimer -->
-      <img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.png?updatedAt=1746713822214" alt="">
+      <!-- Left Section -->
       <div class="footer-left">
-        <p class="footer-copyright">Made with ❤️ by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/"
-            class="footer-link">Kathy</a> © 2024 ThatSkyEvents. All rights reserved.</p>
-        <p class="footer-disclaimer">Disclaimer: This site is a community resource for players of Sky: Children of the
-          Light, not officially endorsed by tgc.</p>
+        <a href="/" class="footer-logo-link">
+          <img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo">
+        </a>
+        <p class="footer-text">
+          Made with ❤️ by 
+          <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank" rel="noopener" class="footer-link">Kathy</a>  
+          © 2024 ThatSkyEvents. All rights reserved.
+        </p>
+        <p class="footer-disclaimer">
+          Disclaimer: This site is a community resource for players of <em>Sky: Children of the Light</em>, not officially endorsed by TGC.
+        </p>
       </div>
 
-      <!-- Right Section with Help and Contact -->
+      <!-- Right Section -->
       <div class="footer-right">
-        <div class="footer-help">
-          <h2 class="help-title">Need assistance?</h2>
-          <p class="help-text">I'm here to help! Contact me for any questions, requests, or website navigation issues.
-          </p>
+        <h2 class="footer-title">Need assistance?</h2>
+        <p class="footer-help-text">
+          I’m here to help! Contact me for any questions, requests, or navigation issues.
+        </p>
 
-          <div class="help-buttons">
-            <!-- Social Media Links -->
-            <div class="social-links">
-              <a rel="noopener" href="https://discordapp.com/users/kx.linaa" target="_blank" class="social-icon" aria-label="Discord">
-                <img src="https://img.icons8.com/?size=100&id=LIGCjf5dKGrN&format=png&color=000000" alt="Discord icon">
-                <span class="social-name">Discord</span>
-              </a>
-              <a rel="noopener" href="https://www.instagram.com/thatgrumpycatto/" target="_blank" class="social-icon"
-                aria-label="Instagram">
-                <img src="https://img.icons8.com/?size=100&id=bh8L0hocH1mA&format=png&color=000000"
-                  alt="Instagram icon">
-                <span class="social-name">Instagram</span>
-              </a>
-            </div>
-          </div>
+        <!-- Social Links -->
+        <div class="social-links">
+          <a rel="noopener" href="https://discordapp.com/users/kx.linaa" target="_blank" class="social-icon">
+            <img src="https://img.icons8.com/?size=100&id=LIGCjf5dKGrN&format=png&color=000000" alt="Discord icon">
+            <span>Discord</span>
+          </a>
+          <a rel="noopener" href="https://www.instagram.com/thatgrumpycatto/" target="_blank" class="social-icon">
+            <img src="https://img.icons8.com/?size=100&id=bh8L0hocH1mA&format=png&color=000000" alt="Instagram icon">
+            <span>Instagram</span>
+          </a>
         </div>
       </div>
     </div>
   </footer>
+
+  <script>
+
+    // menu toggle
+    const menuToggle = document.querySelector(".menu-toggle");
+    const navLinks = document.querySelector(".nav-links");
+    const navOverlay = document.querySelector(".nav-overlay");
+
+    const closeMenuBtn = document.querySelector(".close-btn");
+    if (closeMenuBtn) {
+      closeMenuBtn.addEventListener("click", toggleMenu);
+    }
+
+    function toggleMenu() {
+      const isOpen = navLinks.classList.toggle("active");
+      navOverlay.classList.toggle("active", isOpen);
+      menuToggle.setAttribute("aria-expanded", isOpen);
+      
+      // Control display property
+      if (isOpen) {
+        navLinks.style.display = "flex"; // or "block" depending on your layout
+        navOverlay.style.display = "block";
+      } else {
+        navLinks.style.display = "none";
+        navOverlay.style.display = "none";
+      }
+    }
+
+    menuToggle.addEventListener("click", toggleMenu);
+    navOverlay.addEventListener("click", toggleMenu);
+
+    document.querySelectorAll(".nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("active");
+        navOverlay.classList.remove("active");
+        menuToggle.setAttribute("aria-expanded", "false");
+        
+        // Hide elements when menu closes
+        navLinks.style.display = "none";
+        navOverlay.style.display = "none";
+      });
+    });
+
+    // Initialize - hide menu on page load
+    navLinks.style.display = "none";
+    if (navOverlay) {
+      navOverlay.style.display = "none";
+    }
+
+    // scroll to top button
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 200) {
+        scrollTopBtn.classList.add("show");
+      } else {
+        scrollTopBtn.classList.remove("show");
+      }
+    });
+
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
+
+    // theme toggle
+    class ThemeManager {
+      constructor() {
+        this.theme = this.getStoredTheme() || this.getSystemTheme();
+        this.init();
+      }
+
+      init() {
+        // Apply initial theme
+        this.applyTheme(this.theme);
+        
+        // Set up toggle button
+        const toggleButton = document.getElementById('theme-toggle');
+        if (toggleButton) {
+          toggleButton.addEventListener('click', () => this.toggleTheme());
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!this.getStoredTheme()) {
+            this.applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+
+      getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      getStoredTheme() {
+        return localStorage.getItem('sky-events-theme');
+      }
+
+      applyTheme(theme) {
+        this.theme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Update meta theme-color for mobile browsers
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+          metaTheme.setAttribute('content', theme === 'dark' ? '#1a1f2e' : '#fafafa');
+        }
+      }
+
+      toggleTheme() {
+        const newTheme = this.theme === 'light' ? 'dark' : 'light';
+        this.applyTheme(newTheme);
+        localStorage.setItem('sky-events-theme', newTheme);
+        
+        // Add a little animation feedback
+        const toggleButton = document.getElementById('theme-toggle');
+        if (toggleButton) {
+          toggleButton.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            toggleButton.style.transform = '';
+          }, 100);
+        }
+      }
+
+      // Public method to set theme programmatically
+      setTheme(theme) {
+        if (theme === 'light' || theme === 'dark') {
+          this.applyTheme(theme);
+          localStorage.setItem('sky-events-theme', theme);
+        }
+      }
+
+      // Public method to reset to system preference
+      resetToSystem() {
+        localStorage.removeItem('sky-events-theme');
+        this.applyTheme(this.getSystemTheme());
+      }
+    }
+
+    // Initialize theme manager when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      window.themeManager = new ThemeManager();
+    });
+
+    // Expose theme manager globally for debugging
+    window.setTheme = (theme) => window.themeManager?.setTheme(theme);
+    window.resetTheme = () => window.themeManager?.resetToSystem();
+  </script>
+
 </body>
 
 </html>

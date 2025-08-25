@@ -1,0 +1,222 @@
+/* 🎨 Calendar Section */
+#calendarSection {
+  background: var(--color-surface);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin: var(--spacing-lg) auto;
+  max-width: 1200px;
+}
+
+/* Info Row (icon + text) */
+.calendar-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+/* Calendar Core */
+.calendar {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-sm);
+}
+
+/* FullCalendar specific overrides */
+.fc .fc-toolbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    min-height: 40px; /* Prevents jumping */
+}
+
+/* Left button group */
+.fc .fc-toolbar-chunk:first-child {
+    justify-self: start;
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+/* Center title */
+.fc .fc-toolbar-chunk:nth-child(2) {
+    justify-self: center;
+    text-align: center;
+}
+
+/* Right button group */
+.fc .fc-toolbar-chunk:last-child {
+    justify-self: end;
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.fc .fc-toolbar-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--color-text);
+    white-space: nowrap; /* Prevents title wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.fc .fc-button {
+    background: var(--color-accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    transition: background var(--transition-base);
+    flex-shrink: 0; /* Prevents buttons from shrinking */
+}
+
+.fc .fc-button:hover {
+  background: #88b4f1; /* darker sky blue */
+}
+
+.fc .fc-daygrid-day {
+  transition: background var(--transition-fast);
+}
+
+.fc .fc-daygrid-day:hover {
+  background: rgba(163, 196, 243, 0.15); /* pastel highlight */
+  cursor: pointer;
+}
+
+.fc .fc-daygrid-day-number {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Event Styling */
+.fc-event {
+  min-height: 20px;  
+  line-height: 1.2;  
+  padding: 0;  
+  font-size: 0.85rem; 
+  border-radius: 6px;
+}
+
+.event-content {
+    padding: 0%;
+}
+
+.fc-daygrid-event {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: auto;
+  min-height: 18px;
+  padding: 2px 4px;
+}
+
+.fc-event:hover {
+  transform: scale(1.03);
+}
+
+.fc .fc-daygrid-day-frame {
+    min-height: 100%;
+    position: relative;
+}
+
+/* Event Categories */
+.fc-event.season {
+  background: var(--color-season);
+  color: #333;
+}
+
+.fc-event.ts {
+  background: var(--color-ts);
+  color: #333;
+}
+
+.fc-event.special {
+  background: var(--color-special);
+  color: #333;
+}
+
+.fc-event.shards {
+  background: var(--color-shards);
+  color: #333;
+}
+
+.fc-event.warning {
+  background: var(--color-warning);
+  color: #333;
+}
+
+.fc-day-today {
+  background: var(--color-accent) !important;
+  border: none !important;
+}
+
+.fc-head-container {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: var(--color-accent) !important;
+}
+
+.fc-widget-header {
+    background: var(--color-accent) !important;
+}
+
+.fc-col-header {
+    background: var(--color-accent) !important; 
+}
+
+#category-filter {
+  background-color: var(--secondary-color);
+  border-color: var(--primary-color);
+  color: var(--light-text);
+  border-bottom-left-radius: 0px;
+  border-top-left-radius: 0px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  display: inline-block;
+  /* font-size: 1em; */
+  font-weight: 400;
+  line-height: 2;
+  padding: 0.5em;
+  text-align: center;
+  -webkit-user-select: none;
+  user-select: none;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    #calendarSection {
+        margin: 12px;
+    }
+
+    .fc .fc-toolbar {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: var(--spacing-sm);
+        text-align: center;
+    }
+    
+    .fc .fc-toolbar-chunk {
+        justify-self: center !important;
+    }
+    
+    .fc .fc-toolbar-title {
+        font-size: 1.1rem;
+        max-width: none;
+    }
+    
+    .fc .fc-button {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+}

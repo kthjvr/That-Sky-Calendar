@@ -1,12 +1,18 @@
 // Import Firebase SDK components
 import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import {getFirestore, collection, getDocs, query, orderBy, } from "firebase/firestore";
+
+// Day.js imports
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
+
+const userTimezone = dayjs.tz.guess();
 
 const firebaseConfig = {
   apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
@@ -22,14 +28,12 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 const db = getFirestore();
 const colRef = collection(db, "events");
-const shardsCollection = collection(db, "shards");
 
 // Global variables
 let allEvents = [];
 let eventsByMonthYear = {};
 let currentMonthYearIndex = 0;
 let monthYearKeys = [];
-
 
 // Initialize FullCalendar with event data
 function initializeCalendar(eventsData) {
@@ -77,1328 +81,139 @@ function initializeCalendar(eventsData) {
 
   calendar.render();
   addCategoryFilter(calendar, eventsData);
-  console.log(eventsData);
-  
+  // console.log(eventsData);
 }
 
-// Google calendar integration
-function generateGoogleCalendarLink(event) {
-  const maxDescriptionLength = 300;
-  let description = event.extendedProps.description || "Join us in Sky!";
-  if (description.length > maxDescriptionLength) {
-    description = description.slice(0, maxDescriptionLength) + '...';
-  }
-  description = encodeURIComponent(description);
+// Fetch events and shard events, then combine and initialize the calendar
+Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
+  .then(([eventsSnapshot]) => {
+    const events = [];
 
-  const title = encodeURIComponent(event.title || "Sky Event");
-  const location = encodeURIComponent("Sky: Children of the Light");
+    eventsSnapshot.docs.forEach((doc) => {
+      const startRaw = (doc.data().start || "").trim();
+      const endRaw = (doc.data().end || "").trim();
+      const startTime = doc.data().startTime;
 
-  const start = new Date(event.start).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const end = new Date(event.end).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      let startLA, endLA;
 
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
-}
+      if (startTime) {
+        // Timed event
+        startLA = dayjs.tz(
+          `${startRaw} ${startTime}`,
+          "YYYY-MM-DD HH:mm",
+          "America/Los_Angeles"
+        );
 
-function generateGoogleCalendarLink_previewPanel(event) {
-  const maxDescriptionLength = 300;
-  let description = event.description || "Join us in Sky!";
-  if (description.length > maxDescriptionLength) {
-    description = description.slice(0, maxDescriptionLength) + '...';
-  }
-  description = encodeURIComponent(description);
+        const endTime = doc.data().endTime;
+        if (endTime) {
+          endLA = dayjs.tz(
+            `${endRaw} ${endTime}`,
+            "YYYY-MM-DD HH:mm",
+            "America/Los_Angeles"
+          );
+        } else {
+          endLA = startLA.add(1, "hour");
+        }
+      } else {
+        // All-day event (dates only, ISO-friendly)
+        startLA = dayjs.tz(startRaw, "America/Los_Angeles").startOf("day");
+        endLA = dayjs.tz(endRaw, "America/Los_Angeles").endOf("day");
+      }
 
-  const title = encodeURIComponent(event.title || "Sky Event");
-  const location = encodeURIComponent("Sky: Children of the Light");
+      // Convert to user's local timezone
+      const startLocal = startLA.tz(userTimezone);
+      const endLocal = endLA.tz(userTimezone);
 
-  const start = new Date(event.start).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  const end = new Date(event.end).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      // Validate dates
+      if (!startLocal.isValid() || !endLocal.isValid()) {
+        console.warn("Skipping invalid event:", {
+          id: doc.id,
+          startRaw,
+          endRaw,
+          startTime,
+        });
+        return;
+      }
 
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${description}&location=${location}`;
-}
+      const eventId = doc.id || generateEventId(doc.data().title);
 
+      events.push({
+        id: eventId,
+        title: doc.data().title,
+        start: startLocal.toDate(),
+        end: endLocal.toDate(),
+        allDay: !startTime, // true if no explicit time
+        color: doc.data().color,
+        description: doc.data().description,
+        images: doc.data().images,
+        blogUrl: doc.data().blogUrl,
+        image: doc.data().image,
+        credits: doc.data().credits,
+        category: doc.data().category || "special",
+      });
+    });
 
+    // Store globally
+    allEvents = events;
+
+    // Pass to manager
+    window.skyEventsManager?.setEventsData(events);
+
+    // Render calendar
+    initializeCalendar(events);
+    displayEventNotices(events);
+    showQuickOverview(events);
+  })
+  .catch((error) => {
+    console.error("Error getting documents: ", error);
+    const eventsGrid = document.getElementById("eventsGrid");
+    if (eventsGrid) {
+      eventsGrid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+          <div class="empty-state-text" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Failed to load events</div>
+          <div class="empty-state-subtext" style="color: var(--color-text-muted);">Please check your connection and try again.</div>
+        </div>
+      `;
+    }
+  });
 
 // Add category filter to calendar
 function addCategoryFilter(calendar, eventsData) {
-  const categoryFilterDropdown = document.createElement("select");
-  categoryFilterDropdown.id = "category-filter";
-  categoryFilterDropdown.title = "category-filter";
-  categoryFilterDropdown.innerHTML = `
-    <option value="">All Categories</option>
-    <option value="special-event">Special Events</option>
-    <option value="shard">Shard</option>
-    <option value="days-of-events">Days of Events</option>
-    <option value="travelling-spirits">Travelling Spirits</option>
-    <option value="seasons">Seasons</option>
-    <option value="hide">Hide Shards</option>
-  `;
-
-  const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
-  calendarHeader.appendChild(categoryFilterDropdown);
-
-  categoryFilterDropdown.addEventListener("change", function () {
-    const selectedCategory = this.value.toLowerCase();
-    
-    const filteredEvents = eventsData.filter((event) => {
-      if (selectedCategory === "hide") {
-        return !event.category || !event.category.toLowerCase().includes("shard");
-      } else {
-        if (event.category) {
-          return event.category.toLowerCase() === selectedCategory || selectedCategory === "";
-        } else {
-          return selectedCategory === "";
-        }
-      }
-    });
-    
-    calendar.removeAllEventSources();
-    calendar.addEventSource(filteredEvents);
-  });
-}
-
-// Format date range for display
-function formatDateRange(start, end) {
-  const startDate = moment(start);
-  const endDate = moment(end);
-
-  if (startDate.month() === endDate.month()) {
-    return `${startDate.format("MMM DD")} - ${endDate.format("DD")}`;
-  } else {
-    return `${startDate.format("MMM DD")} - ${endDate.format("MMM DD")}`;
-  }
-}
-
-// Calculate time remaining until event end
-function calculateRemainingTime(end) {
-  const now = new Date();
-  const endTime = new Date(end);
-  const diff = endTime - now;
-
-  if (diff <= 0) return "Ended";
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-  return `${days}D ${hours}H`;
-}
-
-// Calculate time until event start
-function calculateTimeUntilStart(start) {
-  const now = new Date();
-  const startTime = new Date(start);
-  const diff = startTime - now;
-
-  if (diff <= 0) return "Started";
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (days === 0) {
-    return `Starts in ${hours}H ${minutes}M`;
-  } else {
-    return `Starts in ${days}D ${hours}H ${minutes}M`;
-  }
-}
-
-// Create an event card for the events list
-function createEventCard(event) {
-  const now = new Date();
-  const start = new Date(event.start);
-  const end = new Date(event.end);
-
-  let timeInfo = "";
-  if (event.category === "Recurring") {
-    timeInfo = `Every ${event.recurringInterval || "0:30"}`;
-  } else if (now < start) {
-    timeInfo = calculateTimeUntilStart(start);
-  } else if (now >= start && now <= end) {
-    timeInfo = `Ends in: ${calculateRemainingTime(end)}`;
-  } else {
-    timeInfo = "Event ended";
-  }
-
-  const card = document.createElement("div");
-  card.className = "event-card";
-  card.dataset.eventId = event.id || generateEventId(event.title);
-
-  card.innerHTML = `
-    <img src="${event.image || "https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/not%20available?updatedAt=1744181831782"}" alt="${event.title}">
-    <div class="event-details">
-        <h3>${event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "")}</h3>
-        <p>${formatDateRange(event.start, event.end)}</p>
-        <p>${timeInfo}</p>
-    </div>
-    <div class="arrow">›</div>
-  `;
-
-  return card;
-}
-
-// Generate a unique ID for an event based on its title
-function generateEventId(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]/g, "-");
-}
-
-// Organize events by month and year
-function organizeEventsByMonthYear(events) {
-  const eventsByMonthYear = {};
-
-  events.forEach((event) => {
-    const startDate = new Date(event.start);
-    const monthYear = moment(startDate).format("MMMM YYYY");
-
-    if (!eventsByMonthYear[monthYear]) {
-      eventsByMonthYear[monthYear] = [];
-    }
-
-    eventsByMonthYear[monthYear].push(event);
-  });
-
-  return eventsByMonthYear;
-}
-
-// Find the current month index in the monthYearKeys array
-function findCurrentMonthIndex(monthYearKeys) {
-  const currentMonthYear = moment().format("MMMM YYYY");
-  const index = monthYearKeys.indexOf(currentMonthYear);
-  return index !== -1 ? index : 0;
-}
-
-// Function to update the month pagination
-function updateMonthPagination() {
-  const prevButton = document.getElementById("prev-month");
-  const nextButton = document.getElementById("next-month");
-  const monthYearSpan = document.getElementById("current-month-year");
-
-  monthYearSpan.textContent = monthYearKeys[currentMonthYearIndex];
-  prevButton.disabled = currentMonthYearIndex === 0;
-  nextButton.disabled = currentMonthYearIndex === monthYearKeys.length - 1;
-}
-
-// Display events for the current month/year
-function displayCurrentMonthEvents() {
-  const currentMonthYear = monthYearKeys[currentMonthYearIndex];
-  const eventsContainer = document.getElementById("all-events-content");
-  eventsContainer.innerHTML = "";
-
-  const monthDivider = document.createElement("div");
-  monthDivider.className = "month-divider";
-  eventsContainer.appendChild(monthDivider);
-
-  const monthEvents = eventsByMonthYear[currentMonthYear] || [];
-
-  if (monthEvents.length === 0) {
-    const noEvents = document.createElement("div");
-    noEvents.className = "no-events";
-    noEvents.textContent = "No events for this month";
-    eventsContainer.appendChild(noEvents);
-  } else {
-    monthEvents.forEach((event) => {
-      const card = createEventCard(event);
-      eventsContainer.appendChild(card);
-    });
-  }
-
-  addEventListenersToCards();
-}
-
-// Filter events for different tabs (all, in-progress, upcoming)
-function filterEvents() {
-  const now = new Date();
-  const activeTab = document.querySelector(".tab.active").dataset.tab;
-
-  // Filter events by status
-  const inProgress = allEvents.filter((event) => {
-    const start = new Date(event.start);
-    const end = new Date(event.end);
-    return now >= start && now <= end;
-  });
-
-  const upcoming = allEvents.filter((event) => {
-    const start = new Date(event.start);
-    return now < start;
-  });
-
-  // Handle tab display and content
-  handleTabDisplay(activeTab, inProgress, upcoming);
-}
-
-// Handle tab display and content population
-function handleTabDisplay(activeTab, inProgress, upcoming) {
-  // Hide all tab panes first
-  document.getElementById("in-progress").style.display = "none";
-  document.getElementById("upcoming").style.display = "none";
-  document.getElementById("all").style.display = "none";
-  
-  // Show and populate the active tab
-  if (activeTab === "all") {
-    document.getElementById("all").style.display = "block";
-    
-    // Setup month pagination
-    eventsByMonthYear = organizeEventsByMonthYear(allEvents);
-    monthYearKeys = Object.keys(eventsByMonthYear).sort((a, b) => {
-      return moment(a, "MMMM YYYY").diff(moment(b, "MMMM YYYY"));
-    });
-    
-    currentMonthYearIndex = findCurrentMonthIndex(monthYearKeys);
-    updateMonthPagination();
-    displayCurrentMonthEvents();
-  } 
-  else if (activeTab === "in-progress") {
-    const tabPane = document.getElementById("in-progress");
-    tabPane.style.display = "block";
-    tabPane.innerHTML = "";
-    
-    if (inProgress.length === 0) {
-      tabPane.innerHTML = '<div class="no-events">No events in progress</div>';
-    } else {
-      inProgress.forEach((event) => {
-        const card = createEventCard(event);
-        tabPane.appendChild(card);
-      });
-    }
-    
-    addEventListenersToCards();
-  } 
-  else if (activeTab === "upcoming") {
-    const tabPane = document.getElementById("upcoming");
-    tabPane.style.display = "block";
-    tabPane.innerHTML = "";
-    
-    if (upcoming.length === 0) {
-      tabPane.innerHTML = '<div class="no-events">No upcoming events</div>';
-    } else {
-      upcoming.forEach((event) => {
-        const card = createEventCard(event);
-        tabPane.appendChild(card);
-      });
-    }
-    
-    addEventListenersToCards();
-  }
-}
-
-// Update the preview panel with event details
-function updatePreviewPanel(event) {
-  const previewPanel = document.querySelector(".preview-panel");
-
-  if (!previewPanel) return;
-
-  if (!event) {
-    previewPanel.innerHTML = '<div class="loading">Select an event to view details</div>';
-    return;
-  }
-
-  const start = formatDate_withTZ(event.start, "short");
-  const end = formatDate_withTZ(event.end, "short");
-  const dateRange = start + " - " + end;
-  const title = event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
-
-  // Determine badge text based on category
-  let badgeText = event.category || "EVENT";
-  if (badgeText.toUpperCase().includes("DAY")) {
-    badgeText = "DAYS OF";
-  } else if (badgeText.toUpperCase().includes("SEASONS")) {
-    badgeText = "SEASON";
-  } else if (badgeText.toUpperCase().includes("TRAVELLING-SPIRITS")) {
-    badgeText = "TS";
-  } else if (badgeText.toUpperCase().includes("SPECIAL-EVENT")) {
-    badgeText = "SPECIAL";
-  }
-
-  const calendarLink = generateGoogleCalendarLink_previewPanel(event);
-
-  // Generate CTA button
-  const ctaButtonHTML = event.blogUrl ?
-    `<a id="modalCta" class="cta-btn" title="Sky Blog" href="${event.blogUrl}" target="_blank" rel="noopener noreferrer">
-      Read More
-    </a>` : '';
-
-  // Create preview panel content
-  previewPanel.innerHTML = `
-    <div class="carousel">
-      <div class="carousel-images-panel"></div>
-      <button class="carousel-btn-panel prev">❮</button>
-      <button class="carousel-btn-panel next">❯</button>
-    </div>
-    <div class="credits-section">
-      <span class="credits-list">Credits: ${event.credits || "Kathy"}</span>
-    </div>
-    <div class="days-badge">${badgeText.toUpperCase()}</div>
-    <h2>${title}</h2>
-    <p class="date">${dateRange}</p>
-    <p class="description">${event.description || "No description available"}</p>
-    <div class="modal-cta-container">
-      <a id="modalGoogleCalendar" class="cta-btn calendar-link-btn" title="Add to Google Calendar" href="${calendarLink}" rel="noopener noreferrer" target="_blank">
-        Add to Google Calendar
-      </a>
-      ${ctaButtonHTML}
-    </div>
-  `;
-
-  // Populate carousel with images
-  populatePreviewCarousel(event);
-
-  // Add carousel navigation event listeners
-  document.querySelector(".carousel-btn-panel.prev").addEventListener("click", () => navigateCarouselPanel(-1));
-  document.querySelector(".carousel-btn-panel.next").addEventListener("click", () => navigateCarouselPanel(1));
-}
-
-// Populate the preview carousel with images
-function populatePreviewCarousel(event) {
-  const carouselImagesContainer = document.querySelector(".carousel-images-panel");
-  
-  if (event.images) {
-    // Create an array of image URLs
-    const imageUrls = typeof event.images === "string" && event.images.includes(",")
-      ? event.images.split(/,|\|/).map(url => url.trim())
-      : Array.isArray(event.images) 
-        ? event.images 
-        : [event.images];
-
-    imageUrls.forEach((imageUrl, index) => {
-      const imgContainer = document.createElement("div");
-      imgContainer.className = "image-container";
-      
-      const img = document.createElement("img");
-      img.src = imageUrl;
-      img.alt = `${event.title} image ${index + 1}`;
-      img.className = index === 0 ? "active" : "";
-      
-      // Add zoom button
-      const zoomBtn = document.createElement("button");
-      zoomBtn.className = "zoom-btn";
-      zoomBtn.innerHTML = "⛶";
-      zoomBtn.title = "Enlarge image";
-      zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
-
-      imgContainer.appendChild(img);
-      imgContainer.appendChild(zoomBtn);
-      carouselImagesContainer.appendChild(imgContainer);
-    });
-
-    // Show/hide carousel controls based on image count
-    const carouselBtns = document.querySelectorAll(".carousel-btn-panel");
-    carouselBtns.forEach(btn => {
-      btn.style.display = imageUrls.length > 1 ? "block" : "none";
-    });
-  } else {
-    // Add placeholder image if no images provided
-    const imgContainer = document.createElement("div");
-    imgContainer.className = "image-container";
-    
-    const img = document.createElement("img");
-    img.src = "https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/not%20available?updatedAt=1744181831782";
-    img.alt = "Event placeholder image";
-    img.className = "active";
-    
-    const zoomBtn = document.createElement("button");
-    zoomBtn.className = "zoom-btn";
-    zoomBtn.innerHTML = "⛶";
-    zoomBtn.title = "Enlarge image";
-    zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
-
-    imgContainer.appendChild(img);
-    imgContainer.appendChild(zoomBtn);
-    carouselImagesContainer.appendChild(imgContainer);
-
-    // Hide carousel controls
-    document.querySelectorAll(".carousel-btn-panel").forEach(btn => {
-      btn.style.display = "none";
-    });
-  }
-}
-
-// Navigate carousel in the preview panel
-function navigateCarouselPanel(direction) {
-  const imageContainers = document.querySelectorAll(".carousel-images-panel .image-container");
-  if (imageContainers.length <= 1) return;
-
-  let activeIndex = -1;
-  imageContainers.forEach((container, index) => {
-    const img = container.querySelector("img");
-    if (img.classList.contains("active")) {
-      activeIndex = index;
-      img.classList.remove("active");
-    }
-  });
-
-  if (activeIndex === -1) return;
-
-  // Calculate new index with wraparound
-  let newIndex = (activeIndex + direction + imageContainers.length) % imageContainers.length;
-  const newImg = imageContainers[newIndex].querySelector("img");
-  newImg.classList.add("active");
-}
-
-// Open image in zoom overlay
-function openImageZoom(imageSrc, imageAlt) {
-  let zoomOverlay = document.getElementById("imageZoomOverlay");
-  if (!zoomOverlay) {
-    zoomOverlay = createZoomOverlay();
-  }
-  
-  const zoomImg = zoomOverlay.querySelector(".zoom-image");
-  const zoomContainer = zoomOverlay.querySelector(".zoom-image-container");
-  
-  zoomImg.src = imageSrc;
-  zoomImg.alt = imageAlt;
-  
-  // Reset zoom and position
-  resetImageZoom(zoomContainer, zoomImg);
-  
-  // Show overlay
-  zoomOverlay.style.display = "flex";
-  document.body.style.overflow = "hidden";
-  
-  // Initialize zoom controls after image loads
-  zoomImg.onload = () => {
-    initializeZoomControls(zoomContainer, zoomImg);
-    // Start with image fitted to container (original size)
-    fitImageToContainer(zoomContainer, zoomImg);
-  };
-}
-
-// Create zoom overlay element
-function createZoomOverlay() {
-  const overlay = document.createElement("div");
-  overlay.id = "imageZoomOverlay";
-  overlay.className = "image-zoom-overlay";
-  
-  overlay.innerHTML = `
-    <div class="zoom-container">
-      <div class="zoom-header">
-        <div class="zoom-controls">
-          <button class="zoom-btn-control" id="zoomOut">−</button>
-          <span class="zoom-level">100%</span>
-          <button class="zoom-btn-control" id="zoomIn">+</button>
-          <button class="zoom-btn-control" id="resetZoom">Reset</button>
-        </div>
-        <button class="zoom-close-btn">&times;</button>
-      </div>
-      <div class="zoom-instructions">
-        Use mouse wheel to zoom • Click and drag to pan • Pinch to zoom on mobile
-      </div>
-      <div class="zoom-image-container">
-        <img class="zoom-image" src="" alt="" />
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(overlay);
-  
-  // Add CSS styles
-  addZoomStyles();
-  
-  // Add event listeners
-  setupZoomEventListeners(overlay);
-  
-  return overlay;
-}
-
-// Add CSS styles for the zoom overlay
-function addZoomStyles() {
-  if (document.getElementById('zoomStyles')) return;
-  
-  const style = document.createElement('style');
-  style.id = 'zoomStyles';
-  style.textContent = `
-    .image-zoom-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 10000;
-      backdrop-filter: blur(5px);
-    }
-    
-    .zoom-container {
-      width: 95%;
-      height: 95%;
-      display: flex;
-      flex-direction: column;
-      background: #1a1a1a;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    
-    .zoom-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background: #2a2a2a;
-      border-bottom: 1px solid #444;
-    }
-    
-    .zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .zoom-btn-control {
-      background: #4a4a4a;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      min-width: 40px;
-      transition: background 0.2s;
-    }
-    
-    .zoom-btn-control:hover {
-      background: #5a5a5a;
-    }
-    
-    .zoom-level {
-      color: white;
-      font-weight: bold;
-      min-width: 50px;
-      text-align: center;
-    }
-    
-    .zoom-close-btn {
-      background: #ff4444;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    
-    .zoom-close-btn:hover {
-      background: #ff6666;
-    }
-    
-    .zoom-image-container {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-      cursor: grab;
-      background: #1a1a1a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .zoom-image-container:active {
-      cursor: grabbing;
-    }
-    
-    .zoom-image {
-      max-width: 100%;
-      max-height: 100%;
-      transition: transform 0.1s ease-out;
-      user-select: none;
-      -webkit-user-drag: none;
-      object-fit: contain;
-    }
-    
-    /* Zoom button styles */
-    .zoom-btn {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      z-index: 10;
-      backdrop-filter: blur(4px);
-    }
-    
-    .zoom-btn:hover {
-      background: rgba(0, 0, 0, 0.9);
-      transform: scale(1.1);
-    }
-    
-    .zoom-instructions {
-      padding: 10px 20px;
-      background: #2a2a2a;
-      color: #ccc;
-      text-align: center;
-      font-size: 14px;
-      border-top: 1px solid #444;
-    }
-    
-    @media (max-width: 768px) {
-      .zoom-container {
-        width: 100%;
-        height: 100%;
-        border-radius: 0;
-      }
-      
-      .zoom-controls {
-        gap: 5px;
-      }
-      
-      .zoom-btn-control {
-        padding: 6px 10px;
-        font-size: 14px;
-        min-width: 35px;
-      }
-      
-      .zoom-instructions {
-        font-size: 12px;
-        padding: 8px 15px;
-      }
-    }
-  `;
-  
-  document.head.appendChild(style);
-}
-
-// Setup event listeners for zoom functionality
-function setupZoomEventListeners(overlay) {
-  const closeBtn = overlay.querySelector(".zoom-close-btn");
-  closeBtn.onclick = closeImageZoom;
-  
-  // Close on overlay click
-  overlay.onclick = (e) => {
-    if (e.target === overlay) {
-      closeImageZoom();
-    }
-  };
-  
-  // Close on ESC key
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && overlay.style.display === "flex") {
-      closeImageZoom();
-    }
-  });
-}
-
-// Initialize zoom controls for an image
-function initializeZoomControls(container, img) {
-  let scale = 1;
-  let translateX = 0;
-  let translateY = 0;
-  let isDragging = false;
-  let startX = 0;
-  let startY = 0;
-  
-  document.getElementById('zoomIn').onclick = () => {
-    scale = Math.min(scale * 1.2, 5); // Max 5x zoom
-    updateImageTransform();
-    updateZoomInfo(scale);
-  };
-  
-  document.getElementById('zoomOut').onclick = () => {
-    scale = Math.max(scale / 1.2, 0.1); // Min 0.1x zoom
-    updateImageTransform();
-    updateZoomInfo(scale);
-  };
-  
-  document.getElementById('resetZoom').onclick = () => {
-    fitImageToContainer(container, img);
-  };
-  
-  // Mouse wheel zoom
-  container.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const rect = container.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(Math.max(scale * delta, 0.1), 5);
-    
-    // Zoom towards mouse position
-    const scaleDiff = newScale - scale;
-    translateX -= (mouseX - translateX) * scaleDiff / scale;
-    translateY -= (mouseY - translateY) * scaleDiff / scale;
-    
-    scale = newScale;
-    updateImageTransform();
-    updateZoomInfo(scale);
-  });
-  
-  // Mouse drag to pan
-  container.addEventListener('mousedown', startDrag);
-  container.addEventListener('mousemove', drag);
-  container.addEventListener('mouseup', endDrag);
-  container.addEventListener('mouseleave', endDrag);
-  
-  // Touch events for mobile
-  container.addEventListener('touchstart', handleTouchStart, { passive: false });
-  container.addEventListener('touchmove', handleTouchMove, { passive: false });
-  container.addEventListener('touchend', handleTouchEnd);
-  
-  let lastTouchDistance = 0;
-  
-  function startDrag(e) {
-    isDragging = true;
-    startX = e.clientX - translateX;
-    startY = e.clientY - translateY;
-    container.style.cursor = 'grabbing';
-  }
-  
-  function drag(e) {
-    if (!isDragging) return;
-    e.preventDefault();
-    translateX = e.clientX - startX;
-    translateY = e.clientY - startY;
-    updateImageTransform();
-  }
-  
-  function endDrag() {
-    isDragging = false;
-    container.style.cursor = 'grab';
-  }
-  
-  function handleTouchStart(e) {
-    if (e.touches.length === 2) {
-      lastTouchDistance = getTouchDistance(e.touches);
-    } else if (e.touches.length === 1) {
-      startDrag({
-        clientX: e.touches[0].clientX,
-        clientY: e.touches[0].clientY
-      });
-    }
-  }
-  
-  function handleTouchMove(e) {
-    e.preventDefault();
-    
-    if (e.touches.length === 2) {
-      // Pinch to zoom
-      const currentDistance = getTouchDistance(e.touches);
-      if (lastTouchDistance > 0) {
-        const scaleChange = currentDistance / lastTouchDistance;
-        scale = Math.min(Math.max(scale * scaleChange, 0.1), 5);
-        updateImageTransform();
-        updateZoomInfo(scale);
-      }
-      lastTouchDistance = currentDistance;
-    } else if (e.touches.length === 1 && isDragging) {
-      // Single finger drag
-      drag({
-        clientX: e.touches[0].clientX,
-        clientY: e.touches[0].clientY,
-        preventDefault: () => {}
-      });
-    }
-  }
-  
-  function handleTouchEnd() {
-    endDrag();
-    lastTouchDistance = 0;
-  }
-  
-  function getTouchDistance(touches) {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-  
-  function updateImageTransform() {
-    img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-  }
-  
-  // Store functions for reset
-  container._resetZoom = () => {
-    fitImageToContainer(container, img);
-  };
-  
-  container._updateScale = (newScale) => {
-    scale = newScale;
-  };
-}
-
-// Fit image to original size
-function fitImageToContainer(container, img) {
-  const containerRect = container.getBoundingClientRect();
-  const imgRect = img.getBoundingClientRect();
-  
-  // Calculate scale to fit image in container
-  const scaleX = img.naturalWidth;
-  const scaleY = img.naturalHeight;
-  const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond original size
-  
-  // Reset position and apply scale
-  img.style.transform = `translate(0px, 0px) scale(${scale})`;
-  
-  // Update internal scale tracking
-  if (container._updateScale) {
-    container._updateScale(scale);
-  }
-  
-  updateZoomInfo(scale);
-}
-
-// Reset image zoom to fit container
-function resetImageZoom(container, img) {
-  fitImageToContainer(container, img);
-}
-
-// Update zoom percentage display
-function updateZoomInfo(scale) {
-  const zoomLevel = document.querySelector('.zoom-level');
-  if (zoomLevel) {
-    zoomLevel.textContent = Math.round(scale * 100) + '%';
-  }
-}
-
-// Close image zoom
-function closeImageZoom() {
-  const zoomOverlay = document.getElementById("imageZoomOverlay");
-  if (zoomOverlay) {
-    zoomOverlay.style.display = "none";
-    document.body.style.overflow = "";
-  }
-}
-
-// Add event listeners to event cards
-function addEventListenersToCards() {
-  const eventCards = document.querySelectorAll(".event-card");
-
-  eventCards.forEach(card => {
-    card.addEventListener("click", () => {
-      // Remove active class from all cards
-      document.querySelectorAll(".event-card").forEach(c => c.classList.remove("active"));
-      
-      // Add active class to clicked card
-      card.classList.add("active");
-      
-      // Find the event data and update preview
-      const eventId = card.dataset.eventId;
-      const event = allEvents.find(e => (e.id || generateEventId(e.title)) === eventId);
-      
-      if (event) {
-        updatePreviewPanel(event);
-        console.log(event);
+    const categoryFilterDropdown = document.createElement("select");
+    categoryFilterDropdown.id = "category-filter";
+    categoryFilterDropdown.title = "category-filter";
+    categoryFilterDropdown.innerHTML = `
+        <option value="">All Categories</option>
+        <option value="special-event">Special Events</option>
+        <option value="shard">Shard</option>
+        <option value="days-of-events">Days of Events</option>
+        <option value="travelling-spirits">Travelling Spirits</option>
+        <option value="seasons">Seasons</option>
+        <option value="hide">Hide Shards</option>
+    `;
+
+    const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
+    calendarHeader.appendChild(categoryFilterDropdown);
+
+    categoryFilterDropdown.addEventListener("change", function () {
+        const selectedCategory = this.value.toLowerCase();
         
-      }
-    });
-  });
-}
-
-// Fetch events from Firebase
-function fetchEvents() {
-  Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
-    .then(([eventsSnapshot]) => {
-      allEvents = [];
-
-      const userTimezone = moment.tz.guess();
-
-      eventsSnapshot.docs.forEach(doc => {
-        const startRaw = doc.data().start;
-        const endRaw = doc.data().end;
-        const startTime = doc.data().startTime;
-
-        let startMomentLA, endMomentLA;
-
-        if (startTime) {
-          startMomentLA = moment.tz(`${startRaw} ${startTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
-          const endTime = doc.data().endTime;
-          if (endTime) {
-            endMomentLA = moment.tz(`${endRaw} ${endTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
-          } else {
-            endMomentLA = startMomentLA.clone().add(1, 'hour');
-          }
+        const filteredEvents = eventsData.filter((event) => {
+        if (selectedCategory === "hide") {
+            return !event.category || !event.category.toLowerCase().includes("shard");
         } else {
-          // No time specified - all day event
-          startMomentLA = moment.tz(startRaw, "America/Los_Angeles").startOf('day');
-          endMomentLA = moment.tz(endRaw, "YYYY-MM-DD", "America/Los_Angeles").endOf('day');
+            if (event.category) {
+            return event.category.toLowerCase() === selectedCategory || selectedCategory === "";
+            } else {
+            return selectedCategory === "";
+            }
         }
-        const startLocalTime = startMomentLA.clone().tz(userTimezone);
-        const endLocalTime = endMomentLA.clone().tz(userTimezone);
-
-        const eventId = doc.id || generateEventId(doc.data().title);
-
-        allEvents.push({
-          id: eventId,
-          title: doc.data().title,
-          start: startLocalTime.toDate(),
-          end: endLocalTime.toDate(),
-          allDay: startTime,
-          color: doc.data().color,
-          description: doc.data().description,
-          images: doc.data().images,
-          blogUrl: doc.data().blogUrl,
-          image: doc.data().image,
-          credits: doc.data().credits,
-          category: doc.data().category || "Default Category",
         });
-      });
-
-      processEvents();
-    })
-    .catch(error => {
-      console.error("Error getting documents: ", error);
-      const errorMessage = '<div class="no-events">Error loading events. Please try again later.</div>';
-      document.getElementById("all-events-content").innerHTML = errorMessage;
-      document.getElementById("in-progress-content").innerHTML = errorMessage;
-      document.getElementById("upcoming-content").innerHTML = errorMessage;
+        
+        calendar.removeAllEventSources();
+        calendar.addEventSource(filteredEvents);
     });
-}
-
-// Process events after fetching
-function processEvents() {
-  filterEvents();
-
-  // Display first event in preview panel if available
-  if (allEvents.length > 0) {
-    updatePreviewPanel(allEvents[0]);
-
-    // Set first card as active
-    setTimeout(() => {
-      const firstCard = document.querySelector(".event-card");
-      if (firstCard) {
-        firstCard.classList.add("active");
-        const previewPanel = document.querySelector(".preview-panel");
-        previewPanel.innerHTML = '<div class="loading">Select an event to view details</div>';
-      }
-    }, 0);
-  }
-}
-
-// Show quick overview of events
-function showQuickOverview(eventsData) {
-  const eventModal = document.querySelector(".event-cards-overview");
-  eventModal.innerHTML = "";
-
-  const today = new Date();
-  const ongoingEvents = [];
-  const incomingEvents = [];
-
-  // Separate events into ongoing and incoming
-  eventsData.forEach(event => {
-    const eventStart = new Date(event.start);
-    const eventEnd = new Date(event.end);
-
-    if (today >= eventStart && today <= eventEnd) {
-      ongoingEvents.push(event);
-    } else if (today < eventStart && today < eventEnd) {
-      incomingEvents.push(event);
-    }
-  });
-
-  // Display events in overview
-  displayEventsOverview(ongoingEvents, eventModal);
-  displayEventsOverview(incomingEvents, eventModal);
-}
-
-// Helper function to display events in the overview
-function displayEventsOverview(eventsToDisplay, container) {
-  if (eventsToDisplay.length === 0) return;
-  
-  eventsToDisplay.forEach(event => {
-    // Create event card
-    const eventModalCard = document.createElement("div");
-    eventModalCard.classList.add("event-card-overview");
-    eventModalCard.style.borderBottom = `4px solid ${event.color}`;
-    eventModalCard.dataset.eventId = event.id;
-
-    // Image holder
-    const eventImageHolder = document.createElement("div");
-    eventImageHolder.classList.add("event-image-overview");
-
-    const eventImage = document.createElement("img");
-    eventImage.classList.add("event-modal-card-img-overview");
-    eventImage.src = event.image;
-    eventImage.alt = event.title;
-    eventImageHolder.appendChild(eventImage);
-    eventModalCard.appendChild(eventImageHolder);
-
-    // Event badge
-    const eventBadge = document.createElement("div");
-    eventBadge.classList.add("event-badge-overview");
-    let badgeText = formatBadgeText(event.category);
-    eventBadge.textContent = badgeText;
-    eventModalCard.appendChild(eventBadge);
-
-    // Event content container
-    const eventContent = document.createElement("div");
-    eventContent.classList.add("event-content-overview");
-
-    // Title
-    const eventTitle = document.createElement("h3");
-    eventTitle.classList.add("event-title-overview");
-    eventTitle.textContent = event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
-    eventContent.appendChild(eventTitle);
-
-    // Date
-    const eventDate = document.createElement("p");
-    eventDate.classList.add("event-date-overview");
-    
-    // Format dates
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end);
-    const startFormatted = startDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-    });
-    const endFormatted = endDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-    });
-
-    eventDate.textContent = `${startFormatted} - ${endFormatted}`;
-    eventContent.appendChild(eventDate);
-
-    // Countdown
-    const eventDates = document.createElement("p");
-    eventDates.classList.add("event-countdown-overview");
-    const uniqueId = `countdown-${event.title.replace(/ /g, "_")}`;
-    eventDates.id = uniqueId;
-
-    const timeUntilStart = event.start ? timeUntil(event.start) : 0;
-    const startLabel = timeUntilStart <= 0 ? "Starts: Ongoing" : "Starts in: ";
-    const endLabel = timeUntilStart <= 0 ? "Ends in: " : "Ends in: ";
-
-    setTimeout(() => {
-      updateCountdown(uniqueId, event.start, startLabel);
-      if (timeUntilStart <= 0) {
-        updateCountdown(uniqueId, event.end, endLabel);
-      }
-    }, 0);
-
-    eventModalCard.addEventListener("click", function () {
-      openEventModal({
-        title: event.title,
-        start: new Date(event.start),
-        end: new Date(event.end),
-        extendedProps: {
-          credits: event.credits,
-          description: event.description,
-          blogUrl: event.blogUrl,
-          images: event.images
-        }
-      });
-    });
-
-    eventContent.appendChild(eventDates);
-    eventModalCard.appendChild(eventContent);
-    container.appendChild(eventModalCard);
-  });
-}
-
-// Format badge text based on category
-function formatBadgeText(category) {
-  let badgeText = category || "EVENT";
-  if (badgeText.toUpperCase().includes("DAY")) {
-    return "DAYS OF";
-  } else if (badgeText.toUpperCase().includes("SEASONS")) {
-    return "SEASON";
-  } else if (badgeText.toUpperCase().includes("TRAVELLING-SPIRITS")) {
-    return "TS";
-  }
-  else if (badgeText.toUpperCase().includes("SPECIAL-EVENT")) {
-    return "SPECIAL";
-  }
-  return badgeText.toUpperCase();
-}
-
-// Calculate time until a target time
-function timeUntil(targetTime) {
-  const now = new Date();
-  return targetTime - now;
-}
-
-// Update countdown timer
-function updateCountdown(elementId, targetDate, label) {
-  if (!targetDate) return;
-
-  const countdownElement = document.getElementById(elementId);
-  let intervalId = setInterval(function () {
-    const distance = targetDate.getTime() - new Date().getTime();
-
-    if (distance <= 0) {
-      clearInterval(intervalId);
-      countdownElement.textContent = `${label}Ongoing`;
-      return;
-    }
-
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    let countdown = "";
-    if (days > 0) countdown += `${days}d `;
-    if (hours > 0) countdown += `${hours}h `;
-    if (minutes > 0) countdown += `${minutes}m `;
-    countdown += `${seconds}s`;
-
-    countdownElement.textContent = `${label}${countdown}`;
-  }, 1000);
-}
-
-function openEventModal(event) {
-  const modal = document.getElementById("eventModal");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalDateStart = document.getElementById("modalStart");
-  const modalDescription = document.getElementById("modalDescription");
-  const modalCta = document.getElementById("modalCta");
-  const modalGoogleCalendar = document.getElementById("modalGoogleCalendar");
-  const carouselImagesContainer = document.querySelector(".carousel-images");
-  const creditList = document.querySelector(".credits-list");
-
-  let formattedStart, formattedEnd;
-
-  formattedStart = formatDate_withTZ(event.start);
-  formattedEnd = formatDate_withTZ(event.end);
-
-  // Clear previous carousel images
-  carouselImagesContainer.innerHTML = "";
-
-  // Populate credits
-  creditList.textContent = event.extendedProps.credits
-    ? "Credits: " + event.extendedProps.credits
-    : "Credits: We're working on gathering information for you. Check back soon!";
-
-  // Clean title from emojis
-  const title = event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
-
-  // Populate modal data
-  modalTitle.textContent = title;
-  modalDateStart.textContent = formattedStart + " - " + formattedEnd;
-
-  modalDescription.innerHTML = event.extendedProps.description || 
-    "The story behind this event is still unfolding...";
-
-  const calendarLink = generateGoogleCalendarLink(event);
-  modalGoogleCalendar.href = calendarLink;
-  modalGoogleCalendar.target = "_blank";
-  modalGoogleCalendar.rel = "noopener noreferrer";
-  modalGoogleCalendar.textContent = "Add to Google Calendar";
-  modalGoogleCalendar.classList.add("calendar-link-btn");
-
-  // Set CTA link if available
-  if (event.extendedProps.blogUrl) {
-    modalCta.target = "_blank";
-    modalCta.textContent = "Read More";
-    modalCta.href = event.extendedProps.blogUrl;
-    modalCta.style.display = "inline-block";
-  } else {
-    modalCta.style.display = "none";
-  }
-
-  // Add images to carousel
-  populateModalCarousel(event);
-
-  // Show the modal
-  modal.style.display = "block";
-}
-
-// Populate the modal carousel with images
-function populateModalCarousel(event) {
-  const carouselImagesContainer = document.querySelector(".carousel-images");
-  
-  if (event.extendedProps.images) {
-    // Create an array of image URLs
-    const imageUrls = event.extendedProps.images.includes(",")
-      ? event.extendedProps.images.split(/,|\|/).map(url => url.trim())
-      : [event.extendedProps.images];
-
-    imageUrls.forEach((imageUrl, index) => {
-      const imgContainer = document.createElement("div");
-      imgContainer.className = "image-container";
-      
-      const img = document.createElement("img");
-      img.src = imageUrl;
-      img.alt = `${event.title} image ${index + 1}`;
-      img.className = index === 0 ? "active" : "";
-      
-      // Add zoom button
-      const zoomBtn = document.createElement("button");
-      zoomBtn.className = "zoom-btn";
-      zoomBtn.innerHTML = "⛶";
-      zoomBtn.title = "Enlarge image";
-      zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
-
-      imgContainer.appendChild(img);
-      imgContainer.appendChild(zoomBtn);
-      carouselImagesContainer.appendChild(imgContainer);
-    });
-
-    // Show/hide carousel controls
-    const carouselBtns = document.querySelectorAll(".carousel-btn");
-    carouselBtns.forEach(btn => {
-      btn.style.display = imageUrls.length > 1 ? "block" : "none";
-    });
-  } else {
-    // Add placeholder image
-    const imgContainer = document.createElement("div");
-    imgContainer.className = "image-container";
-    
-    const img = document.createElement("img");
-    img.src = "https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/not%20available?updatedAt=1744181831782";
-    img.alt = "Event placeholder image";
-    img.className = "active";
-    
-    const zoomBtn = document.createElement("button");
-    zoomBtn.className = "zoom-btn";
-    zoomBtn.innerHTML = "⛶";
-    zoomBtn.title = "Enlarge image";
-    zoomBtn.onclick = () => openImageZoom(imageUrl, img.alt);
-
-    imgContainer.appendChild(img);
-    imgContainer.appendChild(zoomBtn);
-    carouselImagesContainer.appendChild(imgContainer);
-
-    // Hide carousel controls
-    document.querySelectorAll(".carousel-btn").forEach(btn => {
-      btn.style.display = "none";
-    });
-  }
-}
-
-// Format date with timezone
-function formatDate_withTZ(date, format) {
-  const options = {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  };
-  const formattedDate = new Intl.DateTimeFormat("en-US", options).format(date);
-  const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  return `${formattedDate}`;
-}
-
-// Navigate carousel in the modal
-function navigateCarousel(direction) {
-  const images = document.querySelectorAll(".carousel-images img");
-  if (images.length <= 1) return;
-
-  let activeIndex = -1;
-  images.forEach((img, index) => {
-    if (img.classList.contains("active")) {
-      activeIndex = index;
-      img.classList.remove("active");
-    }
-  });
-
-  if (activeIndex === -1) return;
-
-  // Calculate new index with wraparound
-  let newIndex = (activeIndex + direction + images.length) % images.length;
-  images[newIndex].classList.add("active");
 }
 
 function displayEventNotices(eventsData) {
@@ -1515,356 +330,1812 @@ function createEmptyNoticeElement(className, iconSrc, labelText) {
   return noticeDiv;
 }
 
-// Fetch events and shard events, then combine and initialize the calendar
-Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
-  .then(([eventsSnapshot]) => {
-    const events = [];
+// ___________________________QUICK OVERVIEW_____________________________________
+function showQuickOverview(events) {
+  const container = document.getElementById('event-cards-container');
+  
+  if (!container) {
+    console.warn('Quick overview container not found');
+    return;
+  }
+  
+  // Clear loading state
+  container.innerHTML = '';
+  
+  // Filter events for quick overview (upcoming and current events)
+  const currentDate = new Date();
+  const relevantEvents = events
+    .filter(event => {
+      const eventEnd = new Date(event.end);
+      return eventEnd >= currentDate; // Show current and future events
+    })
+    .slice(0, 6); // Limit to 6 cards for quick overview
 
-    const moment = require("moment");
-    require("moment-timezone");
+  // Handle single card layout
+  if (relevantEvents.length === 1) {
+    container.classList.add('single-card');
+  } else {
+    container.classList.remove('single-card');
+  }
 
-    // Get the user's timezone once
-    const userTimezone = moment.tz.guess();
+  if (relevantEvents.length === 0) {
+    // Show empty state
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🌟</div>
+        <div class="empty-state-text">No upcoming events</div>
+        <div class="empty-state-subtext">Check back soon for new Sky events!</div>
+      </div>
+    `;
+    return;
+  }
 
-    eventsSnapshot.docs.forEach((doc) => {
-      const startRaw = doc.data().start;
-      const endRaw = doc.data().end;
-      const startTime = doc.data().startTime;
-
-      let startMomentLA, endMomentLA;
-
-      if (startTime) {
-        startMomentLA = moment.tz(`${startRaw} ${startTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
-        const endTime = doc.data().endTime;
-        if (endTime) {
-          endMomentLA = moment.tz(`${endRaw} ${endTime}`, "YYYY-MM-DD HH:mm", "America/Los_Angeles");
-        } else {
-          endMomentLA = startMomentLA.clone().add(1, 'hour');
-        }
-      } else {
-        // No time specified - all day event (your current logic)
-        startMomentLA = moment.tz(startRaw, "America/Los_Angeles").startOf('day');
-        endMomentLA = moment.tz(endRaw, "YYYY-MM-DD", "America/Los_Angeles").endOf('day');
-      }
-      const startLocalTime = startMomentLA.clone().tz(userTimezone);
-      const endLocalTime = endMomentLA.clone().tz(userTimezone);
-
-      const eventId = doc.id || generateEventId(doc.data().title);
-
-      events.push({
-        id: eventId,
-        title: doc.data().title,
-        start: startLocalTime.toDate(),
-        end: endLocalTime.toDate(),
-        allDay: startTime,
-        color: doc.data().color,
-        description: doc.data().description,
-        images: doc.data().images,
-        blogUrl: doc.data().blogUrl,
-        image: doc.data().image,
-        credits: doc.data().credits,
-        category: doc.data().category || "Default Category",
-      });
-    });
-
-    // Initialize FullCalendar with the processed events
-    initializeCalendar(events);
-    displayEventNotices(events);
-    showQuickOverview(events);
-  })
-  .catch((error) => {
-    console.error("Error getting documents: ", error);
+  relevantEvents.forEach((event, index) => {
+    const eventCard = createEventCard(event);
+    // Stagger animation
+    eventCard.style.animationDelay = `${index * 0.1}s`;
+    container.appendChild(eventCard);
   });
 
+  // console.log(`Displayed ${relevantEvents.length} events in quick overview`);
+}
 
-  document.addEventListener("DOMContentLoaded", function () {
-    // Show overlay on page load
-    setTimeout(function () {
-      document.querySelector(".overlay").style.opacity = 0;
-      setTimeout(function () {
-        document.querySelector(".overlay").style.display = "none";
-      }, 2500);
-    }, 2500);
+// Function to create individual event card
+function createEventCard(event) {
+  const card = document.createElement('div');
+  card.className = 'event-card';
+  card.setAttribute('data-event-id', event.id);
   
-    var modal = document.getElementById("game-modal");
-    var btn = document.getElementById("open-game-modal");
-    var span = document.getElementsByClassName("close")[0];
-    btn.onclick = function () {
-      modal.style.display = "block";
-    };
+  // Determine event status
+  const currentDate = new Date();
+  const startDate = new Date(event.start);
+  const endDate = new Date(event.end);
+  
+  let eventStatus = '';
+  if (currentDate < startDate) {
+    eventStatus = 'upcoming';
+  } else if (currentDate >= startDate && currentDate <= endDate) {
+    eventStatus = 'ongoing';
+  } else {
+    eventStatus = 'past';
+  }
+  
+  card.classList.add(eventStatus);
+  card.style.borderBottom = `4px solid ${event.color}`;
+  
+  // Get badge info based on category
+  const badgeInfo = getBadgeInfo(event.category);
+  
+  // Format date range
+  const dateRange = formatDateRange(startDate, endDate);
+  
+  // Get countdown info
+  const countdownInfo = getCountdownInfo(startDate, endDate, currentDate);
 
-    span.onclick = function () {
-      modal.style.display = "none";
-    };
+  if (event.title.includes("Traveling Spirit:")) {
+    event.title = event.title.replace("Traveling Spirit:", "TS:");
+  }
+
+  if (event.title.includes("Traveling Spirits")) {
+    event.title = event.title.replace("Traveling Spirits", "TS");
+  }
   
-    window.onclick = function (event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
+  card.innerHTML = `
+    <div class="event-image-container">
+      ${event.image ? 
+        `<img src="${event.image}" alt="${event.title}" class="event-image" onerror="this.parentElement.innerHTML='<div class=\\"event-image-placeholder\\">🌟</div>` : 
+        `<div class="event-image-placeholder">🌟</div>`
       }
-    };
-  
-    // ============================================
-    const tabs = document.querySelectorAll(".tab");
-    const tabPanes = document.querySelectorAll(".tab-pane");
-  
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        // Remove active class from all tabs
-        tabs.forEach((t) => t.classList.remove("active"));
-  
-        // Add active class to clicked tab
-        tab.classList.add("active");
-  
-        // Hide all tab panes
-        tabPanes.forEach((pane) => (pane.style.display = "none"));
-  
-        // Show the corresponding tab pane
-        const tabId = tab.dataset.tab;
-        document.getElementById(tabId).style.display = "block";
-  
-        // If we switch tabs, make sure the content is up to date
-        if (allEvents.length > 0) {
-          filterEvents();
-        }
-      });
-    });
-
-    document.getElementById("prev-month").addEventListener("click", () => {
-      if (currentMonthYearIndex > 0) {
-        currentMonthYearIndex--;
-        updateMonthPagination();
-        displayCurrentMonthEvents();
-      }
-    });
-    document.getElementById("next-month").addEventListener("click", () => {
-      if (currentMonthYearIndex < monthYearKeys.length - 1) {
-        currentMonthYearIndex++;
-        updateMonthPagination();
-        displayCurrentMonthEvents();
-      }
-    });
-  
-    // Initialize the events
-    fetchEvents();
-    tabPanes.forEach((pane) => {
-      if (pane.id === document.querySelector(".tab.active").dataset.tab) {
-        pane.style.display = "block";
-      } else {
-        pane.style.display = "none";
-      }
-    });
-
-    const modalHTML = `<div id="eventModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <!-- Image Carousel -->
-      <div class="carousel">
-        <div class="carousel-images"></div>
-        <button class="carousel-btn prev">❮</button>
-        <button class="carousel-btn next">❯</button>
-      </div>
-
-      <div class="credits-section">
-        <span class="credits-list">Credits: </span>
-      </div>
-
-      <h2 id="modalTitle"></h2>
-      <div id="modalDates">
-        <p id="modalStart"></p>
-        <p id="modalEnd"></p>
-      </div>
-      <div id="modalDescription"></div>
-      <div class="modal-cta-container">
-        <a id="modalGoogleCalendar" class="cta-btn calendar-link-btn" title="Add to Google Calendar">
-          Add to Google Calendar
-        </a>
-        <a id="modalCta" class="cta-btn" title="Sky Blog">
-          Sky Blog
-        </a>
+      <div class="event-badge ${badgeInfo.class}">${badgeInfo.text}</div>
+    </div>
+    <div class="event-content-overview">
+      <h3 class="event-title">${event.title.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "")}</h3>
+      <div class="event-date">${dateRange}</div>
+      <div class="event-countdown ${countdownInfo.class}">
+        <div class="countdown-label">${countdownInfo.label}</div>
+        <div class="countdown-time">${countdownInfo.time}</div>
       </div>
     </div>
-    </div>`;
-    document.body.insertAdjacentHTML("beforeend", modalHTML);
+  `;
 
-    document.querySelector(".carousel-btn.prev").addEventListener("click", function () {
-        navigateCarousel(-1);
-    });
-    document.querySelector(".carousel-btn.next").addEventListener("click", function () {
-        navigateCarousel(1);
-    });
 
-    document.querySelector(".close-modal").addEventListener("click", function (event) {
-        document.getElementById("eventModal").style.display = "none";
-    });
+  
+  // Add click event to open event modal (if you have one)
+  card.addEventListener('click', () => {
+    if (typeof openEventModal === 'function') {
+      openEventModal(event);
+    } else {
+      // console.log('Event clicked:', event.title);
+    }
+  });
+  
+  return card;
+}
 
-    window.addEventListener("click", function (event) {
-      const modal = document.getElementById("eventModal");
-      if (event.target === modal) {
-        modal.style.display = "none";
+// Helper function to get badge information
+function getBadgeInfo(category) {
+  const categoryLower = category?.toLowerCase() || '';
+  
+  if (categoryLower.includes('traveling') || categoryLower.includes('ts')) {
+    return { class: 'ts', text: 'TS' };
+  } else if (categoryLower.includes('season')) {
+    return { class: 'season', text: 'SEASON' };
+  } else if (categoryLower.includes('special')) {
+    return { class: 'special', text: 'SPECIAL' };
+  } else if (categoryLower.includes('shard')) {
+    return { class: 'shards', text: 'SHARDS' };
+  } else {
+    return { class: 'special', text: 'EVENT' };
+  }
+}
+
+// Helper function to format date range
+function formatDateRange(startDate, endDate) {
+  const options = { month: 'short', day: 'numeric' };
+  const start = startDate.toLocaleDateString('en-US', options);
+  const end = endDate.toLocaleDateString('en-US', options);
+  
+  // If same month, show "Jan 15 - 22"
+  if (startDate.getMonth() === endDate.getMonth()) {
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+    const month = startDate.toLocaleDateString('en-US', { month: 'short' });
+    return `${month} ${startDay} - ${endDay}`;
+  }
+  
+  return `${start} - ${end}`;
+}
+
+// Helper function to get countdown information
+function getCountdownInfo(startDate, endDate, currentDate) {
+  const msInDay = 24 * 60 * 60 * 1000;
+  const msInHour = 60 * 60 * 1000;
+  const msInMinute = 60 * 1000;
+  
+  let timeDiff, label, className;
+  
+  if (currentDate < startDate) {
+    // Event hasn't started yet
+    timeDiff = startDate - currentDate;
+    label = 'Starts in';
+    className = 'starting';
+  } else if (currentDate >= startDate && currentDate <= endDate) {
+    // Event is ongoing
+    timeDiff = endDate - currentDate;
+    label = 'Ends in';
+    className = 'ending';
+  } else {
+    // Event has ended
+    return {
+      class: 'ended',
+      label: 'Event',
+      time: 'Ended'
+    };
+  }
+  
+  // Calculate time components
+  const days = Math.floor(timeDiff / msInDay);
+  const hours = Math.floor((timeDiff % msInDay) / msInHour);
+  const minutes = Math.floor((timeDiff % msInHour) / msInMinute);
+  
+  let timeString = '';
+  if (days > 0) {
+    timeString = `${days}d ${hours}h ${minutes}m`;
+  } else if (hours > 0) {
+    timeString = `${hours}h ${minutes}m`;
+  } else if (minutes > 0) {
+    timeString = `${minutes}m`;
+  } else {
+    timeString = 'Now';
+  }
+  
+  return {
+    class: className,
+    label: label,
+    time: timeString
+  };
+}
+
+// Utility function to generate event ID if missing
+function generateEventId(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+}
+
+// Update countdowns every minute
+let countdownInterval = setInterval(() => {
+  const cards = document.querySelectorAll('.event-card-list');
+  if (cards.length === 0) {
+    return;
+  }
+  
+  cards.forEach(card => {
+    const eventId = card.getAttribute('data-event-id');
+    const event = allEvents.find(e => e.id === eventId);
+    if (event) {
+      const currentDate = new Date();
+      const startDate = new Date(event.start);
+      const endDate = new Date(event.end);
+      const countdownInfo = getCountdownInfo(startDate, endDate, currentDate);
+      
+      const countdownElement = card.querySelector('.event-countdown');
+      const labelElement = card.querySelector('.countdown-label');
+      const timeElement = card.querySelector('.countdown-time');
+      
+      if (countdownElement && labelElement && timeElement) {
+        countdownElement.className = `event-countdown ${countdownInfo.class}`;
+        labelElement.textContent = countdownInfo.label;
+        timeElement.textContent = countdownInfo.time;
       }
-    });
+    }
+  });
+}, 60000); // Update every minute
 
-    const modalCSS = `
-      <style>
-      .modal {
-        display: none;
+// Clean up interval when page unloads
+window.addEventListener('beforeunload', () => {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+});
+
+// Debug function to check if Quick Overview is working
+// window.debugQuickOverview = function() {
+//   console.log('All Events:', allEvents);
+//   console.log('Container exists:', !!document.getElementById('event-cards-container'));
+//   const currentDate = new Date();
+//   const relevantEvents = allEvents.filter(event => {
+//     const eventEnd = new Date(event.end);
+//     return eventEnd >= currentDate;
+//   });
+//   console.log('Relevant Events:', relevantEvents);
+// };
+
+
+// ___________________________EVENT MODAL_____________________________________
+
+let currentMediaIndex = 0;
+let currentMediaItems = [];
+
+function openEventModal(event) {
+    const modal = document.getElementById('eventModal');
+    const modalImageContainer = document.getElementById('modalImageContainer');
+    const modalBadge = document.getElementById('modalBadge');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalNote = document.getElementById('modalNote');
+    const modalShareBtn = document.getElementById('modalShareBtn');
+    const modalCalendarBtn = document.getElementById('modalCalendarBtn');
+    
+    // Set up media carousel
+    setupMediaCarousel(event, modalImageContainer);
+    
+    // Set badge
+    const category = event.category || (event.extendedProps && event.extendedProps.category) || 'special';
+    const badgeInfo = getBadgeInfo(category);
+    modalBadge.textContent = badgeInfo.text;
+    modalBadge.className = `modal-badge ${badgeInfo.class}`;
+    
+    // Set title (clean up TS prefixes)
+    let cleanTitle = event.title || '';
+    cleanTitle = cleanTitle.replace("Traveling Spirit:", "TS:");
+    cleanTitle = cleanTitle.replace("Traveling Spirits", "TS");
+    cleanTitle = cleanTitle.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
+    modalTitle.textContent = cleanTitle;
+    
+    // Set quick info summary
+    setQuickInfoSummary(event);
+    
+    // Set description
+    const description = event.description || 
+                       (event.extendedProps && event.extendedProps.description);
+    
+    if (description && description.trim()) {
+        modalDescription.innerHTML = `
+            <div class="description-title">Description</div>
+            <div class="description-content">${description}</div>
+        `;
+    } else {
+        modalDescription.innerHTML = `
+            <div class="description-title">Description</div>
+            <div class="description-content na">Information will be updated as it becomes available.</div>
+        `;
+    }
+    
+    // Set note/reminder
+    const note = event.note || (event.extendedProps && event.extendedProps.note);
+    if (note && note.trim()) {
+        modalNote.innerHTML = `
+            <div class="note-title">Note</div>
+            <div class="note-content">${note}</div>
+        `;
+        modalNote.style.display = 'block';
+    } else {
+        modalNote.innerHTML = `
+            <div class="note-title">Reminder</div>
+            <div class="note-content">Event details are subject to change. Please check back for updates.</div>
+        `;
+        modalNote.style.display = 'block';
+    }
+    
+    // Set action buttons
+    modalShareBtn.onclick = () => shareEvent(event);
+    modalCalendarBtn.onclick = () => addToGoogleCalendar(event);
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function setupMediaCarousel(event, container) {
+    // Enhanced media collection to handle both your current format and future video additions
+    currentMediaItems = collectMediaItems(event);
+    currentMediaIndex = 0;
+    
+    // console.log('Setting up carousel with media items:', currentMediaItems); // Debug log
+    
+    if (currentMediaItems.length === 0) {
+        // No media available
+        container.innerHTML = '<div class="modal-image-placeholder">🌟</div>';
+        return;
+    }
+    
+    if (currentMediaItems.length === 1) {
+        // Single media item
+        const mediaItem = currentMediaItems[0];
+        const mediaHtml = createMediaElement(mediaItem, event.title, true);
+        container.innerHTML = `
+          ${mediaHtml}
+          <div class="media-controls">
+            <button class="media-control-btn" onclick="downloadMedia('${mediaItem.url.replace(/'/g, "\\'")}')" title="Download">
+              💾
+            </button>
+            <button class="media-control-btn" onclick="openZoomModal('${mediaItem.url.replace(/'/g, "\\'")}', '${mediaItem.type}')" title="View Full Size">
+              🔍
+            </button>
+          </div>
+        `;
+        return
+    }
+    
+    let carouselHTML = `
+        <div class="media-carousel">
+            <div class="media-slides" id="mediaSlides">
+    `;
+    
+    currentMediaItems.forEach((mediaItem, index) => {
+        const mediaHtml = createMediaElement(mediaItem, event.title, index === 0);
+        carouselHTML += `<div class="media-slide">${mediaHtml}</div>`;
+    });
+    
+    carouselHTML += `
+            </div>
+            <button class="carousel-nav prev" onclick="prevMedia()" id="prevBtn">‹</button>
+            <button class="carousel-nav next" onclick="nextMedia()" id="nextBtn">›</button>
+            <div class="media-controls">
+                <button class="media-control-btn" onclick="downloadCurrentMedia()" title="Download">
+                    💾
+                </button>
+                <button class="media-control-btn" onclick="openCurrentMediaZoom()" title="View Full Size">
+                    🔍
+                </button>
+            </div>
+            <div class="carousel-indicators" id="carouselIndicators">
+    `;
+    
+    currentMediaItems.forEach((_, index) => {
+        carouselHTML += `<div class="carousel-indicator ${index === 0 ? 'active' : ''}" onclick="goToMedia(${index})"></div>`;
+    });
+    
+    carouselHTML += `
+            </div>
+            <div class="media-counter">
+                <span id="mediaCounter">1 / ${currentMediaItems.length}</span>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = carouselHTML;
+    updateCarouselButtons();
+}
+
+function normalizeToArray(input) {
+    if (!input) return [];
+    if (Array.isArray(input)) return input;
+
+    if (typeof input === "string") {
+        const s = input.trim();
+        if (!s) return [];
+
+        // If the string looks like JSON array, try parsing
+        if ((s.startsWith("[") && s.endsWith("]")) || (s.startsWith('"') && s.endsWith('"'))) {
+            try {
+                const parsed = JSON.parse(s);
+                return Array.isArray(parsed) ? parsed : [s];
+            } catch (_) { 
+                // Fall through to string splitting
+            }
+        }
+
+        // Split on commas/newlines/pipes; trim and keep non-empty
+        return s.split(/[,|\n]/).map(v => v.trim()).filter(Boolean);
+    }
+
+    // Sometimes a single object with { url } sneaks in
+    if (typeof input === "object" && input.url) return [input.url];
+    return [];
+}
+
+function canonicalKey(url) {
+    try {
+        const u = new URL(url, window.location.href);
+        // Ignore query/hash so the same ImageKit asset with different ?updatedAt dedupes
+        return `${u.origin}${u.pathname}`;
+    } catch {
+        return (url || "").split("?")[0];
+    }
+}
+
+function uniqueUrls(urls) {
+    const out = [];
+    const seen = new Set();
+    for (const item of urls) {
+        const u = typeof item === "string" ? item : item?.url;
+        if (!u) continue;
+        const key = canonicalKey(u);
+        if (!seen.has(key)) {
+            seen.add(key);
+            out.push(u);
+        }
+    }
+    return out;
+}
+
+function collectMediaItems(event) {
+    const items = [];
+    const props = event.extendedProps || {};
+
+    // console.log('Collecting media from event:', event); // Debug log
+
+    // Use gallery images for modal (not thumbnail images)
+    const rawImages = event.images ?? props.images ?? [];
+    const imageUrls = uniqueUrls(normalizeToArray(rawImages));
+    
+    // console.log('Raw images:', rawImages); // Debug log
+    // console.log('Processed image URLs:', imageUrls); // Debug log
+
+    for (const url of imageUrls) {
+        items.push({ 
+            url, 
+            type: determineMediaType(url), 
+            source: "gallery" 
+        });
+    }
+
+    // Videos
+    const rawVideos = event.videos ?? props.videos ?? [];
+    const videoUrls = uniqueUrls(normalizeToArray(rawVideos));
+    for (const url of videoUrls) {
+        items.push({ 
+            url, 
+            type: "video", 
+            source: "video" 
+        });
+    }
+
+    // Mixed media
+    const rawMedia = event.media ?? props.media ?? [];
+    const mediaList = normalizeToArray(rawMedia).map(m => (typeof m === "string" ? { url: m } : m));
+    for (const m of mediaList) {
+        const url = m?.url;
+        if (!url) continue;
+        const type = m.type || determineMediaType(url);
+        if (!items.some(it => canonicalKey(it.url) === canonicalKey(url))) {
+            items.push({ 
+                url, 
+                type, 
+                source: "media" 
+            });
+        }
+    }
+
+    // console.log('Final collected media items:', items); // Debug log
+    return items;
+}
+
+// Enhanced media type detection
+function determineMediaType(url) {
+    const urlLower = url.toLowerCase();
+    
+    // Video file extensions
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.m4v', '.3gp'];
+    if (videoExtensions.some(ext => urlLower.includes(ext))) {
+        return 'video';
+    }
+    
+    // Animated image extensions (treat as video for controls)
+    if (urlLower.includes('.gif') || urlLower.includes('.webp')) {
+        return 'animated-image';
+    }
+    
+    // Default to image
+    return 'image';
+}
+
+// Create appropriate media element based on type
+function createMediaElement(mediaItem, altText, shouldAutoplay = false) {
+    const { url, type } = mediaItem;
+    const safeUrl = url.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    
+    switch (type) {
+        case 'video':
+            return `
+                <video class="modal-video" ${shouldAutoplay ? 'controls autoplay muted loop' : 'controls muted'}>
+                    <source src="${safeUrl}" type="${getVideoMimeType(url)}">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        
+        case 'animated-image':
+            return `
+                <img src="${safeUrl}" alt="${altText}" class="modal-image animated-image"
+                     onclick="openZoomModal('${safeUrl}', '${type}')"
+                     onerror="this.parentElement.innerHTML='<div class=&quot;media-error&quot;>Failed to load media</div>'">
+            `;
+        
+        default:
+            return `
+                <img src="${safeUrl}" alt="${altText}" class="modal-image"
+                     onclick="openZoomModal('${safeUrl}', '${type}')"
+                     onerror="this.parentElement.innerHTML='<div class=&quot;media-error&quot;>Failed to load image</div>'">
+            `;
+    }
+}
+
+function prevMedia() {
+    if (currentMediaIndex > 0) {
+        currentMediaIndex--;
+        updateCarousel();
+    }
+}
+
+function nextMedia() {
+    if (currentMediaIndex < currentMediaItems.length - 1) {
+        currentMediaIndex++;
+        updateCarousel();
+    }
+}
+
+function goToMedia(index) {
+    if (index >= 0 && index < currentMediaItems.length) {
+        currentMediaIndex = index;
+        updateCarousel();
+    }
+}
+
+function updateCarousel() {
+    const slides = document.getElementById('mediaSlides');
+    if (!slides) return;
+    
+    // Update slide position
+    slides.style.transform = `translateX(-${currentMediaIndex * 100}%)`;
+    
+    // Update indicators
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentMediaIndex);
+    });
+    
+    // Update media counter
+    const mediaCounter = document.getElementById('mediaCounter');
+    if (mediaCounter) {
+        mediaCounter.textContent = `${currentMediaIndex + 1} / ${currentMediaItems.length}`;
+    }
+    
+    // Handle video/media playback
+    handleMediaPlayback();
+    
+    // Update navigation buttons
+    updateCarouselButtons();
+}
+
+function handleMediaPlayback() {
+    // Pause all videos first
+    document.querySelectorAll('.modal-video').forEach(video => {
+        video.pause();
+    });
+    
+    // Play current video if it exists
+    const currentSlide = document.querySelectorAll('.media-slide')[currentMediaIndex];
+    if (currentSlide) {
+        const currentVideo = currentSlide.querySelector('.modal-video');
+        if (currentVideo) {
+            currentVideo.play().catch(() => {
+                // Auto-play failed, which is normal in many browsers
+                // console.log('Auto-play prevented by browser');
+            });
+        }
+    }
+}
+
+function updateCarouselButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (prevBtn) {
+        prevBtn.disabled = currentMediaIndex === 0;
+        prevBtn.style.opacity = currentMediaIndex === 0 ? '0.5' : '1';
+    }
+    if (nextBtn) {
+        nextBtn.disabled = currentMediaIndex === currentMediaItems.length - 1;
+        nextBtn.style.opacity = currentMediaIndex === currentMediaItems.length - 1 ? '0.5' : '1';
+    }
+}
+
+function downloadCurrentMedia() {
+    if (currentMediaItems[currentMediaIndex]) {
+        downloadMedia(currentMediaItems[currentMediaIndex].url);
+    }
+}
+
+function openCurrentMediaZoom() {
+    if (currentMediaItems[currentMediaIndex]) {
+        const item = currentMediaItems[currentMediaIndex];
+        openZoomModal(item.url, item.type);
+    }
+}
+
+function getVideoMimeType(url) {
+    const urlLower = url.toLowerCase();
+    if (urlLower.includes('.mp4')) return 'video/mp4';
+    if (urlLower.includes('.webm')) return 'video/webm';
+    if (urlLower.includes('.ogg')) return 'video/ogg';
+    if (urlLower.includes('.mov')) return 'video/quicktime';
+    if (urlLower.includes('.avi')) return 'video/x-msvideo';
+    return 'video/mp4'; // default
+}
+
+function downloadMedia(url) {
+    // Enhanced download with better ImageKit support
+    let downloadUrl = url;
+    
+    // For ImageKit URLs, add download parameter
+    if (url.includes('imagekit.io')) {
+        const separator = url.includes('?') ? '&' : '?';
+        downloadUrl = `${url}${separator}ik-attachment=true`;
+    }
+    
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = getFilenameFromUrl(url);
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    
+    // Add to DOM temporarily
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function getFilenameFromUrl(url) {
+    try {
+        const pathname = new URL(url).pathname;
+        const filename = pathname.split('/').pop();
+        return filename || `sky-media-${Date.now()}`;
+    } catch (e) {
+        return `sky-media-${Date.now()}`;
+    }
+}
+
+function openZoomModal(mediaUrl, mediaType = null) {
+    let zoomModal = document.getElementById('zoomModal');
+    
+    if (!zoomModal) {
+        // Create zoom modal if it doesn't exist
+        zoomModal = document.createElement('div');
+        zoomModal.id = 'zoomModal';
+        zoomModal.className = 'zoom-modal';
+        document.body.appendChild(zoomModal);
+    }
+    
+    const type = mediaType || determineMediaType(mediaUrl);
+    const safeUrl = mediaUrl.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    let zoomContent;
+    
+    switch (type) {
+        case 'video':
+            zoomContent = `
+                <div class="zoom-content">
+                    <video class="zoom-video" controls autoplay muted loop>
+                        <source src="${safeUrl}" type="${getVideoMimeType(mediaUrl)}">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
+                            💾
+                        </button>
+                        <button class="zoom-btn" onclick="closeZoomModal()" title="Close">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            `;
+            break;
+        
+        case 'animated-image':
+            zoomContent = `
+                <div class="zoom-content">
+                    <img src="${safeUrl}" alt="Zoomed animated image" class="zoom-image">
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
+                            💾
+                        </button>
+                        <button class="zoom-btn" onclick="closeZoomModal()" title="Close">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            `;
+            break;
+        
+        default: // 'image'
+            zoomContent = `
+                <div class="zoom-content">
+                    <img src="${safeUrl}" alt="Zoomed media" class="zoom-image">
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
+                            💾
+                        </button>
+                        <button class="zoom-btn" onclick="closeZoomModal()" title="Close">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            `;
+    }
+    
+    zoomModal.innerHTML = zoomContent;
+    zoomModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Close on click outside
+    zoomModal.onclick = (e) => {
+        if (e.target === zoomModal) {
+            closeZoomModal();
+        }
+    };
+}
+
+function closeZoomModal() {
+    const zoomModal = document.getElementById('zoomModal');
+    if (zoomModal) {
+        // Pause any videos in zoom modal
+        const zoomVideo = zoomModal.querySelector('.zoom-video');
+        if (zoomVideo) {
+            zoomVideo.pause();
+        }
+        
+        zoomModal.classList.remove('active');
+        if (!document.getElementById('eventModal').classList.contains('active')) {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+function setQuickInfoSummary(event) {
+    const quickInfoContainer = document.getElementById('quickInfoSummary');
+    
+    // Get event data with fallbacks
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end || event.start);
+    const dateRange = formatDateRange(startDate, endDate);
+    
+    // Extract extended properties
+    const props = event.extendedProps || {};
+    const category = event.category || props.category || 'special';
+    
+    let infoItems = [];
+    
+    // Base info for all events
+    infoItems.push({ icon: '📅', label: 'Date:', value: dateRange });
+    
+    // Event-specific information based on category
+    if (category === 'ts') {
+        // Single Traveling Spirit
+        const realm = props.realm || event.realm || null;
+        const location = props.location || event.location || null;
+        const memoryType = props.memoryType || event.memoryType || null;
+        const emote = props.emote || event.emote || null;
+        
+        infoItems.push(
+            { icon: '🌍', label: 'Realm:', value: realm || 'To be announced' },
+            { icon: '📌', label: 'Location:', value: location || 'To be announced' },
+            { icon: '🎭', label: 'Memory Type:', value: memoryType || 'N/A' },
+            { icon: '🕊️', label: 'Emote:', value: emote || 'N/A' }
+        );
+    } else if (category === 'season') {
+        // Seasonal Events
+        const seasonType = props.seasonType || event.seasonType || null;
+        const spiritCount = props.spiritCount || event.spiritCount || null;
+        const duration = props.duration || event.duration || null;
+        const specialItems = props.specialItems || event.specialItems || null;
+        
+        infoItems.push(
+            { icon: '🎭', label: 'Season Type:', value: seasonType || 'To be announced' },
+            { icon: '👥', label: 'Spirits:', value: spiritCount || 'To be announced' },
+            { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
+            { icon: '✨', label: 'Special Items:', value: specialItems || 'To be announced' }
+        );
+    } else if (category === 'special') {
+        // Special Events (Days of Events, etc.)
+        const eventType = props.eventType || event.eventType || null;
+        const activities = props.activities || event.activities || null;
+        const rewards = props.rewards || event.rewards || null;
+        const requirements = props.requirements || event.requirements || null;
+        
+        infoItems.push(
+            { icon: '🎉', label: 'Event Type:', value: eventType || 'Special Event' },
+            { icon: '🎯', label: 'Activities:', value: activities || 'To be announced' },
+            { icon: '🎁', label: 'Rewards:', value: rewards || 'To be announced' },
+            { icon: '📋', label: 'Requirements:', value: requirements || 'None specified' }
+        );
+    } else if (category === 'group_ts' || event.title.toLowerCase().includes('traveling spirits')) {
+        // Group of Traveling Spirits
+        const spiritCount = props.spiritCount || event.spiritCount || null;
+        const realms = props.realms || event.realms || null;
+        const duration = props.duration || event.duration || null;
+        const returnType = props.returnType || event.returnType || null;
+        
+        infoItems.push(
+            { icon: '👥', label: 'Spirit Count:', value: spiritCount || 'To be announced' },
+            { icon: '🌍', label: 'Realms:', value: realms || 'Multiple realms' },
+            { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
+            { icon: '🔄', label: 'Return Type:', value: returnType || 'Regular return' }
+        );
+    } else {
+        // Default/Generic events
+        const eventType = props.eventType || event.eventType || null;
+        const location = props.location || event.location || null;
+        
+        infoItems.push(
+            { icon: '🎯', label: 'Event Type:', value: eventType || 'General Event' },
+            { icon: '📌', label: 'Location:', value: location || 'To be announced' }
+        );
+    }
+    
+    let infoHTML = '<div class="quick-info-title">Quick Info Summary</div>';
+    
+    infoItems.forEach(item => {
+        const isNA = !item.value || item.value === 'N/A' || item.value === 'To be announced' || item.value === 'None specified';
+        const valueClass = isNA ? 'info-value na' : 'info-value';
+        
+        infoHTML += `
+            <div class="info-item">
+                <span class="info-icon">${item.icon}</span>
+                <span class="info-label">${item.label}</span>
+                <span class="${valueClass}">${item.value}</span>
+            </div>
+        `;
+    });
+    
+    quickInfoContainer.innerHTML = infoHTML;
+}
+
+function closeEventModal() {
+    const modal = document.getElementById('eventModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Pause any playing videos when modal closes
+    modal.querySelectorAll('.modal-video').forEach(video => {
+        video.pause();
+    });
+}
+
+function shareEvent(event) {
+    const shareData = {
+        title: event.title,
+        text: `Check out this Sky: Children of the Light event: ${event.title}`,
+        url: window.location.href
+    };
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData).catch(() => {
+            // Fallback if share fails
+            fallbackShare(event);
+        });
+    } else {
+        // Fallback: copy to clipboard
+        fallbackShare(event);
+    }
+}
+
+function fallbackShare(event) {
+    const shareText = `${event.title}\n${formatDateRange(new Date(event.start), new Date(event.end || event.start))}\n${window.location.href}`;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            showNotification('Event details copied to clipboard!');
+        }).catch(() => {
+            fallbackCopyToClipboard(shareText);
+        });
+    } else {
+        fallbackCopyToClipboard(shareText);
+    }
+}
+
+function addToGoogleCalendar(event) {
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end || event.start);
+    
+    // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
+    const formatGoogleDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    };
+    
+    const startStr = formatGoogleDate(startDate);
+    const endStr = formatGoogleDate(endDate);
+    
+    // Clean title
+    let cleanTitle = event.title.replace("Traveling Spirit:", "TS:");
+    cleanTitle = cleanTitle.replace("Traveling Spirits", "TS");
+    cleanTitle = cleanTitle.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
+    
+    // Prepare description
+    const props = event.extendedProps || {};
+    let details = `Sky: Children of the Light Event\n\n`;
+    
+    if (props.realm || event.realm) {
+        details += `Realm: ${props.realm || event.realm}\n`;
+    }
+    if (props.location || event.location) {
+        details += `Location: ${props.location || event.location}\n`;
+    }
+    if (props.memoryType || event.memoryType) {
+        details += `Memory Type: ${props.memoryType || event.memoryType}\n`;
+    }
+    if (props.emote || event.emote) {
+        details += `Emote: ${props.emote || event.emote}\n`;
+    }
+    
+    if (event.description || (props.description)) {
+        details += `\nDescription:\n${event.description || props.description}`;
+    }
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+        `&text=${encodeURIComponent(cleanTitle)}` +
+        `&dates=${startStr}/${endStr}` +
+        `&details=${encodeURIComponent(details)}` +
+        `&location=${encodeURIComponent('Sky: Children of the Light')}`;
+    
+    window.open(googleCalendarUrl, '_blank');
+}
+
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        showNotification('Event details copied to clipboard!');
+    } catch (err) {
+        showNotification('Unable to copy to clipboard');
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
+
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
         position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.7);
-        overflow-y: scroll;
-        color: var(--dark-text);
-      }
-
-      .modal-content {
-        background-color: white;
-        margin: auto;
-        padding: 20px;
-        width: 80%;
-        max-width: 600px;
+        top: 20px;
+        right: 20px;
+        background: #333;
+        color: white;
+        padding: 12px 16px;
         border-radius: 8px;
-        position: relative;
-        margin-top: 5%;
-      }
+        z-index: 10000;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: opacity 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
 
-      #modalDates {
-        margin-bottom: 10px;
-      }
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal button
+    const closeBtn = document.getElementById('closeModal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeEventModal);
+    }
+    
+    // Close modal when clicking overlay
+    const modalOverlay = document.getElementById('eventModal');
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeEventModal();
+            }
+        });
+    }
+    
+    // Close on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const eventModal = document.getElementById('eventModal');
+            const zoomModal = document.getElementById('zoomModal');
+            
+            if (zoomModal && zoomModal.classList.contains('active')) {
+                closeZoomModal();
+            } else if (eventModal && eventModal.classList.contains('active')) {
+                closeEventModal();
+            }
+        }
+    });
+    
+    // Keyboard navigation for carousel
+    document.addEventListener('keydown', (e) => {
+        const eventModal = document.getElementById('eventModal');
+        if (eventModal && eventModal.classList.contains('active')) {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevMedia();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextMedia();
+            }
+        }
+    });
+});
 
-      #modalDates p{
-        font-size: 14px;
-      }
+// Global function exports for onclick handlers
+window.openEventModal = openEventModal;
+window.closeEventModal = closeEventModal;
+window.downloadMedia = downloadMedia;
+window.openZoomModal = openZoomModal;
+window.nextMedia = nextMedia;
+window.prevMedia = prevMedia;
+window.goToMedia = goToMedia;
+window.downloadCurrentMedia = downloadCurrentMedia;
+window.openCurrentMediaZoom = openCurrentMediaZoom;
+window.closeZoomModal = closeZoomModal;
 
-      .close-modal {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 24px;
-        font-weight: bold;
-        cursor: pointer;
-        z-index: 1000;
-      }
 
-      .credits-section {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-      }
+// ___________________________EVENT LIST WITH PAGINATION_____________________________________
 
-      .camera-icon {
-        width: 20px;
-        height: 20px;
-      }
+class SkyEventsManager {
+  constructor() {
+    this.events = [];
+    this.allEvents = []; // Global events array from your existing code
+    this.favorites = JSON.parse(localStorage.getItem('skyEventsFavorites') || '[]');
+    this.currentFilter = 'all';
+    this.searchTerm = '';
+    this.countdownIntervals = new Map();
+    this.calendar = null;
+    
+    // Pagination properties
+    this.currentPage = 1;
+    this.eventsPerPage = 6;
+    this.filteredEvents = [];
+    
+    this.init();
+  }
 
-      .credits-list{
-        font-size: 12px;
-      }
+  init() {
+    this.setupEventListeners();
+    this.initializeFilters();
+    this.createPaginationContainer();
+  }
 
-      .carousel {
-        position: relative;
-        width: 100%;
-        margin-bottom: 20px;
-      }
+  // Method to be called after your Firebase data loads
+  setEventsData(eventsData) {
+    // console.log('Setting events data:', eventsData.length, 'events'); // Debug log
+    this.allEvents = eventsData;
+    this.events = this.convertFirebaseEventsToCardFormat(eventsData);
+    this.filterEvents(); // Filter first
+    this.renderCurrentPage(); // Then render current page (this will start countdowns automatically)
+  }
 
-      .carousel-images {
-        display: flex;
-        overflow: hidden;
-        width: 100%;
-        height: auto;
-        border-radius: 4px;
-      }
+  // Convert your Firebase event format to card display format
+  convertFirebaseEventsToCardFormat(firebaseEvents) {
+    const events = firebaseEvents.map(event => ({
+      id: event.id,
+      title: event.title,
+      description: event.description || '',
+      category: event.category || 'special',
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      color: event.color,
+      image: event.image,
+      images: event.images,
+      blogUrl: event.blogUrl,
+      credits: event.credits
+    }));
+    
+    // Sort events by start date (latest first)
+    return events.sort((a, b) => {
+      const dateA = new Date(a.start);
+      const dateB = new Date(b.start);
+      return dateB - dateA;
+    });
+  }
 
-      .carousel-images img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: none;
-      }
+  // Filter events based on current filter and search term
+  filterEvents() {
+    // console.log('Filtering with search term:', this.searchTerm, 'and filter:', this.currentFilter); // Debug log
+    
+    this.filteredEvents = this.events.filter(event => {
+      const matchesFilter = this.currentFilter === 'all' || 
+                           this.currentFilter === event.category ||
+                           (this.currentFilter === 'favorites' && this.favorites.includes(event.id));
+      const searchLower = this.searchTerm.toLowerCase();
+      const matchesSearch = this.searchTerm === '' || 
+                           event.title.toLowerCase().includes(searchLower);
+      
+      // console.log(`Event: ${event.title}, Filter Match: ${matchesFilter}, Search Match: ${matchesSearch}`); // Debug log
+      
+      return matchesFilter && matchesSearch;
+    });
+    
+    // console.log('Filtered events count:', this.filteredEvents.length); // Debug log
+    
+    this.currentPage = 1;
+  }
 
-      .carousel-images img.active {
-        display: block;
-      }
+  // Get events for current page
+  getCurrentPageEvents() {
+    const startIndex = (this.currentPage - 1) * this.eventsPerPage;
+    const endIndex = startIndex + this.eventsPerPage;
+    return this.filteredEvents.slice(startIndex, endIndex);
+  }
 
-      .carousel-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(0,0,0,0.5);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-        cursor: pointer;
-      }
+  // Get total pages
+  getTotalPages() {
+    return Math.ceil(this.filteredEvents.length / this.eventsPerPage);
+  }
 
-      .carousel-btn.prev {
-        left: 10px;
-      }
+  // Render current page events
+  renderCurrentPage() {
+    const eventsGrid = document.getElementById('eventsGrid');
+    if (!eventsGrid) return;
 
-      .carousel-btn.next {
-        right: 10px;
-      }
+    eventsGrid.innerHTML = ''; // Clear existing cards
 
-      #modalTitle {
-        margin-top: 15px;
-        margin-bottom: 10px;
-        font-size: 24px;
-      }
+    const currentPageEvents = this.getCurrentPageEvents();
+    
+    if (currentPageEvents.length === 0) {
+      this.showEmptyState();
+      this.updatePagination();
+      return;
+    }
 
-      #modalDescription {
-        margin-bottom: 20px;
-        text-align: justify;
-        font-size: 16px;
-        line-height: 1.5;
-      }
+    currentPageEvents.forEach(event => {
+      const eventCard = this.createEventCard(event);
+      eventsGrid.appendChild(eventCard);
+    });
 
-      .cta-btn {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: var(--secondary-color);
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: bold;
-        z-index: 1000;
-        cursor: pointer;
-        width: 100%;
-        text-align: center;
-      }
+    this.updateFavoriteButtons();
+    this.updatePagination();
+    
+    // Start countdowns after DOM is fully updated
+    setTimeout(() => {
+      this.startCountdowns();
+    }, 50);
+  }
 
-      .cta-btn:hover {
-        background: #3367d6;
-      }
+  createEventCard(event) {
+    const card = document.createElement('div');
+    card.className = `event-list-card ${event.category}`;
+    card.dataset.eventId = event.id;
+    card.dataset.category = event.category;
 
-      .modal-cta-container {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-        width: 100%;
-      }
+    const now = new Date();
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+    
+    const isActive = now >= startDate && now <= endDate;
+    const isUpcoming = now < startDate;
+    const hasEnded = now > endDate;
 
-      .modal-cta-container .cta-btn {
-        flex: 1;
-        width: auto;
-        text-align: center;
-      }
+    const badge = this.getCategoryBadge(event.category);
+    const icon = this.getCategoryIcon(event.category);
+    const countdownHtml = this.generateCountdownHtml(event, isActive, isUpcoming, hasEnded);
 
-      .calendar-link-btn {
-        background: #4285F4;
-      }
-
-      .calendar-link-btn:hover {
-        background: #3367d6;
-      }
-
-      </style>
+    card.innerHTML = `
+      <div class="event-list-badge">
+        <span class="event-list-badge-item ${event.category}-badge">${badge}</span>
+      </div>
+      
+      <div class="event-list-header">
+        <div class="event-list-icon">
+          ${icon}
+        </div>
+        <h3 class="event-list-title">${event.title}</h3>
+      </div>
+      
+      <div class="event-list-info">
+        ${event.description ? `<div class="event-list-description" hidden>${event.description}</div>` : ''}
+        
+        <div class="event-list-details">
+          <div class="event-list-detail-item">
+            <span class="event-list-detail-label">Start:</span>
+            <span class="event-list-detail-value">${this.formatDate(startDate)}</span>
+          </div>
+          <div class="event-list-detail-item">
+            <span class="event-list-detail-label">End:</span>
+            <span class="event-list-detail-value">${this.formatDate(endDate)}</span>
+          </div>
+          ${event.category === 'season' ? `
+          <div class="event-list-detail-item">
+            <span class="event-list-detail-label">Type:</span>
+            <span class="event-list-detail-value">Seasonal Event</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+      
+      ${countdownHtml}
+      
+      <div class="event-list-actions">
+        <button class="event-list-btn event-list-btn-primary" onclick="openEventModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">
+          View Details
+        </button>
+        <button class="event-list-btn event-list-btn-secondary event-list-favorite-btn" data-event-id="${event.id}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+      </div>
     `;
 
-    document.head.insertAdjacentHTML("beforeend", modalCSS);
+    return card;
+  }
+
+  getCategoryBadge(category) {
+    const badges = {
+      "seasons": 'Season',
+      "travelling-spirits": 'Traveling Spirit',
+      "special-event": 'Special Event',
+      shards: 'Shard Event',
+      "days-of-events": 'Days of Event',
+      default: 'Event'
+    };
+    return badges[category] || badges.default;
+  }
+
+  getCategoryIcon(category) {
+    const icons = {
+      "seasons": `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L15.5 8.5L22 12L15.5 15.5L12 22L8.5 15.5L2 12L8.5 8.5L12 2Z"/>
+      </svg>`,
+      "travelling-spirits": `<svg width="24" height="24" viewBox="0 0 48 48" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M24 4L29 14L44 24L29 34L24 44L19 34L4 24L19 14L24 4Z"/>
+          <path d="M12 6L14 10L18 12L14 14L12 18L10 14L6 12L10 10L12 6Z"/>
+          <path d="M36 30L38 34L42 36L38 38L36 42L34 38L30 36L34 34L36 30Z"/>
+        </svg>`,
+      "special-event": `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="9" y="10" width="6" height="12" rx="1"/>
+            <path d="M12 2C13.2 4 14 5.5 14 7C14 8.66 13 10 12 10C11 10 10 8.66 10 7C10 5.5 10.8 4 12 2Z"/>
+          </svg>`,
+      shards: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L15.5 8.5L22 12L15.5 15.5L12 22L8.5 15.5L2 12L8.5 8.5L12 2Z"/>
+      </svg>`,
+      "days-of-events": `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3H18V1H16V3H8V1H6V3H5C3.89 3 3.01 3.9 3.01 5L3 19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19Z"/>
+      </svg>`,
+      default: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L15.5 8.5L22 12L15.5 15.5L12 22L8.5 15.5L2 12L8.5 8.5L12 2Z"/>
+      </svg>`
+    };
+    return icons[category] || icons.default;
+  }
+
+  generateCountdownHtml(event, isActive, isUpcoming, hasEnded) {
+    if (hasEnded) {
+      return `
+        <div class="event-list-countdown event-list-countdown-ended">
+          <div class="event-list-countdown-item">
+            <span class="event-list-countdown-number">Event</span>
+            <span class="event-list-countdown-label">Ended</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const targetDate = isActive ? event.end : event.start;
+    const countdownClass = isActive ? 'event-list-countdown-active' : 'event-list-countdown-upcoming';
+
+    return `
+      <div class="event-list-countdown ${countdownClass}" data-target-date="${targetDate}">
+        <div class="event-list-countdown-item">
+          <span class="event-list-countdown-number">--</span>
+          <span class="event-list-countdown-label">Days</span>
+        </div>
+        <div class="event-list-countdown-item">
+          <span class="event-list-countdown-number">--</span>
+          <span class="event-list-countdown-label">Hours</span>
+        </div>
+        <div class="event-list-countdown-item">
+          <span class="event-list-countdown-number">--</span>
+          <span class="event-list-countdown-label">Min</span>
+        </div>
+      </div>
+    `;
+  }
+
+  formatDate(date) {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: date.getHours() !== 0 ? 'numeric' : undefined,
+      minute: date.getHours() !== 0 ? '2-digit' : undefined
+    });
+  }
+
+  setupEventListeners() {
+    // Use event delegation for search functionality to ensure it works even if input is created later
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'eventListSearch' || e.target.classList.contains('event-list-search-input')) {
+        // console.log('Search input detected:', e.target.value); // Debug log
+        this.searchTerm = e.target.value.toLowerCase();
+        this.filterEvents();
+        this.renderCurrentPage(); // This will automatically restart countdowns
+      }
+    });
+
+    // Filter buttons and other event listeners
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('event-list-filter-btn')) {
+        this.handleFilterClick(e.target);
+      }
+      
+      if (e.target.closest('.event-list-favorite-btn')) {
+        this.handleFavoriteClick(e.target.closest('.event-list-favorite-btn'));
+      }
+
+      // Pagination buttons
+      if (e.target.classList.contains('pagination-btn')) {
+        const page = parseInt(e.target.dataset.page);
+        if (page && page !== this.currentPage) {
+          this.currentPage = page;
+          this.renderCurrentPage();
+          // Restart countdowns after pagination
+          setTimeout(() => {
+            this.startCountdowns();
+          }, 100);
+        }
+      }
+
+      if (e.target.classList.contains('pagination-prev')) {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.renderCurrentPage();
+          setTimeout(() => {
+            this.startCountdowns();
+          }, 100);
+        }
+      }
+
+      if (e.target.classList.contains('pagination-next')) {
+        if (this.currentPage < this.getTotalPages()) {
+          this.currentPage++;
+          this.renderCurrentPage();
+          setTimeout(() => {
+            this.startCountdowns();
+          }, 100);
+        }
+      }
+    });
+
+    // Theme toggle
+    const themeToggle = document.querySelector('.event-list-theme-toggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', this.toggleTheme);
+    }
+  }
+
+  handleFilterClick(button) {
+    // Remove active class from all filter buttons
+    document.querySelectorAll('.event-list-filter-btn').forEach(btn => 
+      btn.classList.remove('active')
+    );
+    
+    // Add active class to clicked button
+    button.classList.add('active');
+    
+    // Update current filter
+    this.currentFilter = button.dataset.filter;
+    this.filterEvents();
+    this.renderCurrentPage();
+    
+    // Restart countdowns after a brief delay to ensure DOM is updated
+    setTimeout(() => {
+      this.startCountdowns();
+    }, 100);
+  }
+
+  handleFavoriteClick(button) {
+    const eventId = button.dataset.eventId;
+    const index = this.favorites.indexOf(eventId);
+    
+    if (index > -1) {
+      this.favorites.splice(index, 1);
+      button.classList.remove('favorited');
+    } else {
+      this.favorites.push(eventId);
+      button.classList.add('favorited');
+    }
+    
+    localStorage.setItem('skyEventsFavorites', JSON.stringify(this.favorites));
+    this.updateFavoriteButton(button, eventId);
+  }
+
+  updateFavoriteButton(button, eventId) {
+    const isFavorited = this.favorites.includes(eventId);
+    button.classList.toggle('favorited', isFavorited);
+    
+    // Add animation
+    button.style.transform = 'scale(1.2)';
+    setTimeout(() => {
+      button.style.transform = '';
+    }, 150);
+  }
+
+  showEmptyState() {
+    const eventsGrid = document.getElementById('eventsGrid');
+    if (!eventsGrid) return;
+
+    let emptyMessage = `
+      <div class="event-list-empty-message">
+        <div class="empty-state">
+    `;
+
+    if (this.searchTerm) {
+      emptyMessage += `
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <h3>No events found</h3>
+        <p>Try adjusting your search terms or filters</p>
+      `;
+    } else if (this.currentFilter === 'favorites') {
+      emptyMessage += `
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <h3>No favorite events</h3>
+        <p>Start adding events to your favorites by clicking the heart icon</p>
+      `;
+    } else {
+      emptyMessage += `
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12,2L13.5,7.5L19,9L13.5,10.5L12,16L10.5,10.5L5,9L10.5,7.5L12,2Z"/>
+        </svg>
+        <h3>No events in this category</h3>
+        <p>Try selecting a different filter</p>
+      `;
+    }
+
+    emptyMessage += `
+        </div>
+      </div>
+    `;
+
+    eventsGrid.innerHTML = emptyMessage;
+  }
+
+  updateFavoriteButtons() {
+    document.querySelectorAll('.event-list-favorite-btn').forEach(button => {
+      const eventId = button.dataset.eventId;
+      if (this.favorites.includes(eventId)) {
+        button.classList.add('favorited');
+      }
+    });
+  }
+
+  // Pagination Methods
+  createPaginationContainer() {
+    let paginationContainer = document.querySelector('.event-list-pagination');
+    if (!paginationContainer) {
+      paginationContainer = document.createElement('div');
+      paginationContainer.className = 'event-list-pagination';
+      
+      const eventsGrid = document.getElementById('eventsGrid');
+      if (eventsGrid && eventsGrid.parentNode) {
+        eventsGrid.parentNode.insertBefore(paginationContainer, eventsGrid.nextSibling);
+      }
+    }
+  }
+
+  updatePagination() {
+    const paginationContainer = document.querySelector('.event-list-pagination');
+    if (!paginationContainer) return;
+
+    const totalPages = this.getTotalPages();
+    
+    if (totalPages <= 1) {
+      paginationContainer.innerHTML = '';
+      return;
+    }
+
+    let paginationHtml = `
+      <div class="pagination-info">
+        Showing ${((this.currentPage - 1) * this.eventsPerPage) + 1}-${Math.min(this.currentPage * this.eventsPerPage, this.filteredEvents.length)} of ${this.filteredEvents.length} events
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn pagination-prev" ${this.currentPage === 1 ? 'disabled' : ''}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15,18 9,12 15,6"></polyline>
+          </svg>
+          Previous
+        </button>
+    `;
+
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+      paginationHtml += `<button class="pagination-btn" data-page="1">1</button>`;
+      if (startPage > 2) {
+        paginationHtml += `<span class="pagination-ellipsis">...</span>`;
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      paginationHtml += `
+        <button class="pagination-btn ${i === this.currentPage ? 'active' : ''}" data-page="${i}">
+          ${i}
+        </button>
+      `;
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        paginationHtml += `<span class="pagination-ellipsis">...</span>`;
+      }
+      paginationHtml += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+    }
+
+    paginationHtml += `
+        <button class="pagination-btn pagination-next" ${this.currentPage === totalPages ? 'disabled' : ''}>
+          Next
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9,18 15,12 9,6"></polyline>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    paginationContainer.innerHTML = paginationHtml;
+  }
+
+  initializeFilters() {
+    // Create filter buttons if they don't exist
+    let filtersContainer = document.querySelector('.event-list-filters');
+    if (!filtersContainer) {
+      filtersContainer = document.createElement('div');
+      filtersContainer.className = 'event-list-filters';
+      
+      const eventsGrid = document.getElementById('eventsGrid');
+      if (eventsGrid) {
+        eventsGrid.parentNode.insertBefore(filtersContainer, eventsGrid);
+      }
+    }
+    
+    const filters = [
+      { key: 'all', label: 'All Events' },
+      { key: 'seasons', label: 'Seasons' },
+      { key: 'travelling-spirits', label: 'Traveling Spirits' },
+      { key: 'special-event', label: 'Special Events' },
+      { key: 'days-of-events', label: 'Days of Events' },
+      { key: 'shards', label: 'Shard Events' },
+      { key: 'favorites', label: 'Favorites' }
+    ];
+    
+    filtersContainer.innerHTML = filters.map(filter => 
+      `<button class="event-list-filter-btn ${filter.key === 'all' ? 'active' : ''}" data-filter="${filter.key}">
+        ${filter.label}
+      </button>`
+    ).join('');
+  }
+
+  startCountdowns() {
+    // console.log('Starting countdowns...'); // Debug log
+    
+    // Clear existing intervals
+    this.countdownIntervals.forEach(interval => clearInterval(interval));
+    this.countdownIntervals.clear();
+
+    const countdownElements = document.querySelectorAll('.event-list-countdown');
+    // console.log('Found countdown elements:', countdownElements.length); // Debug log
+    
+    countdownElements.forEach(countdown => {
+      if (countdown.classList.contains('event-list-countdown-ended')) return;
+      
+      const eventCard = countdown.closest('.event-list-card');
+      if (!eventCard) return;
+      
+      const eventId = eventCard.dataset.eventId;
+      const targetDate = countdown.dataset.targetDate;
+      
+      // console.log(`Setting up countdown for event ${eventId} with target date ${targetDate}`); // Debug log
+      
+      if (targetDate && eventId) {
+        const interval = setInterval(() => {
+          this.updateCountdown(countdown, targetDate);
+        }, 1000);
+        
+        this.countdownIntervals.set(eventId, interval);
+        
+        // Update immediately
+        this.updateCountdown(countdown, targetDate);
+      }
+    });
+    
+    // console.log('Active countdown intervals:', this.countdownIntervals.size); // Debug log
+  }
+
+  updateCountdown(element, targetDateStr) {
+    const now = new Date().getTime();
+    const targetDate = new Date(targetDateStr).getTime();
+    const distance = targetDate - now;
+    
+    if (distance < 0) {
+      element.innerHTML = `
+        <div class="event-list-countdown-item">
+          <span class="event-list-countdown-number">Event</span>
+          <span class="event-list-countdown-label">Ended</span>
+        </div>
+      `;
+      element.className = 'event-list-countdown event-list-countdown-ended';
+      return;
+    }
+    
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    const countdownItems = element.querySelectorAll('.event-list-countdown-item');
+    
+    if (days > 0) {
+      if (countdownItems[0]) {
+        countdownItems[0].querySelector('.event-list-countdown-number').textContent = days;
+        countdownItems[0].querySelector('.event-list-countdown-label').textContent = 'Days';
+      }
+      if (countdownItems[1]) {
+        countdownItems[1].querySelector('.event-list-countdown-number').textContent = hours;
+        countdownItems[1].querySelector('.event-list-countdown-label').textContent = 'Hours';
+      }
+      if (countdownItems[2]) {
+        countdownItems[2].querySelector('.event-list-countdown-number').textContent = minutes;
+        countdownItems[2].querySelector('.event-list-countdown-label').textContent = 'Min';
+      }
+    } else {
+      if (countdownItems[0]) {
+        countdownItems[0].querySelector('.event-list-countdown-number').textContent = hours;
+        countdownItems[0].querySelector('.event-list-countdown-label').textContent = 'Hours';
+      }
+      if (countdownItems[1]) {
+        countdownItems[1].querySelector('.event-list-countdown-number').textContent = minutes;
+        countdownItems[1].querySelector('.event-list-countdown-label').textContent = 'Min';
+      }
+      if (countdownItems[2]) {
+        countdownItems[2].querySelector('.event-list-countdown-number').textContent = seconds;
+        countdownItems[2].querySelector('.event-list-countdown-label').textContent = 'Sec';
+      }
+    }
+  }
+
+  toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('skyEventsTheme', newTheme);
+  }
+
+  // Notification System
+  setupNotifications() {
+    if ('Notification' in window) {
+      Notification.requestPermission();
+    }
+  }
+
+  scheduleEventNotification(event, minutesBefore = 30) {
+    const eventTime = new Date(event.startDate || event.nextOccurrence);
+    const notificationTime = new Date(eventTime.getTime() - (minutesBefore * 60 * 1000));
+    const now = new Date();
+
+    if (notificationTime > now) {
+      const timeUntilNotification = notificationTime.getTime() - now.getTime();
+      
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          new Notification(`Sky COTL Event Reminder`, {
+            body: `${event.title} starts in ${minutesBefore} minutes!`,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico'
+          });
+        }
+      }, timeUntilNotification);
+    }
+  }
+
+  // Utility Methods
+  destroy() {
+    // Clean up intervals
+    this.countdownIntervals.forEach(interval => clearInterval(interval));
+    this.countdownIntervals.clear();
+    
+    if (this.calendar) {
+      this.calendar.destroy();
+    }
+  }
+}
+
+// Initialize the events manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  // Load saved theme
+  const savedTheme = localStorage.getItem('skyEventsTheme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  
+  // Initialize events manager
+  window.skyEventsManager = new SkyEventsManager();
+  
+  // Create search input if it doesn't exist - ensure this runs after manager is created
+  setTimeout(() => {
+    if (!document.getElementById('eventListSearch')) {
+      const searchContainer = document.createElement('div');
+      searchContainer.className = 'event-list-search-container';
+      searchContainer.innerHTML = `
+        <input 
+          type="text" 
+          id="eventListSearch" 
+          class="event-list-search-input" 
+          placeholder="Search events..." 
+          aria-label="Search events"
+        >
+      `;
+      
+      const eventsGrid = document.getElementById('eventsGrid');
+      if (eventsGrid) {
+        eventsGrid.parentNode.insertBefore(searchContainer, eventsGrid);
+        // console.log('Search input created successfully'); // Debug log
+      }
+    } else {
+      // console.log('Search input already exists'); // Debug log
+    }
+  }, 100);
 });
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SkyEventsManager;
+}

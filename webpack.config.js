@@ -1,7 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-
 module.exports = {
   mode: 'production',
   entry: {
@@ -21,22 +20,53 @@ module.exports = {
   optimization: {
     splitChunks: {
       chunks: 'all',
-      maxInitialRequests: 4,
+      maxInitialRequests: 6,
+      maxAsyncRequests: 8,
+      minSize: 20000,
+      maxSize: 250000,
       cacheGroups: {
+        firebase: {
+          test: /[\\/]node_modules[\\/](@firebase|firebase)[\\/]/,
+          name: 'firebase',
+          chunks: 'all',
+          priority: 30,
+          enforce: true
+        },
+        moment: {
+          test: /[\\/]node_modules[\\/](moment|moment-timezone)[\\/]/,
+          name: 'moment',
+          chunks: 'all',
+          priority: 25,
+          enforce: true
+        },
         vendors: {
           test: /[\\/]node_modules[\\/]/,
-          priority: -10
+          name: 'vendors',
+          chunks: 'all',
+          priority: -10,
+          maxSize: 150000
         },
         default: {
           minChunks: 2,
           priority: -20,
-          reuseExistingChunk: true
+          reuseExistingChunk: true,
+          maxSize: 100000
         }
       }
-    }
+    },
+    usedExports: true,
+  },
+  performance: {
+    maxAssetSize: 500000,
+    maxEntrypointSize: 500000,
+    hints: 'warning'
   },
   module: {
     rules: [
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,
         use: [
