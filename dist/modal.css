@@ -1004,6 +1004,7 @@
     font-weight: 600;
     color: #555;
     margin-right: 6px;
+    min-width: -webkit-fill-available;
     min-width: fit-content;
 }
 

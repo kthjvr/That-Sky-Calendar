@@ -61,14 +61,15 @@
   <link rel="stylesheet" href="modal.css">
   <link rel="stylesheet" href="event_list.css">
   <link rel="stylesheet" href="credits.css">
+  
 
   <link rel="icon" type="image/x-icon"
     href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705">
 
   <!-- CALENDAR -->
   <script defer src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
 
 </head>
 
@@ -82,7 +83,7 @@
   <nav class="navbar">
     <div class="nav-container">
       <!-- Logo -->
-      <a href="/" class="logo-link">
+      <a href="#home" class="logo-link">
         <img 
           class="logo" 
           src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" 
@@ -94,14 +95,13 @@
         ☰
       </button>
 
-      <!-- Navigation Links (Desktop + Mobile Drawer) -->
+      <!-- Navigation Links -->
       <ul class="nav-links">
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
         <li><a href="#home">Home</a></li>
         <li><a href="#calendarSection">Calendar</a></li>
-        <li><a href="/events">Events</a></li>
-        <li><a href="/spirits">Traveling Spirits</a></li>
-        <li><a href="/about">About</a></li>
+        <li><a href="#eventsGrid">Events</a></li>
+        <li><a href="#about">About</a></li>
         <li>
           <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
             <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -206,7 +206,7 @@
   </div>
 
   <!-- Credits Container -->
-  <section class="credits-section">
+  <section class="credits-section" id="about">
       <h1>Image Credits & Acknowledgments</h1>
       
       <div class="credits-intro">
@@ -255,7 +255,7 @@
   </section>
 
 
-  <!-- Modal HTML Structure -->
+  <!-- Modal -->
   <div class="modal-overlay" id="eventModal">
       <div class="event-modal">
           <div class="modal-header">
@@ -299,6 +299,20 @@
       <!-- Zoom content will be inserted here -->
   </div>
 
+  <!-- Game Modal -->
+  <!-- <div id="game-modal" class="game-modal" hidden>
+      <div class="modal-content">
+          <span class="close" aria-label="Close game modal">&times;</span>
+          <div class="iframe-container">
+              <iframe 
+                  src="https://echoes-of-light.netlify.app/" 
+                  title="Echoes of Light Memory Game" 
+                  loading="lazy">
+              </iframe>
+          </div>
+      </div>
+  </div> -->
+
   <!-- Footer Section -->
   <footer class="footer">
     <div class="footer-container">
@@ -337,52 +351,55 @@
   </footer>
 
   <script>
-
     // menu toggle
     const menuToggle = document.querySelector(".menu-toggle");
     const navLinks = document.querySelector(".nav-links");
     const navOverlay = document.querySelector(".nav-overlay");
-
     const closeMenuBtn = document.querySelector(".close-btn");
-    if (closeMenuBtn) {
-      closeMenuBtn.addEventListener("click", toggleMenu);
+
+    function isMobile() {
+      return window.innerWidth <= 768;
     }
 
-    function toggleMenu() {
-      const isOpen = navLinks.classList.toggle("active");
-      navOverlay.classList.toggle("active", isOpen);
-      menuToggle.setAttribute("aria-expanded", isOpen);
-      
-      // Control display property
-      if (isOpen) {
-        navLinks.style.display = "flex"; // or "block" depending on your layout
-        navOverlay.style.display = "block";
+    function resetNavState() {
+      if (isMobile()) {
+        navLinks.classList.remove("active");
+        navOverlay?.classList.remove("active");
+        menuToggle.setAttribute("aria-expanded", "false");
       } else {
-        navLinks.style.display = "none";
-        navOverlay.style.display = "none";
+        navLinks.classList.remove("active");
+        navOverlay?.classList.remove("active");
+        menuToggle.setAttribute("aria-expanded", "false");
       }
     }
 
+    function toggleMenu() {
+      if (!isMobile()) return;
+
+      const isOpen = navLinks.classList.toggle("active");
+      navOverlay?.classList.toggle("active", isOpen);
+      menuToggle.setAttribute("aria-expanded", isOpen);
+    }
+
+    // Event listeners
     menuToggle.addEventListener("click", toggleMenu);
-    navOverlay.addEventListener("click", toggleMenu);
+    closeMenuBtn?.addEventListener("click", toggleMenu);
+    navOverlay?.addEventListener("click", toggleMenu);
 
     document.querySelectorAll(".nav-links a").forEach(link => {
       link.addEventListener("click", () => {
-        navLinks.classList.remove("active");
-        navOverlay.classList.remove("active");
-        menuToggle.setAttribute("aria-expanded", "false");
-        
-        // Hide elements when menu closes
-        navLinks.style.display = "none";
-        navOverlay.style.display = "none";
+        if (isMobile()) {
+          navLinks.classList.remove("active");
+          navOverlay?.classList.remove("active");
+          menuToggle.setAttribute("aria-expanded", "false");
+        }
       });
     });
 
-    // Initialize - hide menu on page load
-    navLinks.style.display = "none";
-    if (navOverlay) {
-      navOverlay.style.display = "none";
-    }
+    // Reset state on resize
+    window.addEventListener("resize", resetNavState);
+    document.addEventListener("DOMContentLoaded", resetNavState);
+
 
     // scroll to top button
     const scrollTopBtn = document.getElementById("scrollTopBtn");
