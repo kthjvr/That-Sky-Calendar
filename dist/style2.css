@@ -799,7 +799,6 @@ body {
   }
 
   .nav-links {
-    display: flex;
     position: fixed;
     top: 0;
     right: -100%;
@@ -812,7 +811,7 @@ body {
     justify-content: flex-start;
     align-items: flex-start;
     padding: 80px var(--spacing-lg) var(--spacing-lg);
-    transition: right var(--transition-base);
+    transition: all var(--transition-base);
     box-shadow: var(--shadow-lg);
     z-index: 1000;
   }

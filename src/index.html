@@ -355,51 +355,39 @@
     const menuToggle = document.querySelector(".menu-toggle");
     const navLinks = document.querySelector(".nav-links");
     const navOverlay = document.querySelector(".nav-overlay");
+
     const closeMenuBtn = document.querySelector(".close-btn");
-
-    function isMobile() {
-      return window.innerWidth <= 768;
-    }
-
-    function resetNavState() {
-      if (isMobile()) {
-        navLinks.classList.remove("active");
-        navOverlay?.classList.remove("active");
-        menuToggle.setAttribute("aria-expanded", "false");
-      } else {
-        navLinks.classList.remove("active");
-        navOverlay?.classList.remove("active");
-        menuToggle.setAttribute("aria-expanded", "false");
-      }
+    if (closeMenuBtn) {
+      closeMenuBtn.addEventListener("click", toggleMenu);
     }
 
     function toggleMenu() {
-      if (!isMobile()) return;
-
       const isOpen = navLinks.classList.toggle("active");
-      navOverlay?.classList.toggle("active", isOpen);
+      navOverlay.classList.toggle("active", isOpen);
       menuToggle.setAttribute("aria-expanded", isOpen);
+
+      // Control display property
+      if (isOpen) {
+        navLinks.style.display = "flex"; // or "block" depending on your layout
+        navOverlay.style.display = "block";
+      } else {
+        navLinks.style.display = "none";
+        navOverlay.style.display = "none";
+      }
     }
 
-    // Event listeners
     menuToggle.addEventListener("click", toggleMenu);
-    closeMenuBtn?.addEventListener("click", toggleMenu);
-    navOverlay?.addEventListener("click", toggleMenu);
+    navOverlay.addEventListener("click", toggleMenu);
 
     document.querySelectorAll(".nav-links a").forEach(link => {
       link.addEventListener("click", () => {
-        if (isMobile()) {
+      if (isMobile()) {
           navLinks.classList.remove("active");
           navOverlay?.classList.remove("active");
           menuToggle.setAttribute("aria-expanded", "false");
         }
       });
     });
-
-    // Reset state on resize
-    window.addEventListener("resize", resetNavState);
-    document.addEventListener("DOMContentLoaded", resetNavState);
-
 
     // scroll to top button
     const scrollTopBtn = document.getElementById("scrollTopBtn");
