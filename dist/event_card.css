@@ -1,0 +1,536 @@
+/* ===============================
+   Quick Overview Section
+   =============================== */
+
+.quick-overview {
+  padding: calc(var(--spacing-lg) * 2) var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  background: linear-gradient(135deg, 
+    rgba(163, 196, 243, 0.05) 0%, 
+    rgba(190, 225, 230, 0.05) 50%, 
+    rgba(252, 213, 206, 0.05) 100%);
+  border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+  margin-bottom: calc(var(--spacing-lg) * 1.5);
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-special));
+  border-radius: var(--radius-sm);
+}
+
+/* ===============================
+   Event Cards Container
+   =============================== */
+
+.event-cards-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.event-cards-overview .event-card {
+  max-width: 250px;
+  justify-self: center;
+}
+
+.event-cards-overview:has(.event-card:only-child) {
+  display: flex;
+  justify-content: center;
+}
+
+.event-cards-overview.single-card {
+  display: flex;
+  justify-content: center;
+}
+
+.event-cards-overview.single-card .event-card {
+  width: 100%;
+  max-width: 250px;
+}
+
+/* ===============================
+   Individual Event Card
+   =============================== */
+
+.event-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  position: relative;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  animation: var(--animation-fade-up);
+  min-width: 250px;
+}
+
+.event-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-accent);
+}
+
+.event-card:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.event-card:nth-child(even) {
+  animation-delay: 0.2s;
+}
+
+/* ===============================
+   Event Card Image
+   =============================== */
+
+.event-image-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-shards), var(--color-accent));
+  border-radius: var(--radius-lg-top);
+}
+
+.event-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: transform var(--transition-slow);
+}
+
+.event-card:hover .event-image {
+  transform: scale(1.05);
+}
+
+.event-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-special));
+  color: white;
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+/* ===============================
+   Event Badge
+   =============================== */
+
+.event-badge {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-lg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+/* Badge Categories */
+.event-badge.ts {
+  background: rgba(205, 234, 192, 0.9);
+  color: #2d5016;
+  border-color: rgba(205, 234, 192, 0.5);
+}
+
+.event-badge.season {
+  background: rgba(252, 213, 206, 0.9);
+  color: #8b2635;
+  border-color: rgba(252, 213, 206, 0.5);
+}
+
+.event-badge.special {
+  background: rgba(190, 225, 230, 0.9);
+  color: #0f4c75;
+  border-color: rgba(190, 225, 230, 0.5);
+}
+
+.event-badge.shards {
+  background: rgba(240, 239, 235, 0.9);
+  color: #5a5a5a;
+  border-color: rgba(240, 239, 235, 0.5);
+}
+
+.event-card:hover .event-badge {
+  transform: scale(1.1);
+}
+
+/* ===============================
+   Event Card Content
+   =============================== */
+
+.event-content-overview {
+  padding: var(--spacing-md);
+}
+
+.event-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.4;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-date {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.event-date::before {
+  content: '📅';
+  font-size: 1rem;
+}
+
+/* ===============================
+   Countdown Section
+   =============================== */
+
+.event-countdown {
+  background: rgba(163, 196, 243, 0.1);
+  border: 1px solid rgba(163, 196, 243, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  text-align: center;
+  margin-top: var(--spacing-sm);
+}
+
+.countdown-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.countdown-time {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* Different countdown states */
+.event-countdown.starting {
+  background: rgba(205, 234, 192, 0.1);
+  border-color: rgba(205, 234, 192, 0.3);
+}
+
+.event-countdown.starting .countdown-time {
+  color: var(--color-accent);
+}
+
+.event-countdown.ending {
+  background: rgba(252, 213, 206, 0.1);
+  border-color: rgba(252, 213, 206, 0.3);
+}
+
+.event-countdown.ending .countdown-time {
+  color: #8b2635;
+}
+
+.event-countdown.ended {
+  background: rgba(200, 200, 200, 0.1);
+  border-color: rgba(200, 200, 200, 0.3);
+}
+
+.event-countdown.ended .countdown-time {
+  color: var(--color-text-muted);
+}
+
+/* ===============================
+   Loading State
+   =============================== */
+
+.event-cards-overview.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(163, 196, 243, 0.3);
+  border-top: 3px solid var(--color-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===============================
+   Empty State
+   =============================== */
+
+.empty-state {
+  text-align: center;
+  padding: calc(var(--spacing-lg) * 2);
+  color: var(--color-text-muted);
+  background: rgba(163, 196, 243, 0.05);
+  border-radius: var(--radius-lg);
+  border: 2px dashed rgba(163, 196, 243, 0.2);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state-subtext {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* ===============================
+   Mobile Event Cards
+   =============================== */
+
+@media (max-width: 768px) {
+  .quick-overview {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .event-cards-overview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-width: 100%;
+    align-items: center;
+  }
+  
+  .event-card {
+    display: flex;
+    flex-direction: row;
+    min-width: unset;
+    max-width: 100%;
+    width: 100%;
+    height: 120px;
+    justify-self: stretch;
+    min-height: 120px;
+  }
+  
+  .event-image-container {
+    width: 120px; 
+    height: 100%;
+    flex-shrink: 0;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  }
+  
+  .event-content-overview {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+  }
+  
+  .event-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .event-date {
+    font-size: 0.85rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-muted);
+  }
+  
+  .event-countdown {
+    padding: 0;
+    margin-top: 0;
+    background: none;
+    border-radius: var(--radius-sm);
+    border: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: flex-end;
+  }
+  
+  .countdown-label {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+  }
+  
+  .countdown-time {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .event-badge {
+    top: var(--spacing-sm);
+    left: var(--spacing-sm);
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    z-index: 10;
+    width: fit-content;
+  }
+  
+  .event-card:hover {
+    transform: none; 
+  }
+  
+  .event-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-cards-overview .event-card {
+    max-width: 350px;
+  }
+
+  .event-card {
+    height: 100px;
+    min-height: 100px;
+  }
+  
+  .event-image-container {
+    width: 100px;
+  }
+  
+  
+  .event-title {
+    font-size: 0.95rem;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+  
+  .event-date {
+    font-size: 0.8rem;
+  }
+  
+  .countdown-time {
+    font-size: 0.85rem;
+  }
+  
+  .event-badge {
+    font-size: 0.6rem;
+    padding: 3px 6px;
+  }
+
+
+}
+
+/* ===============================
+   Mobile-specific utility classes
+   =============================== */
+
+@media (max-width: 768px) {
+  .event-cards-overview:has(.event-card:only-child),
+  .event-cards-overview.single-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  .event-cards-overview:has(.event-card:only-child) .event-card,
+  .event-cards-overview.single-card .event-card {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .event-card.featured::before {
+    top: var(--spacing-xs);
+    left: var(--spacing-xs);
+    font-size: 1.2rem;
+  }
+}
+
+/* ===============================
+   Animation Keyframes
+   =============================== */
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===============================
+   Utility Classes for Cards
+   =============================== */
+
+.event-card.featured {
+  border: 2px solid var(--color-accent);
+  background: linear-gradient(135deg, 
+    rgba(163, 196, 243, 0.02) 0%, 
+    rgba(190, 225, 230, 0.02) 100%);
+}
+
+.event-card.featured::before {
+  content: '⭐';
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  font-size: 1.5rem;
+  z-index: 2;
+}
+
+.event-card.past {
+  opacity: 0.7;
+  filter: grayscale(20%);
+}

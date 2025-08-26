@@ -53,7 +53,7 @@ function initializeCalendar(eventsData) {
         return {
           html: `
             <div class="event-icon-container">
-              <img src="${iconPath}" class="event-icon" alt="event icon" />
+              <img src="${iconPath}" class="event-icon" alt="event icon" loading="lazy"/>
             </div>
           `,
         };
@@ -190,7 +190,6 @@ function addCategoryFilter(calendar, eventsData) {
         <option value="days-of-events">Days of Events</option>
         <option value="travelling-spirits">Travelling Spirits</option>
         <option value="seasons">Seasons</option>
-        <option value="hide">Hide Shards</option>
     `;
 
     const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
@@ -304,7 +303,7 @@ function createNoticeElement(event, className, iconSrc, labelText, timeText) {
 
   noticeDiv.innerHTML = `
       <div class="notice-icon">
-        <img src="${iconSrc}" alt="${className} event icon">
+        <img src="${iconSrc}" alt="${className} event icon" loading="lazy" >
       </div>
       <div class="notice-text">
         <p><strong>${labelText}</strong> <u>${event.title}</u> ${timeText}</p>
@@ -321,7 +320,7 @@ function createEmptyNoticeElement(className, iconSrc, labelText) {
 
   noticeDiv.innerHTML = `
       <div class="notice-icon">
-        <img src="${iconSrc}" alt="${className} event icon">
+        <img src="${iconSrc}" alt="${className} event icon" loading="lazy" >
       </div>
       <div class="notice-text">
         <p>${labelText}</p>
@@ -423,7 +422,7 @@ function createEventCard(event) {
   card.innerHTML = `
     <div class="event-image-container">
       ${event.image ? 
-        `<img src="${event.image}" alt="${event.title}" class="event-image" onerror="this.parentElement.innerHTML='<div class=\\"event-image-placeholder\\">🌟</div>` : 
+        `<img src="${event.image}" alt="${event.title}" loading="lazy" class="event-image" onerror="this.parentElement.innerHTML='<div class=\\"event-image-placeholder\\">🌟</div>` : 
         `<div class="event-image-placeholder">🌟</div>`
       }
       <div class="event-badge ${badgeInfo.class}">${badgeInfo.text}</div>
@@ -462,8 +461,6 @@ function getBadgeInfo(category) {
     return { class: 'season', text: 'SEASON' };
   } else if (categoryLower.includes('special')) {
     return { class: 'special', text: 'SPECIAL' };
-  } else if (categoryLower.includes('shard')) {
-    return { class: 'shards', text: 'SHARDS' };
   } else {
     return { class: 'special', text: 'EVENT' };
   }
@@ -685,10 +682,10 @@ function setupMediaCarousel(event, container) {
         container.innerHTML = `
           ${mediaHtml}
           <div class="media-controls">
-            <button class="media-control-btn" onclick="downloadMedia('${mediaItem.url.replace(/'/g, "\\'")}')" title="Download">
+            <button type="button" class="media-control-btn" onclick="downloadMedia('${mediaItem.url.replace(/'/g, "\\'")}')" title="Download">
               💾
             </button>
-            <button class="media-control-btn" onclick="openZoomModal('${mediaItem.url.replace(/'/g, "\\'")}', '${mediaItem.type}')" title="View Full Size">
+            <button type="button" class="media-control-btn" onclick="openZoomModal('${mediaItem.url.replace(/'/g, "\\'")}', '${mediaItem.type}')" title="View Full Size">
               🔍
             </button>
           </div>
@@ -708,13 +705,13 @@ function setupMediaCarousel(event, container) {
     
     carouselHTML += `
             </div>
-            <button class="carousel-nav prev" onclick="prevMedia()" id="prevBtn">‹</button>
-            <button class="carousel-nav next" onclick="nextMedia()" id="nextBtn">›</button>
+            <button type="button" class="carousel-nav prev" onclick="prevMedia()" id="prevBtn">‹</button>
+            <button type="button" class="carousel-nav next" onclick="nextMedia()" id="nextBtn">›</button>
             <div class="media-controls">
-                <button class="media-control-btn" onclick="downloadCurrentMedia()" title="Download">
+                <button type="button" class="media-control-btn" onclick="downloadCurrentMedia()" title="Download">
                     💾
                 </button>
-                <button class="media-control-btn" onclick="openCurrentMediaZoom()" title="View Full Size">
+                <button type="button" class="media-control-btn" onclick="openCurrentMediaZoom()" title="View Full Size">
                     🔍
                 </button>
             </div>
@@ -841,7 +838,6 @@ function collectMediaItems(event) {
     return items;
 }
 
-// Enhanced media type detection
 function determineMediaType(url) {
     const urlLower = url.toLowerCase();
     
@@ -876,14 +872,14 @@ function createMediaElement(mediaItem, altText, shouldAutoplay = false) {
         
         case 'animated-image':
             return `
-                <img src="${safeUrl}" alt="${altText}" class="modal-image animated-image"
+                <img loading="lazy"  src="${safeUrl}" alt="${altText}" class="modal-image animated-image"
                      onclick="openZoomModal('${safeUrl}', '${type}')"
                      onerror="this.parentElement.innerHTML='<div class=&quot;media-error&quot;>Failed to load media</div>'">
             `;
         
         default:
             return `
-                <img src="${safeUrl}" alt="${altText}" class="modal-image"
+                <img loading="lazy" src="${safeUrl}" alt="${altText}" class="modal-image"
                      onclick="openZoomModal('${safeUrl}', '${type}')"
                      onerror="this.parentElement.innerHTML='<div class=&quot;media-error&quot;>Failed to load image</div>'">
             `;
@@ -1049,10 +1045,10 @@ function openZoomModal(mediaUrl, mediaType = null) {
                         Your browser does not support the video tag.
                     </video>
                     <div class="zoom-controls">
-                        <button class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
+                        <button type="button" class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
                             💾
                         </button>
-                        <button class="zoom-btn" onclick="closeZoomModal()" title="Close">
+                        <button type="button" class="zoom-btn" onclick="closeZoomModal()" title="Close">
                             ✕
                         </button>
                     </div>
@@ -1063,12 +1059,12 @@ function openZoomModal(mediaUrl, mediaType = null) {
         case 'animated-image':
             zoomContent = `
                 <div class="zoom-content">
-                    <img src="${safeUrl}" alt="Zoomed animated image" class="zoom-image">
+                    <img loading="lazy"  src="${safeUrl}" alt="Zoomed animated image" class="zoom-image">
                     <div class="zoom-controls">
-                        <button class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
+                        <button type="button" class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
                             💾
                         </button>
-                        <button class="zoom-btn" onclick="closeZoomModal()" title="Close">
+                        <button type="button" class="zoom-btn" onclick="closeZoomModal()" title="Close">
                             ✕
                         </button>
                     </div>
@@ -1079,12 +1075,12 @@ function openZoomModal(mediaUrl, mediaType = null) {
         default: // 'image'
             zoomContent = `
                 <div class="zoom-content">
-                    <img src="${safeUrl}" alt="Zoomed media" class="zoom-image">
+                    <img loading="lazy"  src="${safeUrl}" alt="Zoomed media" class="zoom-image">
                     <div class="zoom-controls">
-                        <button class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
+                        <button type="button" class="zoom-btn" onclick="downloadMedia('${safeUrl}')" title="Download">
                             💾
                         </button>
-                        <button class="zoom-btn" onclick="closeZoomModal()" title="Close">
+                        <button type="button" class="zoom-btn" onclick="closeZoomModal()" title="Close">
                             ✕
                         </button>
                     </div>
@@ -1182,13 +1178,11 @@ function setQuickInfoSummary(event) {
         const spiritCount = props.spiritCount || event.spiritCount || null;
         const realms = props.realms || event.realms || null;
         const duration = props.duration || event.duration || null;
-        const returnType = props.returnType || event.returnType || null;
         
         infoItems.push(
             { icon: '👥', label: 'Spirit Count:', value: spiritCount || 'To be announced' },
             { icon: '🌍', label: 'Realms:', value: realms || 'Multiple realms' },
             { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
-            { icon: '🔄', label: 'Return Type:', value: returnType || 'Regular return' }
         );
     } else {
         // Default/Generic events
@@ -1423,7 +1417,7 @@ window.closeZoomModal = closeZoomModal;
 class SkyEventsManager {
   constructor() {
     this.events = [];
-    this.allEvents = []; // Global events array from your existing code
+    this.allEvents = [];
     this.favorites = JSON.parse(localStorage.getItem('skyEventsFavorites') || '[]');
     this.currentFilter = 'all';
     this.searchTerm = '';
@@ -1449,8 +1443,8 @@ class SkyEventsManager {
     // console.log('Setting events data:', eventsData.length, 'events'); // Debug log
     this.allEvents = eventsData;
     this.events = this.convertFirebaseEventsToCardFormat(eventsData);
-    this.filterEvents(); // Filter first
-    this.renderCurrentPage(); // Then render current page (this will start countdowns automatically)
+    this.filterEvents();
+    this.renderCurrentPage();
   }
 
   // Convert your Firebase event format to card display format
@@ -1480,25 +1474,30 @@ class SkyEventsManager {
 
   // Filter events based on current filter and search term
   filterEvents() {
-    // console.log('Filtering with search term:', this.searchTerm, 'and filter:', this.currentFilter); // Debug log
-    
     this.filteredEvents = this.events.filter(event => {
-      const matchesFilter = this.currentFilter === 'all' || 
-                           this.currentFilter === event.category ||
-                           (this.currentFilter === 'favorites' && this.favorites.includes(event.id));
+      const now = new Date();
+      const startDate = new Date(event.start);
+      const endDate = new Date(event.end);
+
+      const isActive = now >= startDate && now <= endDate;
+
+      const matchesFilter = 
+        this.currentFilter === 'all' ||
+        this.currentFilter === event.category ||
+        (this.currentFilter === 'favorites' && this.favorites.includes(event.id)) ||
+        (this.currentFilter === 'in-progress' && isActive);
+
       const searchLower = this.searchTerm.toLowerCase();
       const matchesSearch = this.searchTerm === '' || 
-                           event.title.toLowerCase().includes(searchLower);
-      
-      // console.log(`Event: ${event.title}, Filter Match: ${matchesFilter}, Search Match: ${matchesSearch}`); // Debug log
-      
+                            event.title.toLowerCase().includes(searchLower);
+
       return matchesFilter && matchesSearch;
     });
-    
-    // console.log('Filtered events count:', this.filteredEvents.length); // Debug log
-    
+
     this.currentPage = 1;
   }
+
+
 
   // Get events for current page
   getCurrentPageEvents() {
@@ -1550,63 +1549,78 @@ class SkyEventsManager {
     const now = new Date();
     const startDate = new Date(event.start);
     const endDate = new Date(event.end);
-    
+
     const isActive = now >= startDate && now <= endDate;
     const isUpcoming = now < startDate;
     const hasEnded = now > endDate;
 
     const badge = this.getCategoryBadge(event.category);
     const icon = this.getCategoryIcon(event.category);
-    const countdownHtml = this.generateCountdownHtml(event, isActive, isUpcoming, hasEnded);
+
+    // Determine status
+    let statusClass = 'ended';
+    let statusText = 'Event Ended';
+
+    if (isActive) {
+      statusClass = 'active';
+      statusText = 'Active Now';
+    } else if (isUpcoming) {
+      statusClass = 'upcoming';
+      statusText = 'Coming Soon';
+    } else if (event.recurring) {
+      statusClass = 'recurring';
+      statusText = 'Recurring';
+    }
 
     card.innerHTML = `
-      <div class="event-list-badge">
-        <span class="event-list-badge-item ${event.category}-badge">${badge}</span>
+      <div class="event-list-icon">
+        ${icon}
       </div>
       
-      <div class="event-list-header">
-        <div class="event-list-icon">
-          ${icon}
+      <div class="event-list-content">
+        <div class="event-list-badge">
+          <span class="event-list-badge-item ${event.category}-badge">${badge}</span>
+          <div class="event-list-status ${statusClass}">${statusText}</div>
         </div>
         <h3 class="event-list-title">${event.title}</h3>
-      </div>
-      
-      <div class="event-list-info">
-        ${event.description ? `<div class="event-list-description" hidden>${event.description}</div>` : ''}
+        <div class="event-list-dates">${this.formatDateRange(startDate, endDate)}</div>
         
-        <div class="event-list-details">
-          <div class="event-list-detail-item">
-            <span class="event-list-detail-label">Start:</span>
-            <span class="event-list-detail-value">${this.formatDate(startDate)}</span>
-          </div>
-          <div class="event-list-detail-item">
-            <span class="event-list-detail-label">End:</span>
-            <span class="event-list-detail-value">${this.formatDate(endDate)}</span>
-          </div>
-          ${event.category === 'season' ? `
-          <div class="event-list-detail-item">
-            <span class="event-list-detail-label">Type:</span>
-            <span class="event-list-detail-value">Seasonal Event</span>
-          </div>
-          ` : ''}
+        <div class="event-list-actions">
+          <button type="button" class="event-list-btn event-list-btn-primary" onclick="openEventModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">
+            View Details
+          </button>
+          <button type="button" class="event-list-btn event-list-btn-secondary event-list-favorite-btn" data-event-id="${event.id}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
         </div>
-      </div>
-      
-      ${countdownHtml}
-      
-      <div class="event-list-actions">
-        <button class="event-list-btn event-list-btn-primary" onclick="openEventModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">
-          View Details
-        </button>
-        <button class="event-list-btn event-list-btn-secondary event-list-favorite-btn" data-event-id="${event.id}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </button>
       </div>
     `;
 
     return card;
+  }
+
+  formatDateRange(startDate, endDate) {
+    const start = this.formatDate(startDate);
+    const end = this.formatDate(endDate);
+    
+    // If same month, show "Jun 18 - 25, 2025"
+    if (startDate.getMonth() === endDate.getMonth() && 
+        startDate.getFullYear() === endDate.getFullYear()) {
+      const startDay = startDate.getDate();
+      const endDay = endDate.getDate();
+      const month = startDate.toLocaleDateString('en-US', { month: 'short' });
+      const year = startDate.getFullYear();
+      
+      if (startDay === endDay) {
+        return `${month} ${startDay}, ${year}`;
+      }
+      return `${month} ${startDay} - ${endDay}, ${year}`;
+    }
+    
+    // Different months: "Jun 18, 2025 - Jul 18, 2025"
+    return `${start} - ${end}`;
   }
 
   getCategoryBadge(category) {
@@ -1614,7 +1628,6 @@ class SkyEventsManager {
       "seasons": 'Season',
       "travelling-spirits": 'Traveling Spirit',
       "special-event": 'Special Event',
-      shards: 'Shard Event',
       "days-of-events": 'Days of Event',
       default: 'Event'
     };
@@ -1635,9 +1648,6 @@ class SkyEventsManager {
             <rect x="9" y="10" width="6" height="12" rx="1"/>
             <path d="M12 2C13.2 4 14 5.5 14 7C14 8.66 13 10 12 10C11 10 10 8.66 10 7C10 5.5 10.8 4 12 2Z"/>
           </svg>`,
-      shards: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2L15.5 8.5L22 12L15.5 15.5L12 22L8.5 15.5L2 12L8.5 8.5L12 2Z"/>
-      </svg>`,
       "days-of-events": `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
         <path d="M19 3H18V1H16V3H8V1H6V3H5C3.89 3 3.01 3.9 3.01 5L3 19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19Z"/>
       </svg>`,
@@ -1652,9 +1662,9 @@ class SkyEventsManager {
     if (hasEnded) {
       return `
         <div class="event-list-countdown event-list-countdown-ended">
-          <div class="event-list-countdown-item">
-            <span class="event-list-countdown-number">Event</span>
-            <span class="event-list-countdown-label">Ended</span>
+          <div class="event-list-countdown-content">
+            <div class="event-list-countdown-header">Event</div>
+            <div class="event-list-countdown-time">Ended</div>
           </div>
         </div>
       `;
@@ -1662,24 +1672,18 @@ class SkyEventsManager {
 
     const targetDate = isActive ? event.end : event.start;
     const countdownClass = isActive ? 'event-list-countdown-active' : 'event-list-countdown-upcoming';
+    const headerText = isActive ? 'Ends In' : 'Starts In';
 
     return `
       <div class="event-list-countdown ${countdownClass}" data-target-date="${targetDate}">
-        <div class="event-list-countdown-item">
-          <span class="event-list-countdown-number">--</span>
-          <span class="event-list-countdown-label">Days</span>
-        </div>
-        <div class="event-list-countdown-item">
-          <span class="event-list-countdown-number">--</span>
-          <span class="event-list-countdown-label">Hours</span>
-        </div>
-        <div class="event-list-countdown-item">
-          <span class="event-list-countdown-number">--</span>
-          <span class="event-list-countdown-label">Min</span>
+        <div class="event-list-countdown-content">
+          <div class="event-list-countdown-header">${headerText}</div>
+          <div class="event-list-countdown-time">--D --H --M</div>
         </div>
       </div>
     `;
   }
+
 
   formatDate(date) {
     return date.toLocaleDateString('en-US', {
@@ -1692,7 +1696,6 @@ class SkyEventsManager {
   }
 
   setupEventListeners() {
-    // Use event delegation for search functionality to ensure it works even if input is created later
     document.addEventListener('input', (e) => {
       if (e.target.id === 'eventListSearch' || e.target.classList.contains('event-list-search-input')) {
         // console.log('Search input detected:', e.target.value); // Debug log
@@ -1793,7 +1796,6 @@ class SkyEventsManager {
     const isFavorited = this.favorites.includes(eventId);
     button.classList.toggle('favorited', isFavorited);
     
-    // Add animation
     button.style.transform = 'scale(1.2)';
     setTimeout(() => {
       button.style.transform = '';
@@ -1883,7 +1885,7 @@ class SkyEventsManager {
         Showing ${((this.currentPage - 1) * this.eventsPerPage) + 1}-${Math.min(this.currentPage * this.eventsPerPage, this.filteredEvents.length)} of ${this.filteredEvents.length} events
       </div>
       <div class="pagination-controls">
-        <button class="pagination-btn pagination-prev" ${this.currentPage === 1 ? 'disabled' : ''}>
+        <button type="button" class="pagination-btn pagination-prev" ${this.currentPage === 1 ? 'disabled' : ''}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="15,18 9,12 15,6"></polyline>
           </svg>
@@ -1901,7 +1903,7 @@ class SkyEventsManager {
     }
 
     if (startPage > 1) {
-      paginationHtml += `<button class="pagination-btn" data-page="1">1</button>`;
+      paginationHtml += `<button type="button" class="pagination-btn" data-page="1">1</button>`;
       if (startPage > 2) {
         paginationHtml += `<span class="pagination-ellipsis">...</span>`;
       }
@@ -1909,7 +1911,7 @@ class SkyEventsManager {
 
     for (let i = startPage; i <= endPage; i++) {
       paginationHtml += `
-        <button class="pagination-btn ${i === this.currentPage ? 'active' : ''}" data-page="${i}">
+        <button type="button" class="pagination-btn ${i === this.currentPage ? 'active' : ''}" data-page="${i}">
           ${i}
         </button>
       `;
@@ -1919,11 +1921,11 @@ class SkyEventsManager {
       if (endPage < totalPages - 1) {
         paginationHtml += `<span class="pagination-ellipsis">...</span>`;
       }
-      paginationHtml += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+      paginationHtml += `<button type="button" class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
     }
 
     paginationHtml += `
-        <button class="pagination-btn pagination-next" ${this.currentPage === totalPages ? 'disabled' : ''}>
+        <button type="button" class="pagination-btn pagination-next" ${this.currentPage === totalPages ? 'disabled' : ''}>
           Next
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="9,18 15,12 9,6"></polyline>
@@ -1954,16 +1956,18 @@ class SkyEventsManager {
       { key: 'travelling-spirits', label: 'Traveling Spirits' },
       { key: 'special-event', label: 'Special Events' },
       { key: 'days-of-events', label: 'Days of Events' },
-      { key: 'shards', label: 'Shard Events' },
-      { key: 'favorites', label: 'Favorites' }
+      { key: 'favorites', label: 'Favorites' },
+      { key: 'in-progress', label: 'In Progress' }
     ];
     
     filtersContainer.innerHTML = filters.map(filter => 
-      `<button class="event-list-filter-btn ${filter.key === 'all' ? 'active' : ''}" data-filter="${filter.key}">
+      `<button type="button" class="event-list-filter-btn ${filter.key === 'all' ? 'active' : ''}" data-filter="${filter.key}">
         ${filter.label}
       </button>`
     ).join('');
   }
+
+
 
   startCountdowns() {
     // console.log('Starting countdowns...'); // Debug log
@@ -2008,9 +2012,9 @@ class SkyEventsManager {
     
     if (distance < 0) {
       element.innerHTML = `
-        <div class="event-list-countdown-item">
-          <span class="event-list-countdown-number">Event</span>
-          <span class="event-list-countdown-label">Ended</span>
+        <div class="event-list-countdown-content">
+          <div class="event-list-countdown-header">Event</div>
+          <div class="event-list-countdown-time">Ended</div>
         </div>
       `;
       element.className = 'event-list-countdown event-list-countdown-ended';
@@ -2020,36 +2024,13 @@ class SkyEventsManager {
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
     
-    const countdownItems = element.querySelectorAll('.event-list-countdown-item');
+    const timeElement = element.querySelector('.event-list-countdown-time');
     
-    if (days > 0) {
-      if (countdownItems[0]) {
-        countdownItems[0].querySelector('.event-list-countdown-number').textContent = days;
-        countdownItems[0].querySelector('.event-list-countdown-label').textContent = 'Days';
-      }
-      if (countdownItems[1]) {
-        countdownItems[1].querySelector('.event-list-countdown-number').textContent = hours;
-        countdownItems[1].querySelector('.event-list-countdown-label').textContent = 'Hours';
-      }
-      if (countdownItems[2]) {
-        countdownItems[2].querySelector('.event-list-countdown-number').textContent = minutes;
-        countdownItems[2].querySelector('.event-list-countdown-label').textContent = 'Min';
-      }
-    } else {
-      if (countdownItems[0]) {
-        countdownItems[0].querySelector('.event-list-countdown-number').textContent = hours;
-        countdownItems[0].querySelector('.event-list-countdown-label').textContent = 'Hours';
-      }
-      if (countdownItems[1]) {
-        countdownItems[1].querySelector('.event-list-countdown-number').textContent = minutes;
-        countdownItems[1].querySelector('.event-list-countdown-label').textContent = 'Min';
-      }
-      if (countdownItems[2]) {
-        countdownItems[2].querySelector('.event-list-countdown-number').textContent = seconds;
-        countdownItems[2].querySelector('.event-list-countdown-label').textContent = 'Sec';
-      }
+    if (timeElement) {
+      // Format the time as "XD XH XM"
+      const timeText = `${days}D ${hours}H ${minutes}M`;
+      timeElement.textContent = timeText;
     }
   }
 

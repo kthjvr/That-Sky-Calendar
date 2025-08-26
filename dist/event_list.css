@@ -1,0 +1,674 @@
+/* ===============================
+   Event List Cards Styles
+   =============================== */
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.event-list-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  animation: var(--animation-fade-up);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  min-height: 100px;
+  padding: var(--spacing-sm);
+  gap: var(--spacing-sm);
+}
+
+.event-list-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-accent);
+}
+
+/* Category-specific card borders */
+.event-list-card.seasonal {
+  border-color: var(--color-season);
+}
+
+.event-list-card.ts {
+  border-color: var(--color-ts);
+}
+
+.event-list-card.special {
+  border-color: var(--color-special);
+}
+
+.event-list-card.shards {
+  border-color: var(--color-shards);
+}
+
+.event-list-card:hover.seasonal {
+  border-color: var(--color-season);
+  box-shadow: 0 4px 20px rgba(252, 213, 206, 0.3);
+}
+
+.event-list-card:hover.ts {
+  border-color: var(--color-ts);
+  box-shadow: 0 4px 20px rgba(205, 234, 192, 0.3);
+}
+
+.event-list-card:hover.special {
+  border-color: var(--color-special);
+  box-shadow: 0 4px 20px rgba(190, 225, 230, 0.3);
+}
+
+.event-list-card:hover.shards {
+  border-color: var(--color-shards);
+  box-shadow: 0 4px 20px rgba(240, 239, 235, 0.3);
+}
+
+/* ===============================
+   Event List Badge - Inline with Status
+   =============================== */
+
+.event-list-badge {
+  position: static;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.event-list-badge-item {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: white;
+  white-space: nowrap;
+}
+
+.event-list-badge-item.seasons-badge {
+  background: var(--color-season);
+  color: #5d4037;
+}
+
+.event-list-badge-item.travelling-spirits-badge {
+  background: var(--color-ts);
+  color: #2e7d32;
+}
+
+.event-list-badge-item.special-event-badge {
+  background: var(--color-special);
+  color: #00695c;
+}
+
+.event-list-badge-item.special-events-badge {
+  background: var(--color-special);
+  color: #00695c;
+}
+
+.event-list-badge-item.days-of-events-badge {
+  background: var(--color-days);
+  color: #00695c;
+}
+
+.event-list-badge-item.shards-badge {
+  background: var(--color-shards);
+  color: var(--color-text);
+}
+
+/* ===============================
+   Event List Icon - Compact
+   =============================== */
+
+.event-list-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(163, 196, 243, 0.1);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.event-list-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ===============================
+   Event List Content - Vertical Layout with Badge on Top
+   =============================== */
+
+.event-list-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.event-list-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 2px 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-list-dates {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1.2;
+}
+
+/* ===============================
+   Event List Status - Inline with Badge
+   =============================== */
+
+.event-list-status {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.event-list-status.active {
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+}
+
+.event-list-status.upcoming {
+  background: rgba(255, 193, 7, 0.1);
+  color: #f57c00;
+}
+
+.event-list-status.ended {
+  background: rgba(158, 158, 158, 0.1);
+  color: #757575;
+}
+
+.event-list-status.recurring {
+  background: rgba(156, 39, 176, 0.1);
+  color: #7b1fa2;
+}
+
+/* ===============================
+   Event List Actions
+   =============================== */
+
+.event-list-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: stretch;
+  margin-top: 4px;
+}
+
+.event-list-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+}
+
+.event-list-btn-primary {
+  background: var(--color-accent);
+  color: white;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.event-list-btn-primary:hover {
+  background: #8bb3e8;
+  transform: translateY(-1px);
+}
+
+.event-list-btn-secondary {
+  background: rgba(163, 196, 243, 0.1);
+  color: var(--color-accent);
+  border: 1px solid rgba(163, 196, 243, 0.2);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.event-list-btn-secondary svg {
+  width: 14px;
+  height: 14px;
+}
+
+.event-list-btn-secondary:hover {
+  background: rgba(163, 196, 243, 0.2);
+  transform: scale(1.05);
+}
+
+.event-list-favorite-btn.favorited {
+  background: var(--color-accent);
+  color: white;
+}
+
+.event-list-favorite-btn.favorited svg {
+  fill: currentColor;
+}
+
+/* ===============================
+   Event List Filter and Search Styles
+   =============================== */
+
+.event-list-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  padding: 0 var(--spacing-md);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.event-list-filter-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(163, 196, 243, 0.2);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.event-list-filter-btn:hover,
+.event-list-filter-btn.active {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.event-list-search-container {
+  margin-bottom: var(--spacing-md);
+  padding: 0 var(--spacing-md);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.event-list-search-input {
+  width: 100%;
+  max-width: 300px;
+  padding: var(--spacing-sm);
+  border: 2px solid rgba(163, 196, 243, 0.2);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  transition: all var(--transition-base);
+}
+
+.event-list-search-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(163, 196, 243, 0.1);
+}
+
+/* ===============================
+   Event List Empty State
+   =============================== */
+
+.event-list-empty-message {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  margin: var(--spacing-lg) 0;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-muted);
+  max-width: 400px;
+}
+
+.empty-state svg {
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===============================
+   Event List Pagination Styles
+   =============================== */
+
+.event-list-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+  padding: 0 var(--spacing-md);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pagination-info {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-btn {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid rgba(163, 196, 243, 0.2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 500;
+  font-family: var(--font-body);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 32px;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(163, 196, 243, 0.1);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+}
+
+.pagination-btn.active {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.pagination-btn:disabled {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border-color: rgba(163, 196, 243, 0.1);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-prev,
+.pagination-next {
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.pagination-prev svg,
+.pagination-next svg {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.pagination-ellipsis {
+  padding: var(--spacing-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+}
+
+/* ===============================
+   Responsive Design - Mobile
+   =============================== */
+
+@media (max-width: 768px) {
+  .events-grid {
+    grid-template-columns: 1fr;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+  
+  .event-list-card {
+    min-height: 80px;
+    padding: var(--spacing-xs);
+    gap: var(--spacing-xs);
+    align-items: flex-start;
+  }
+  
+  .event-list-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .event-list-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .event-list-title {
+    font-size: 0.9rem;
+  }
+  
+  .event-list-dates {
+    font-size: 0.75rem;
+  }
+  
+  .event-list-btn-primary {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .event-list-btn-secondary {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .event-list-btn-secondary svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-list-card {
+    min-height: 70px;
+  }
+  
+  .event-list-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .event-list-title {
+    font-size: 0.85rem;
+  }
+}
+
+/* ===============================
+   Loading State
+   =============================== */
+
+.event-list-loading-skeleton {
+  background: linear-gradient(90deg, 
+    rgba(163, 196, 243, 0.1) 0%, 
+    rgba(163, 196, 243, 0.2) 50%, 
+    rgba(163, 196, 243, 0.1) 100%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+.event-list-skeleton-card {
+  height: 80px;
+  width: 100%;
+}
+
+/* ===============================
+   Theme Toggle
+   =============================== */
+
+.event-list-theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  z-index: 1000;
+}
+
+.event-list-theme-toggle:hover {
+  transform: scale(1.05);
+  background: #8bb3e8;
+}
+
+/* ===============================
+   Animations
+   =============================== */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* ===============================
+   Dark Theme Support
+   =============================== */
+
+[data-theme="dark"] .event-list-card {
+  background: var(--color-surface-dark, #1a1a1a);
+  border-color: rgba(163, 196, 243, 0.2);
+}
+
+[data-theme="dark"] .event-list-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .event-list-btn-secondary {
+  background: rgba(163, 196, 243, 0.05);
+  border-color: rgba(163, 196, 243, 0.1);
+}
+
+[data-theme="dark"] .event-list-search-input {
+  background: var(--color-surface-dark, #1a1a1a);
+  border-color: rgba(163, 196, 243, 0.2);
+}
+
+[data-theme="dark"] .event-list-filter-btn {
+  background: var(--color-surface-dark, #1a1a1a);
+  border-color: rgba(163, 196, 243, 0.2);
+}
+
+[data-theme="dark"] .pagination-btn {
+  background: var(--color-surface-dark, #1a1a1a);
+  border-color: rgba(163, 196, 243, 0.2);
+}
+
+[data-theme="dark"] .pagination-btn:hover:not(:disabled) {
+  background: rgba(163, 196, 243, 0.1);
+}
+
+/* ===============================
+   Accessibility
+   =============================== */
+
+.event-list-btn:focus,
+.event-list-filter-btn:focus,
+.event-list-search-input:focus,
+.pagination-btn:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.event-list-favorite-btn:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-list-card {
+    animation: none;
+  }
+  
+  .event-list-card:hover {
+    transform: none;
+  }
+  
+  .event-list-btn:hover {
+    transform: none;
+  }
+  
+  .pagination-btn:hover {
+    transform: none;
+  }
+  
+  .event-list-loading-skeleton {
+    animation: none;
+  }
+}

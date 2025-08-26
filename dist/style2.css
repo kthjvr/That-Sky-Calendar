@@ -1,13 +1,9 @@
-/* ===============================
-   Modern Sky Events CSS Design
-   =============================== */
-
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
-/* Root CSS Variables (as provided) */
+/* Root CSS Variables */
 :root {
-  /* 🎨 Color Palette (Pastels, Sky-inspired) */
+  /* Color Palette */
   --color-bg: #fafafa;
   --color-surface: #ffffff;
   --color-text: #333333;
@@ -15,11 +11,12 @@
   --color-accent: #a3c4f3;
 
   /* Category tokens */
-  --color-season: #fcd5ce;   /* pink-peach */
-  --color-ts: #cdeac0;       /* mint green */
-  --color-special: #bee1e6;  /* teal pastel */
-  --color-shards: #f0efeb;   /* off-white grey */
-  --color-warning: #ffe066;  /* yellow for alerts */
+  --color-season: #fcd5ce;
+  --color-ts: #cdeac0;
+  --color-special: #bee1e6;
+  --color-days: #e0bbff;
+  --color-shards: #f0efeb;
+  --color-warning: #ffe066;
 
   /* Other variables remain the same */
   --font-heading: 'Poppins', sans-serif;
@@ -300,13 +297,12 @@ body {
    =============================== */
 
 .navbar {
-  /* position: fixed; */
   top: 0;
   left: 0;
   right: 0;
   background: var(--color-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 1000;
   transition: all var(--transition-base);
@@ -408,13 +404,15 @@ body {
 
 .hero-banner {
   position: relative;
-  min-height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  overflow: hidden;
-  margin-top: 0;
+  justify-content: center;   
+  min-height: 100vh;         
+  text-align: center;
+  padding: var(--spacing-lg);
+  box-sizing: border-box;
 }
 
 .hero-background {
@@ -423,9 +421,14 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?updatedAt=1746713811012") center/cover no-repeat;
-  opacity: 0.9;
   z-index: -2;
+}
+
+.hero-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
 }
 
 .hero-background::before {
@@ -440,6 +443,7 @@ body {
     radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
     radial-gradient(circle at 40% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
   animation: float 6s ease-in-out infinite;
+  z-index: 1;
 }
 
 .hero-overlay {
@@ -453,10 +457,9 @@ body {
 }
 
 .hero-content {
-  text-align: center;
   z-index: 10;
   max-width: 800px;
-  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl); 
   animation: var(--animation-fade-up);
 }
 
@@ -514,15 +517,17 @@ body {
 .info-section {
   display: flex;
   gap: var(--spacing-lg);
-  margin-top: var(--spacing-lg);
   flex-wrap: wrap;
   justify-content: center;
+  margin-top: auto;          
+  margin-bottom: var(--spacing-lg); 
+  z-index: 10;               
 }
 
 .info-container {
   background: var(--color-surface);
-  backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
@@ -750,7 +755,6 @@ body {
   visibility: visible;
 }
 
-/* Close button base */
 .close-btn {
   position: absolute;
   top: 1rem;
@@ -762,17 +766,16 @@ body {
   color: inherit;
   cursor: pointer;
   line-height: 1;
-  z-index: 1001; /* ensures it's above nav */
-  display: none; /* hidden by default */
+  z-index: 1001; 
+  display: none; 
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .close-btn:hover {
-  color: #ff5252; /* red accent on hover */
+  color: #ff5252; 
   transform: rotate(90deg);
 }
 
-/* Show close button only when nav is active */
 .nav-links.active .close-btn {
   display: block;
 }
@@ -827,10 +830,6 @@ body {
   .nav-links a:hover {
     background: var(--color-accent);
     color: white;
-  }
-
-  .hero-background{
-      background: url("https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img-port.jpg?updatedAt=1746713810471") center/cover no-repeat;
   }
 
   .hero-content {

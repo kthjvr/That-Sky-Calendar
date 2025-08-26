@@ -60,6 +60,7 @@
   <link rel="stylesheet" href="calendar.css">
   <link rel="stylesheet" href="modal.css">
   <link rel="stylesheet" href="event_list.css">
+  <link rel="stylesheet" href="credits.css">
 
   <link rel="icon" type="image/x-icon"
     href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705">
@@ -89,20 +90,20 @@
       </a>
 
       <!-- Hamburger Button -->
-      <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">
+      <button type="button" class="menu-toggle" aria-label="Open menu" aria-expanded="false">
         ☰
       </button>
 
       <!-- Navigation Links (Desktop + Mobile Drawer) -->
       <ul class="nav-links">
-        <button class="close-btn" aria-label="Close menu">&times;</button>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
         <li><a href="#home">Home</a></li>
         <li><a href="#calendarSection">Calendar</a></li>
         <li><a href="/events">Events</a></li>
         <li><a href="/spirits">Traveling Spirits</a></li>
         <li><a href="/about">About</a></li>
         <li>
-          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+          <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
             <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -129,7 +130,27 @@
 
   <!-- Hero Banner -->
   <section class="hero-banner" id="home">
-    <div class="hero-background"></div>
+    <picture class="hero-background">
+      <!-- Mobile image -->
+      <source 
+        media="(max-width: 768px)" 
+        srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img-port.jpg?tr=w-768,q-70,f-webp" 
+        type="image/webp">
+
+      <!-- Desktop image -->
+      <source 
+        media="(min-width: 769px)" 
+        srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70,f-webp" 
+        type="image/webp">
+
+      <!-- Fallback JPEG (in case WebP not supported) -->
+      <img 
+        src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70" 
+        alt="That Sky Events Hero Background" 
+        width="1600" height="900"
+        loading="eager">
+    </picture>
+
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
@@ -145,13 +166,14 @@
       <div class="info-container game">
         <h2>Fancy a game?</h2>
         <p class="game-description">Challenge yourself with a round of memory game! Click to play.</p>
-        <button id="open-game-modal">Play Game</button>
+        <button type="button" id="open-game-modal">Play Game</button>
       </div>
     </div>
   </section>
 
+
   <!-- Scroll to Top Button -->
-  <button id="scrollTopBtn" aria-label="Scroll to top">
+  <button type="button" id="scrollTopBtn" aria-label="Scroll to top">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
@@ -179,9 +201,58 @@
     <div id='calendar' class="calendar"></div>
   </section>
 
-    <!-- Event Cards Container -->
+  <!-- Event Cards Container -->
   <div class="events-grid" id="eventsGrid">
   </div>
+
+  <!-- Credits Container -->
+  <section class="credits-section">
+      <h1>Image Credits & Acknowledgments</h1>
+      
+      <div class="credits-intro">
+          <strong>That Sky Events</strong> is a community-created calendar and resource website for Sky: Children of the Light players. This is an unofficial fan project designed to help the Sky community stay informed about events and game information.
+      </div>
+
+      <h2>Game Assets & Screenshots</h2>
+      <div class="credits-grid">
+          <div class="credit-item">
+              <div class="credit-label">Original Game:</div>
+              <div class="credit-value">Sky: Children of the Light</div>
+          </div>
+          <div class="credit-item">
+              <div class="credit-label">Developer/Publisher:</div>
+              <div class="credit-value">thatgamecompany</div>
+          </div>
+          <div class="credit-item">
+              <div class="credit-label">Copyright:</div>
+              <div class="credit-value">© thatgamecompany. All rights reserved.</div>
+          </div>
+      </div>
+      
+      <p>All Sky: Children of the Light game imagery, assets, and screenshots are the intellectual property of <strong>thatgamecompany</strong>. These images are used for informational and educational purposes to help the Sky community.</p>
+
+      <h2>Community Documentation</h2>
+      <div class="credit-item">
+          <div class="credit-label">Primary Source:</div>
+          <div class="credit-value">
+              <a href="https://sky-children-of-the-light.fandom.com/" target="_blank" rel="noopener">Sky: Children of the Light Wiki</a> hosted on Fandom
+          </div>
+      </div>
+
+      <h3>Special Recognition</h3>
+      <p>We acknowledge and thank all contributors to the Sky: Children of the Light Wiki, including administrators, editors, and image uploaders who have made comprehensive documentation possible. The wiki serves as an invaluable resource for the Sky community, and this calendar project would not be possible without their dedicated work.</p>
+
+      <div class="legal-notice">
+          <h3>Copyright Notice</h3>
+          <p>All copyrighted materials used on this website remain the property of their respective copyright holders. Images are used for educational and informational purposes only, with no commercial intent.</p>
+          
+          <p>If you are a copyright holder and would like content removed or have concerns about usage, please contact us and we will promptly address your request.</p>
+      </div>
+
+      <div class="disclaimer">
+          That Sky Events is an independent fan-created resource and is not affiliated with or endorsed by thatgamecompany. Sky: Children of the Light is a trademark of thatgamecompany.
+      </div>
+  </section>
 
 
   <!-- Modal HTML Structure -->
@@ -191,7 +262,7 @@
               <div class="modal-image-container" id="modalImageContainer">
                   <!-- Image carousel will be inserted here -->
               </div>
-              <button class="modal-close" id="closeModal">&times;</button>
+              <button type="button" class="modal-close" id="closeModal">&times;</button>
               <div class="modal-badge" id="modalBadge"><!-- Badge text --></div>
           </div>
           <div class="modal-body">
@@ -210,11 +281,11 @@
               </div>
               
               <div class="modal-actions">
-                  <button class="modal-btn share" id="modalShareBtn">
+                  <button type="button" class="modal-btn share" id="modalShareBtn">
                       <span class="btn-icon">📤</span>
                       Share Event
                   </button>
-                  <button class="modal-btn calendar" id="modalCalendarBtn">
+                  <button type="button" class="modal-btn calendar" id="modalCalendarBtn">
                       <span class="btn-icon">📅</span>
                       Add to Calendar
                   </button>
@@ -233,16 +304,13 @@
     <div class="footer-container">
       <!-- Left Section -->
       <div class="footer-left">
-        <a href="/" class="footer-logo-link">
+        <a href="#home" class="footer-logo-link">
           <img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo">
         </a>
         <p class="footer-text">
           Made with ❤️ by 
           <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank" rel="noopener" class="footer-link">Kathy</a>  
           © 2024 ThatSkyEvents. All rights reserved.
-        </p>
-        <p class="footer-disclaimer">
-          Disclaimer: This site is a community resource for players of <em>Sky: Children of the Light</em>, not officially endorsed by TGC.
         </p>
       </div>
 
