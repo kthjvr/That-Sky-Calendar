@@ -394,6 +394,9 @@
         
         if (!menuToggle || !navLinks) return;
 
+        // Set initial state properly
+        this.setInitialMenuState();
+
         menuToggle.addEventListener('click', (e) => {
           e.preventDefault();
           this.toggleMenu();
@@ -414,6 +417,9 @@
             this.closeMenu();
           }
         });
+
+        // Handle window resize to maintain correct state
+        window.addEventListener('resize', () => this.handleResize());
       }
 
       setupNavLinkHandlers() {
@@ -441,12 +447,17 @@
         
         if (navLinks) {
           navLinks.classList.add('active');
+          // Force display block before adding active class for smooth transition
           navLinks.style.display = 'block';
+          // Use requestAnimationFrame to ensure display takes effect before transition
+          requestAnimationFrame(() => {
+            navLinks.style.transform = 'translateX(0)';
+          });
         }
         
         if (navOverlay) {
           navOverlay.classList.add('active');
-          navOverlay.style.display = 'flex';
+          navOverlay.style.display = 'block';
         }
         
         if (menuToggle) {
@@ -463,7 +474,14 @@
         
         if (navLinks) {
           navLinks.classList.remove('active');
-          navLinks.style.display = 'none';
+          // Reset transform to initial position
+          navLinks.style.transform = '';
+          // Hide after transition completes
+          setTimeout(() => {
+            if (!this.state.isMenuOpen) {
+              navLinks.style.display = 'none';
+            }
+          }, 300);
         }
         
         if (navOverlay) {
@@ -476,6 +494,41 @@
         }
 
         document.body.style.overflow = '';
+      }
+
+      setInitialMenuState() {
+        const { navLinks, navOverlay, menuToggle } = this.elements;
+        
+        if (this.isMobile()) {
+          if (navLinks) {
+            navLinks.classList.remove('active');
+            navLinks.style.display = 'none';
+            navLinks.style.transform = '';
+          }
+          
+          if (navOverlay) {
+            navOverlay.classList.remove('active');
+            navOverlay.style.display = 'none';
+          }
+          
+          if (menuToggle) {
+            menuToggle.setAttribute('aria-expanded', 'false');
+          }
+        } else {
+          // On desktop, ensure menu is visible
+          if (navLinks) {
+            navLinks.style.display = '';
+            navLinks.style.transform = '';
+          }
+        }
+        
+        this.state.isMenuOpen = false;
+        document.body.style.overflow = '';
+      }
+
+      handleResize() {
+        // Reset menu state on resize to prevent positioning issues
+        this.setInitialMenuState();
       }
 
       isMobile() {

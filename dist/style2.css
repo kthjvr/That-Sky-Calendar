@@ -820,6 +820,10 @@ body {
     right: 0;
   }
 
+  .nav-links li {
+    padding: var(--spacing-md);
+  }
+
   .nav-links a {
     width: 100%;
     padding: var(--spacing-md);
