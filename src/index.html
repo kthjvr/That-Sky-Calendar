@@ -351,84 +351,182 @@
   </footer>
 
   <script>
-    // menu toggle
-    const menuToggle = document.querySelector(".menu-toggle");
-    const navLinks = document.querySelector(".nav-links");
-    const navOverlay = document.querySelector(".nav-overlay");
-
-    const closeMenuBtn = document.querySelector(".close-btn");
-    if (closeMenuBtn) {
-      closeMenuBtn.addEventListener("click", toggleMenu);
-    }
-
-    function toggleMenu() {
-      const isOpen = navLinks.classList.toggle("active");
-      navOverlay.classList.toggle("active", isOpen);
-      menuToggle.setAttribute("aria-expanded", isOpen);
-
-      // Control display property
-      if (isOpen) {
-        navLinks.style.display = "flex"; // or "block" depending on your layout
-        navOverlay.style.display = "block";
-      } else {
-        navLinks.style.display = "none";
-        navOverlay.style.display = "none";
-      }
-    }
-
-    menuToggle.addEventListener("click", toggleMenu);
-    navOverlay.addEventListener("click", toggleMenu);
-
-    document.querySelectorAll(".nav-links a").forEach(link => {
-      link.addEventListener("click", () => {
-      if (isMobile()) {
-          navLinks.classList.remove("active");
-          navOverlay?.classList.remove("active");
-          menuToggle.setAttribute("aria-expanded", "false");
-        }
-      });
-    });
-
-    // scroll to top button
-    const scrollTopBtn = document.getElementById("scrollTopBtn");
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 200) {
-        scrollTopBtn.classList.add("show");
-      } else {
-        scrollTopBtn.classList.remove("show");
-      }
-    });
-
-    scrollTopBtn.addEventListener("click", () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    });
-
-    // theme toggle
-    class ThemeManager {
+    class WebsiteManager {
       constructor() {
-        this.theme = this.getStoredTheme() || this.getSystemTheme();
+        this.state = {
+          isMenuOpen: false,
+          currentTheme: null
+        };
+        
+        this.elements = {};
         this.init();
       }
 
       init() {
-        // Apply initial theme
-        this.applyTheme(this.theme);
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.initializeComponents());
+        } else {
+          this.initializeComponents();
+        }
+      }
+
+      cacheElements() {
+        this.elements = {
+          menuToggle: document.querySelector('.menu-toggle'),
+          navLinks: document.querySelector('.nav-links'),
+          navOverlay: document.querySelector('.nav-overlay'),
+          closeBtn: document.querySelector('.close-btn'),
+          scrollTopBtn: document.getElementById('scrollTopBtn'),
+          themeToggle: document.getElementById('theme-toggle'),
+          metaTheme: document.querySelector('meta[name="theme-color"]')
+        };
+      }
+
+      initializeComponents() {
+        this.cacheElements();
+        this.initMobileMenu();
+        this.initScrollToTop();
+        this.initThemeManager();
+      }
+
+      initMobileMenu() {
+        const { menuToggle, navLinks, navOverlay, closeBtn } = this.elements;
         
-        // Set up toggle button
-        const toggleButton = document.getElementById('theme-toggle');
-        if (toggleButton) {
-          toggleButton.addEventListener('click', () => this.toggleTheme());
+        if (!menuToggle || !navLinks) return;
+
+        menuToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.toggleMenu();
+        });
+
+        if (navOverlay) {
+          navOverlay.addEventListener('click', () => this.closeMenu());
         }
 
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-          if (!this.getStoredTheme()) {
-            this.applyTheme(e.matches ? 'dark' : 'light');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => this.closeMenu());
+        }
+
+        this.setupNavLinkHandlers();
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.state.isMenuOpen) {
+            this.closeMenu();
           }
         });
+      }
+
+      setupNavLinkHandlers() {
+        document.querySelectorAll('.nav-links a').forEach(link => {
+          link.addEventListener('click', () => {
+            if (this.state.isMenuOpen) {
+              this.closeMenu();
+            }
+          });
+        });
+      }
+
+      toggleMenu() {
+        if (this.state.isMenuOpen) {
+          this.closeMenu();
+        } else {
+          this.openMenu();
+        }
+      }
+
+      openMenu() {
+        const { menuToggle, navLinks, navOverlay } = this.elements;
+        
+        this.state.isMenuOpen = true;
+        
+        if (navLinks) {
+          navLinks.classList.add('active');
+          navLinks.style.display = 'block';
+        }
+        
+        if (navOverlay) {
+          navOverlay.classList.add('active');
+          navOverlay.style.display = 'flex';
+        }
+        
+        if (menuToggle) {
+          menuToggle.setAttribute('aria-expanded', 'true');
+        }
+
+        document.body.style.overflow = 'hidden';
+      }
+
+      closeMenu() {
+        const { menuToggle, navLinks, navOverlay } = this.elements;
+        
+        this.state.isMenuOpen = false;
+        
+        if (navLinks) {
+          navLinks.classList.remove('active');
+          navLinks.style.display = 'none';
+        }
+        
+        if (navOverlay) {
+          navOverlay.classList.remove('active');
+          navOverlay.style.display = 'none';
+        }
+        
+        if (menuToggle) {
+          menuToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        document.body.style.overflow = '';
+      }
+
+      isMobile() {
+        return window.innerWidth <= 768;
+      }
+
+      initScrollToTop() {
+        const { scrollTopBtn } = this.elements;
+        
+        if (!scrollTopBtn) return;
+
+        let scrollTimeout = null;
+        
+        window.addEventListener('scroll', () => {
+          if (scrollTimeout) return;
+          
+          scrollTimeout = setTimeout(() => {
+            this.handleScroll();
+            scrollTimeout = null;
+          }, 16);
+        });
+
+        scrollTopBtn.addEventListener('click', () => {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+
+      handleScroll() {
+        const { scrollTopBtn } = this.elements;
+        
+        if (window.scrollY > 200) {
+          scrollTopBtn?.classList.add('show');
+        } else {
+          scrollTopBtn?.classList.remove('show');
+        }
+      }
+
+      initThemeManager() {
+        const { themeToggle } = this.elements;
+        
+        this.state.currentTheme = this.getStoredTheme() || this.getSystemTheme();
+        this.applyTheme(this.state.currentTheme);
+
+        if (themeToggle) {
+          themeToggle.addEventListener('click', () => this.toggleTheme());
+        }
+
+        this.setupSystemThemeListener();
       }
 
       getSystemTheme() {
@@ -436,58 +534,107 @@
       }
 
       getStoredTheme() {
-        return localStorage.getItem('sky-events-theme');
+        try {
+          return localStorage.getItem('sky-events-theme');
+        } catch (error) {
+          console.warn('localStorage not available:', error);
+          return null;
+        }
+      }
+
+      setStoredTheme(theme) {
+        try {
+          localStorage.setItem('sky-events-theme', theme);
+        } catch (error) {
+          console.warn('Could not save theme to localStorage:', error);
+        }
       }
 
       applyTheme(theme) {
-        this.theme = theme;
+        this.state.currentTheme = theme;
         document.documentElement.setAttribute('data-theme', theme);
         
-        // Update meta theme-color for mobile browsers
-        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        const { metaTheme } = this.elements;
         if (metaTheme) {
-          metaTheme.setAttribute('content', theme === 'dark' ? '#1a1f2e' : '#fafafa');
+          const themeColor = theme === 'dark' ? '#1a1f2e' : '#fafafa';
+          metaTheme.setAttribute('content', themeColor);
         }
       }
 
       toggleTheme() {
-        const newTheme = this.theme === 'light' ? 'dark' : 'light';
+        const newTheme = this.state.currentTheme === 'light' ? 'dark' : 'light';
         this.applyTheme(newTheme);
-        localStorage.setItem('sky-events-theme', newTheme);
+        this.setStoredTheme(newTheme);
         
-        // Add a little animation feedback
-        const toggleButton = document.getElementById('theme-toggle');
-        if (toggleButton) {
-          toggleButton.style.transform = 'scale(0.95)';
-          setTimeout(() => {
-            toggleButton.style.transform = '';
-          }, 100);
-        }
+        this.addToggleAnimation();
       }
 
-      // Public method to set theme programmatically
+      addToggleAnimation() {
+        const { themeToggle } = this.elements;
+        if (!themeToggle) return;
+        
+        themeToggle.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          themeToggle.style.transform = '';
+        }, 100);
+      }
+
+      setupSystemThemeListener() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        mediaQuery.addEventListener('change', (e) => {
+          if (!this.getStoredTheme()) {
+            this.applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+
       setTheme(theme) {
         if (theme === 'light' || theme === 'dark') {
           this.applyTheme(theme);
-          localStorage.setItem('sky-events-theme', theme);
+          this.setStoredTheme(theme);
+          return true;
         }
+        return false;
       }
 
-      // Public method to reset to system preference
-      resetToSystem() {
-        localStorage.removeItem('sky-events-theme');
+      resetToSystemTheme() {
+        try {
+          localStorage.removeItem('sky-events-theme');
+        } catch (error) {
+          console.warn('Could not clear theme from localStorage:', error);
+        }
+        
         this.applyTheme(this.getSystemTheme());
+      }
+
+      getCurrentTheme() {
+        return this.state.currentTheme;
+      }
+
+      isMenuOpen() {
+        return this.state.isMenuOpen;
+      }
+
+      destroy() {
+        document.body.style.overflow = '';
+        this.closeMenu();
       }
     }
 
-    // Initialize theme manager when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      window.themeManager = new ThemeManager();
-    });
+    let websiteManager = null;
 
-    // Expose theme manager globally for debugging
-    window.setTheme = (theme) => window.themeManager?.setTheme(theme);
-    window.resetTheme = () => window.themeManager?.resetToSystem();
+    if (typeof window !== 'undefined') {
+      websiteManager = new WebsiteManager();
+      
+      window.setTheme = (theme) => websiteManager?.setTheme(theme);
+      window.resetTheme = () => websiteManager?.resetToSystemTheme();
+      window.getCurrentTheme = () => websiteManager?.getCurrentTheme();
+    }
+
+    if (typeof module !== 'undefined' && module.exports) {
+      module.exports = WebsiteManager;
+    }
   </script>
 
 </body>

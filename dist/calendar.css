@@ -197,6 +197,7 @@
 @media (max-width: 768px) {
     #calendarSection {
         margin: 12px;
+        padding: var(--spacing-md);
     }
 
     .fc .fc-toolbar {
