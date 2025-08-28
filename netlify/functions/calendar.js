@@ -20,29 +20,41 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
+console.log('passed the init');
+
+
 export async function handler(event, context) {
   try {
     const snapshot = await db.collection("events").get();
     const calendar = ical({ name: "Sky CotL Events" });
+
+    console.log('inside the export');
 
     snapshot.forEach((doc) => {
       const data = doc.data();
 
       console.log("Raw Firestore data:", data);
 
-      const startDate = dayjs.tz(
-        (data.start || "").trim(),
-        "YYYY-MM-DD",
-        LA_TZ
-      );
-      const endDate = dayjs.tz(
-        (data.end || "").trim(),
-        "YYYY-MM-DD",
-        LA_TZ
-      );
+      const startString = `${(data.start || "").trim()}T00:00:00`;
+      const endString = `${(data.end || "").trim()}T23:59:59`;
 
-      console.log("Parsed start:", startDate.format(), "valid?", startDate.isValid());
-      console.log("Parsed end:", endDate.format(), "valid?", endDate.isValid());
+      console.log("ISO strings:", startString, endString);
+
+      const startDate = dayjs.tz(startString, LA_TZ);
+      const endDate = dayjs.tz(endString, LA_TZ);
+
+      console.log(
+        "Parsed start:",
+        startDate.format(),
+        "valid?",
+        startDate.isValid()
+      );
+      console.log(
+        "Parsed end:",
+        endDate.format(),
+        "valid?",
+        endDate.isValid()
+      );
 
       if (!startDate.isValid() || !endDate.isValid()) {
         throw new Error(
