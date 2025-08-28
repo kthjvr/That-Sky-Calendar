@@ -3,9 +3,11 @@ import * as admin from "firebase-admin";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
 const LA_TZ = "America/Los_Angeles";
 
@@ -17,24 +19,19 @@ if (!admin.apps.length) {
   });
 }
 
-
 const db = admin.firestore();
 
 export async function handler(event, context) {
   try {
-    // Step 3.1: Fetch events from Firestore
     const snapshot = await db.collection("events").get();
 
-    // Step 3.2: Init calendar
     const calendar = ical({ name: "Sky CotL Events" });
 
-    // Step 3.3: Add events into calendar
     snapshot.forEach((doc) => {
       const data = doc.data();
 
-      // Assume Firestore has { start: "2025-09-01", end: "2025-09-04" }
-      const start = dayjs.tz(`${data.start} 00:00`, LA_TZ).toDate();
-      const end = dayjs.tz(`${data.end} 23:59`, LA_TZ).toDate();
+      const start = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day").toDate();
+      const end = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day").toDate();
 
       calendar.createEvent({
         start,
@@ -45,7 +42,6 @@ export async function handler(event, context) {
       });
     });
 
-    // Step 3.4: Return .ics response
     return {
       statusCode: 200,
       headers: {
