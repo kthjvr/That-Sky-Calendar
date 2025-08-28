@@ -72,13 +72,12 @@ export async function handler(event, context) {
     });
 
     return {
-    statusCode: 200,
-    headers: {
+      statusCode: 200,
+      headers: {
         "Content-Type": "text/calendar; charset=utf-8",
-        "Content-Disposition": "inline; filename=sky-events.ics",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-    },
-    body: calendar.toString(),
+        "Content-Disposition": "attachment; filename=sky-events.ics",
+      },
+      body: calendar.toString(),
     };
   } catch (error) {
     console.error("Calendar generation failed:", error);
