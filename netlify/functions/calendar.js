@@ -24,45 +24,31 @@ const db = admin.firestore();
 export async function handler(event, context) {
   try {
     const snapshot = await db.collection("events").get();
-
     const calendar = ical({ name: "Sky CotL Events" });
 
     snapshot.forEach((doc) => {
-    const data = doc.data();
-    console.log("Raw data:", data);
+      const data = doc.data();
 
-    let startDate, endDate;
+      // Explicit parsing using format
+      const startDate = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day");
+      const endDate = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day");
 
-    if (data.start && typeof data.start.toDate === "function") {
-        startDate = dayjs(data.start.toDate()).tz(LA_TZ).startOf("day").toDate();
-    } else if (typeof data.start === "string") {
-        startDate = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day").toDate();
-    }
-
-    if (data.end && typeof data.end.toDate === "function") {
-        endDate = dayjs(data.end.toDate()).tz(LA_TZ).endOf("day").toDate();
-    } else if (typeof data.end === "string") {
-        endDate = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day").toDate();
-    }
-
-    if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      if (!startDate.isValid() || !endDate.isValid()) {
         throw new Error(
-        `Invalid date values for event "${data.title}" (start=${JSON.stringify(
-            data.start
-        )}, end=${JSON.stringify(data.end)})`
+          `Invalid date values for event "${data.title}" (start=${data.start}, end=${data.end})`
         );
-    }
+      }
 
-    calendar.createEvent({
-        start: startDate,
-        end: endDate,
+      console.log("start:", data.start, "parsed:", startDate.format())
+
+      calendar.createEvent({
+        start: startDate.toDate(),
+        end: endDate.toDate(),
         summary: data.title || "Untitled Event",
         description: data.description || "",
         timezone: LA_TZ,
+      });
     });
-    });
-
-
 
     return {
       statusCode: 200,
