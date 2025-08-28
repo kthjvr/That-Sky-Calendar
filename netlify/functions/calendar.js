@@ -11,7 +11,6 @@ dayjs.extend(customParseFormat);
 
 const LA_TZ = "America/Los_Angeles";
 
-// Parse service account from Netlify env var
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -29,17 +28,27 @@ export async function handler(event, context) {
     snapshot.forEach((doc) => {
       const data = doc.data();
 
-      // Explicit parsing using format
-      const startDate = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day");
-      const endDate = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day");
+      console.log("Raw Firestore data:", data);
+
+      const startDate = dayjs.tz(
+        (data.start || "").trim(),
+        "YYYY-MM-DD",
+        LA_TZ
+      );
+      const endDate = dayjs.tz(
+        (data.end || "").trim(),
+        "YYYY-MM-DD",
+        LA_TZ
+      );
+
+      console.log("Parsed start:", startDate.format(), "valid?", startDate.isValid());
+      console.log("Parsed end:", endDate.format(), "valid?", endDate.isValid());
 
       if (!startDate.isValid() || !endDate.isValid()) {
         throw new Error(
           `Invalid date values for event "${data.title}" (start=${data.start}, end=${data.end})`
         );
       }
-
-      console.log("start:", data.start, "parsed:", startDate.format())
 
       calendar.createEvent({
         start: startDate.toDate(),
@@ -59,6 +68,7 @@ export async function handler(event, context) {
       body: calendar.toString(),
     };
   } catch (error) {
+    console.error("Calendar generation failed:", error);
     return {
       statusCode: 500,
       body: `Error generating calendar: ${error.message}`,
