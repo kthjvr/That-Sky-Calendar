@@ -9,12 +9,14 @@ dayjs.extend(timezone);
 
 const LA_TZ = "America/Los_Angeles";
 
-// Init Firebase Admin (only once)
+// Parse service account from Netlify env var
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+    credential: admin.credential.cert(serviceAccount),
   });
 }
+
 
 const db = admin.firestore();
 
