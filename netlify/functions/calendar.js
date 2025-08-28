@@ -29,37 +29,39 @@ export async function handler(event, context) {
 
     snapshot.forEach((doc) => {
     const data = doc.data();
-
     console.log("Raw data:", data);
 
-    let start, end;
+    let startDate, endDate;
 
-    try {
-        if (data.start) {
-        start = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day").toDate();
-        }
-        if (data.end) {
-        end = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day").toDate();
-        }
-    } catch (err) {
-        console.error("Date parse error:", err, "for doc:", doc.id, data);
-        throw err;
+    if (data.start && typeof data.start.toDate === "function") {
+        startDate = dayjs(data.start.toDate()).tz(LA_TZ).startOf("day").toDate();
+    } else if (typeof data.start === "string") {
+        startDate = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day").toDate();
     }
 
-    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (data.end && typeof data.end.toDate === "function") {
+        endDate = dayjs(data.end.toDate()).tz(LA_TZ).endOf("day").toDate();
+    } else if (typeof data.end === "string") {
+        endDate = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day").toDate();
+    }
+
+    if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
         throw new Error(
-        `Invalid date values for event "${data.title}" (start=${data.start}, end=${data.end})`
+        `Invalid date values for event "${data.title}" (start=${JSON.stringify(
+            data.start
+        )}, end=${JSON.stringify(data.end)})`
         );
     }
 
     calendar.createEvent({
-        start,
-        end,
+        start: startDate,
+        end: endDate,
         summary: data.title || "Untitled Event",
         description: data.description || "",
         timezone: LA_TZ,
     });
     });
+
 
 
     return {
