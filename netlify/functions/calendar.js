@@ -28,19 +28,39 @@ export async function handler(event, context) {
     const calendar = ical({ name: "Sky CotL Events" });
 
     snapshot.forEach((doc) => {
-      const data = doc.data();
+    const data = doc.data();
 
-      const start = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day").toDate();
-      const end = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day").toDate();
+    console.log("Raw data:", data);
 
-      calendar.createEvent({
+    let start, end;
+
+    try {
+        if (data.start) {
+        start = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ).startOf("day").toDate();
+        }
+        if (data.end) {
+        end = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ).endOf("day").toDate();
+        }
+    } catch (err) {
+        console.error("Date parse error:", err, "for doc:", doc.id, data);
+        throw err;
+    }
+
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+        throw new Error(
+        `Invalid date values for event "${data.title}" (start=${data.start}, end=${data.end})`
+        );
+    }
+
+    calendar.createEvent({
         start,
         end,
         summary: data.title || "Untitled Event",
         description: data.description || "",
         timezone: LA_TZ,
-      });
     });
+    });
+
 
     return {
       statusCode: 200,
