@@ -94,7 +94,7 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
       const endRaw = (doc.data().end || "").trim();
       const startTime = doc.data().startTime;
 
-      let startLA, endLA;
+      let startLA, endLA, startLocal, endLocal;
 
       if (startTime) {
         // Timed event
@@ -114,15 +114,21 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         } else {
           endLA = startLA.add(1, "hour");
         }
+
+        startLocal = startLA.tz(userTimezone);
+        endLocal = endLA.tz(userTimezone);
       } else {
-        // All-day event (dates only, ISO-friendly)
+        // Parse the stored dates as LA timezone (the source timezone)
         startLA = dayjs.tz(startRaw, "America/Los_Angeles").startOf("day");
         endLA = dayjs.tz(endRaw, "America/Los_Angeles").endOf("day");
+        
+        // Convert to user's timezone to get the local date boundaries
+        const startInUserTZ = startLA.tz(userTimezone);
+        const endInUserTZ = endLA.tz(userTimezone);
+        
+        startLocal = startInUserTZ.startOf("day");
+        endLocal = endInUserTZ.startOf("day");
       }
-
-      // Convert to user's local timezone
-      const startLocal = startLA.tz(userTimezone);
-      const endLocal = endLA.tz(userTimezone);
 
       // Validate dates
       if (!startLocal.isValid() || !endLocal.isValid()) {
@@ -137,12 +143,22 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
 
       const eventId = doc.id || generateEventId(doc.data().title);
 
+      console.log("Event processing debug:", {
+        title: doc.data().title,
+        isAllDay: !startTime,
+        startRaw,
+        endRaw,
+        startLA: startLA.format(),
+        endLA: endLA.format(),
+        userTimezone
+      });
+
       events.push({
         id: eventId,
         title: doc.data().title,
-        start: startLocal.toDate(),
-        end: endLocal.toDate(),
-        allDay: !startTime, // true if no explicit time
+        start: startLA.toDate(),
+        end: endLA.toDate(),
+        allDay: startTime,
         color: doc.data().color,
         description: doc.data().description,
         images: doc.data().images,
