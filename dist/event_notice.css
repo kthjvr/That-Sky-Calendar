@@ -363,6 +363,7 @@
   
   .notice-text p {
     font-size: 0.9rem;
+    text-align: left;
   }
   
   .notices-grid {
@@ -381,6 +382,7 @@
   
   .notice-text p {
     font-size: 0.85rem;
+    text-align: left;
   }
 }
 

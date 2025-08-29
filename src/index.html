@@ -61,6 +61,7 @@
   <link rel="stylesheet" href="modal.css">
   <link rel="stylesheet" href="event_list.css">
   <link rel="stylesheet" href="credits.css">
+  <link rel="stylesheet" href="subscription.css">
   
 
   <link rel="icon" type="image/x-icon"
@@ -156,7 +157,12 @@
     <div class="hero-content">
       <h1 class="hero-title">That Sky Events</h1>
       <p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.</p>
-      <a href="#calendar" class="cta-button">Jump to calendar</a>
+      <div class="hero-cta-container">
+        <button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">
+          📅 Subscribe to Sky Events Calendar
+        </button>
+        <a href="#calendar" class="secondary-cta">View Calendar</a>
+      </div>
     </div>
 
     <div class="info-section">
@@ -189,6 +195,15 @@
   </section>
 
   <section id="calendarSection">
+
+    <div class="calendar-subscription-banner">
+      <h3>📅 Want these events in your own calendar?</h3>
+      <p>Subscribe to get automatic updates for all Sky events, traveling spirits, and seasonal celebrations.</p>
+      <button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">
+        Subscribe Now
+      </button>
+    </div>
+
     <div class="calendar-info">
       <div style="margin-right: 10px;">
         <img src="https://img.icons8.com/?size=100&id=63308&format=png&color=000000" alt="Calendar Icon"
@@ -387,6 +402,7 @@
         this.initMobileMenu();
         this.initScrollToTop();
         this.initThemeManager();
+        this.initCalendarSubscription();
       }
 
       initMobileMenu() {
@@ -642,6 +658,25 @@
         });
       }
 
+      initCalendarSubscription() {
+        // Close modal when clicking outside
+        document.addEventListener('click', (event) => {
+          if (event.target.classList.contains('calendar-instructions-modal')) {
+            event.target.remove();
+          }
+        });
+
+        // Close modal with escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            const modal = document.querySelector('.calendar-instructions-modal');
+            if (modal) {
+              modal.remove();
+            }
+          }
+        });
+      }
+
       setTheme(theme) {
         if (theme === 'light' || theme === 'dark') {
           this.applyTheme(theme);
@@ -675,6 +710,144 @@
       }
     }
 
+    // Enhanced device detection
+    function detectDevice() {
+      const userAgent = navigator.userAgent;
+      const platform = navigator.platform;
+      const maxTouchPoints = navigator.maxTouchPoints || 0;
+      
+      // Detect specific devices and platforms
+      const detection = {
+        // Mobile Operating Systems
+        isIOS: /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream,
+        isAndroid: /Android/.test(userAgent),
+        isWindowsPhone: /Windows Phone/.test(userAgent),
+        
+        // Desktop Operating Systems
+        isWindows: /Win/.test(platform) || /Windows/.test(userAgent),
+        isMacOS: /Mac/.test(platform) && !(/iPad|iPhone|iPod/.test(userAgent)),
+        isLinux: /Linux/.test(platform) && !/Android/.test(userAgent),
+        isChromebook: /CrOS/.test(userAgent),
+        
+        // Browsers
+        isChrome: /Chrome/.test(userAgent) && !/Edge|Edg/.test(userAgent),
+        isSafari: /Safari/.test(userAgent) && !/Chrome|Edge|Edg/.test(userAgent),
+        isFirefox: /Firefox/.test(userAgent),
+        isEdge: /Edge|Edg/.test(userAgent),
+        
+        // Device types
+        isMobile: /Mobi|Android/i.test(userAgent) || maxTouchPoints > 0 && window.innerWidth <= 768,
+        isTablet: (/iPad/.test(userAgent)) || (maxTouchPoints > 0 && window.innerWidth > 768 && window.innerWidth <= 1024),
+        isDesktop: !(/Mobi|Android|iPad|iPhone|iPod/.test(userAgent)) && maxTouchPoints === 0,
+        
+        // Capabilities
+        hasTouch: maxTouchPoints > 0 || 'ontouchstart' in window,
+        isStandalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches
+      };
+      
+      // Determine primary platform category
+      if (detection.isIOS) detection.platform = 'ios';
+      else if (detection.isAndroid) detection.platform = 'android';
+      else if (detection.isMacOS) detection.platform = 'macos';
+      else if (detection.isWindows) detection.platform = 'windows';
+      else if (detection.isLinux) detection.platform = 'linux';
+      else detection.platform = 'unknown';
+      
+      // Determine device category
+      if (detection.isMobile) detection.deviceType = 'mobile';
+      else if (detection.isTablet) detection.deviceType = 'tablet';
+      else detection.deviceType = 'desktop';
+      
+      return detection;
+    }
+
+    // Calendar subscription functions with enhanced device detection
+    function showCalendarSubscriptionInstructions() {
+      const device = detectDevice();
+      const modal = document.createElement('div');
+      modal.className = 'calendar-instructions-modal';
+      
+      console.log('Device detection:', device); // For debugging
+      
+      // Build dynamic content based on device
+      let title = 'Subscribe to Sky Events Calendar';
+      let description = 'Add this calendar to stay updated with all Sky events:';
+      let buttons = '';
+      
+      // Customize based on platform
+      if (device.isIOS) {
+        title = '📱 Add to your iPhone/iPad Calendar';
+        description = 'Tap below to add Sky Events directly to your Apple Calendar:';
+        buttons += `<button onclick="subscribeToAppleCalendar()" class="primary-option">📅 Add to Apple Calendar</button>`;
+        buttons += `<button onclick="subscribeToGoogleCalendar()">📊 Add to Google Calendar</button>`;
+      } else if (device.isAndroid) {
+        title = '📱 Add to your Android Calendar';
+        description = 'Tap below to add Sky Events to your preferred calendar app:';
+        buttons += `<button onclick="subscribeToGoogleCalendar()" class="primary-option">📊 Add to Google Calendar</button>`;
+        buttons += `<button onclick="subscribeToAppleCalendar()">📅 Try Apple Calendar</button>`;
+      } else if (device.isMacOS) {
+        title = '💻 Add to your Mac Calendar';
+        description = 'Choose your preferred calendar application:';
+        buttons += `<button onclick="subscribeToAppleCalendar()" class="primary-option">📅 Apple Calendar</button>`;
+        buttons += `<button onclick="subscribeToGoogleCalendar()">📊 Google Calendar</button>`;
+      } else if (device.isWindows) {
+        title = '💻 Add to your Windows Calendar';
+        description = 'Choose your preferred calendar application:';
+        buttons += `<button onclick="subscribeToGoogleCalendar()" class="primary-option">📊 Google Calendar</button>`;
+        buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
+        buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
+      } else {
+        // Fallback for other systems
+        buttons += `<button onclick="subscribeToGoogleCalendar()" class="primary-option">📊 Google Calendar</button>`;
+        buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
+        buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
+      }
+      
+      // Always include copy URL option
+      buttons += `<button onclick="copyCalendarUrl()" class="secondary-option">📋 Copy Calendar URL</button>`;
+      
+      // Add device-specific instructions
+      let instructions = '';
+      if (device.isMobile && device.isIOS) {
+        instructions = '<p class="device-instructions">💡 After tapping, Safari will ask to add the calendar subscription.</p>';
+      } else if (device.isMobile && device.isAndroid) {
+        instructions = '<p class="device-instructions">💡 You may need to open the link in your calendar app.</p>';
+      } else if (device.isDesktop) {
+        instructions = '<p class="device-instructions">💡 Links will open in your default browser and calendar application.</p>';
+      }
+      
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h3>${title}</h3>
+          <p>${description}</p>
+          ${instructions}
+          <div class="subscription-options">
+            ${buttons}
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="close-button">Close</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function subscribeToGoogleCalendar() {
+      const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
+      const googleUrl = `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarUrl)}`;
+      window.open(googleUrl, '_blank');
+    }
+
+    function subscribeToAppleCalendar() {
+      const url = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
+      window.location.href = url; // iOS Safari will open a prompt to subscribe
+    }
+
+    function subscribeToOutlookCalendar() {
+      const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
+      const outlookUrl = `https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(calendarUrl)}`;
+      window.open(outlookUrl, '_blank');
+    }
+
+    // Initialize WebsiteManager
     let websiteManager = null;
 
     if (typeof window !== 'undefined') {
