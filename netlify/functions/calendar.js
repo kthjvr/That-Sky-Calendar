@@ -26,19 +26,35 @@ export async function handler(event, context) {
   try {
     const snapshot = await db.collection("events").get();
 
-    // Force calendar to UTC (no local timezone component)
     const calendar = ical({
       name: "Sky CotL Events",
-      prodId: { company: "thatskyevents", product: "calendar", language: "EN" },
-      timezone: "UTC",
+      description: "Sky: Children of the Light Events Calendar",
+      prodId: { 
+        company: "thatskyevents", 
+        product: "calendar", 
+        language: "EN" 
+      },
+      url: "https://development--thatskyevents.netlify.app/.netlify/functions/calendar",
+      method: "PUBLISH",
+      timezone: {
+        name: "UTC",
+        generator: getTimezoneGenerator
+      }
     });
 
     console.log("inside the export");
 
+    let eventCount = 0;
     snapshot.forEach((doc) => {
       const data = doc.data();
 
       console.log("Raw Firestore data:", data);
+
+      // Skip events without required fields
+      if (!data.title || !data.start || !data.end) {
+        console.warn("Skipping event with missing required fields:", data);
+        return;
+      }
 
       const startString = `${(data.start || "").trim()}T00:00:00`;
       const endString = `${(data.end || "").trim()}T23:59:59`;
@@ -63,33 +79,75 @@ export async function handler(event, context) {
       );
 
       if (!startDate.isValid() || !endDate.isValid()) {
-        throw new Error(
+        console.error(
           `Invalid date values for event "${data.title}" (start=${data.start}, end=${data.end})`
         );
+        return;
       }
 
+      // Create event with more complete properties
       calendar.createEvent({
-        start: startDate.toDate(), // now guaranteed UTC
-        end: endDate.toDate(),     // now guaranteed UTC
+        uid: `${doc.id}@thatskyevents.netlify.app`, // Unique ID
+        start: startDate.toDate(),
+        end: endDate.toDate(),
         summary: data.title || "Untitled Event",
         description: data.description || "",
-        // 🚨 removed timezone: LA_TZ — keep events pure UTC
+        location: data.location || "",
+        created: new Date(),
+        lastModified: new Date(),
+        status: 'CONFIRMED',
+        organizer: {
+          name: 'Sky Events',
+          email: 'events@thatskyevents.netlify.app'
+        }
       });
+      
+      eventCount++;
     });
+
+    console.log(`Generated calendar with ${eventCount} events`);
+
+    const calendarString = calendar.toString();
+    
+    console.log("Calendar preview:", calendarString.split('\n').slice(0, 10).join('\n'));
 
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "text/calendar; charset=utf-8",
-        "Content-Disposition": "attachment; filename=sky-events.ics",
+        "Content-Disposition": 'inline; filename="sky-events.ics"',
+        // CORS headers
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Cache-Control": "public, max-age=300",
+        "X-Content-Type-Options": "nosniff"
       },
-      body: calendar.toString(),
+      body: calendarString,
     };
   } catch (error) {
     console.error("Calendar generation failed:", error);
     return {
       statusCode: 500,
+      headers: {
+        "Content-Type": "text/plain",
+      },
       body: `Error generating calendar: ${error.message}`,
     };
   }
+}
+
+// Helper function
+function getTimezoneGenerator() {
+  return [
+    'BEGIN:VTIMEZONE',
+    'TZID:UTC',
+    'BEGIN:STANDARD',
+    'DTSTART:19700101T000000',
+    'TZNAME:UTC',
+    'TZOFFSETFROM:+0000',
+    'TZOFFSETTO:+0000',
+    'END:STANDARD',
+    'END:VTIMEZONE'
+  ].join('\r\n');
 }
