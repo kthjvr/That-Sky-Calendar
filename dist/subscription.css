@@ -3,6 +3,7 @@
     flex-direction: column;
     gap: var(--spacing-md);
     align-items: center;
+    margin-bottom: var(--spacing-md);
 }
 
 .subscription-cta {
@@ -192,7 +193,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .hero-cta-container {
-    gap: var(--spacing-sm);
+        gap: var(--spacing-sm);
     }
 
     .subscription-cta, .secondary-cta {

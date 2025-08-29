@@ -143,15 +143,16 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
 
       const eventId = doc.id || generateEventId(doc.data().title);
 
-      console.log("Event processing debug:", {
-        title: doc.data().title,
-        isAllDay: !startTime,
-        startRaw,
-        endRaw,
-        startLA: startLA.format(),
-        endLA: endLA.format(),
-        userTimezone
-      });
+      // for debug
+      // console.log("Event processing debug:", {
+      //   title: doc.data().title,
+      //   isAllDay: !startTime,
+      //   startRaw,
+      //   endRaw,
+      //   startLA: startLA.format(),
+      //   endLA: endLA.format(),
+      //   userTimezone
+      // });
 
       events.push({
         id: eventId,

@@ -27,7 +27,7 @@
     background: var(--color-surface);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    max-width: 90vw;
+    max-width: 60vw;
     max-height: 90vh;
     overflow: hidden;
     transform: scale(0.7) translateY(50px);
@@ -73,21 +73,6 @@
     display: block;
 }
 
-/* Dark mode modal styles */
-[data-theme="dark"] .game-modal {
-    background: rgba(0, 0, 0, 0.9);
-}
-
-[data-theme="dark"] .game-modal .close {
-    background: var(--color-surface);
-    color: var(--color-text);
-}
-
-[data-theme="dark"] .game-modal .close:hover {
-    background: var(--color-accent);
-    color: white;
-}
-
 /* Responsive iframe sizing */
 .iframe-container {
     position: relative;
@@ -95,30 +80,10 @@
     height: 650px;
     max-width: 90vw;
     max-height: 80vh;
+    border-radius: var(--radius-md);
 }
 
-@media (max-width: 768px) {
-    .iframe-container {
-        width: 95vw;
-        height: 70vh;
-    }
-    
-    .game-modal .close {
-        top: var(--spacing-sm);
-        right: var(--spacing-sm);
-        width: 35px;
-        height: 35px;
-        font-size: 1.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .iframe-container {
-        width: 98vw;
-        height: 65vh;
-    }
-}
-
+/* Game Button Styling */
 #open-game-modal {
     background: var(--color-accent);
     color: white;
@@ -136,4 +101,57 @@
     background: #8bb5f0;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
+}
+
+/* Dark theme support */
+[data-theme="dark"] .game-modal {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="dark"] .game-modal .close {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+[data-theme="dark"] .game-modal .close:hover {
+    background: var(--color-accent);
+    color: white;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    .iframe-container {
+        width: 95vw;
+        height: 70vh;
+        border: none;
+        border-radius: var(--radius-md);
+    }
+    
+    .game-modal .close {
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        width: 35px;
+        height: 35px;
+        font-size: 1.5rem;
+    }
+
+    .game-modal .modal-content {
+        padding: var(--spacing-sm);
+        max-width: 80vw;
+    }
+}
+
+@media (max-width: 480px) {
+    .iframe-container {
+        width: 80vw;
+        height: 65vh;
+        border: none;
+        border-radius: var(--radius-md);
+    }
+    
+    .game-modal .close {
+        width: 30px;
+        height: 30px;
+        font-size: 1.2rem;
+    }
 }

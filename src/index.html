@@ -62,6 +62,7 @@
   <link rel="stylesheet" href="event_list.css">
   <link rel="stylesheet" href="credits.css">
   <link rel="stylesheet" href="subscription.css">
+  <link rel="stylesheet" href="game_modal.css">
   
 
   <link rel="icon" type="image/x-icon"
@@ -170,13 +171,12 @@
         <h2>Heads Up</h2>
       </div>
       <div class="info-container game">
-        <h2>Fancy a game?</h2>
-        <p class="game-description">Challenge yourself with a round of memory game! Click to play.</p>
-        <button type="button" id="open-game-modal">Play Game</button>
+          <h2>Fancy a game?</h2>
+          <p class="game-description">Challenge yourself with a round of memory game! Click to play.</p>
+          <button type="button" id="open-game-modal">Play Game</button>
       </div>
     </div>
   </section>
-
 
   <!-- Scroll to Top Button -->
   <button type="button" id="scrollTopBtn" aria-label="Scroll to top">
@@ -315,7 +315,7 @@
   </div>
 
   <!-- Game Modal -->
-  <!-- <div id="game-modal" class="game-modal" hidden>
+  <div id="game-modal" class="game-modal" hidden>
       <div class="modal-content">
           <span class="close" aria-label="Close game modal">&times;</span>
           <div class="iframe-container">
@@ -326,7 +326,7 @@
               </iframe>
           </div>
       </div>
-  </div> -->
+  </div>
 
   <!-- Footer Section -->
   <footer class="footer">
@@ -393,7 +393,11 @@
           closeBtn: document.querySelector('.close-btn'),
           scrollTopBtn: document.getElementById('scrollTopBtn'),
           themeToggle: document.getElementById('theme-toggle'),
-          metaTheme: document.querySelector('meta[name="theme-color"]')
+          metaTheme: document.querySelector('meta[name="theme-color"]'),
+          // Game modal elements
+          gameModal: document.getElementById('game-modal'),
+          openGameBtn: document.getElementById('open-game-modal'),
+          closeGameBtn: document.querySelector('#game-modal .close')
         };
       }
 
@@ -403,6 +407,7 @@
         this.initScrollToTop();
         this.initThemeManager();
         this.initCalendarSubscription();
+        this.initGameModal();
       }
 
       initMobileMenu() {
@@ -704,9 +709,87 @@
         return this.state.isMenuOpen;
       }
 
+      initGameModal() {
+        this.cacheGameElements();
+        this.setupGameEventListeners();
+      }
+
+      cacheGameElements() {
+        this.elements.gameModal = document.getElementById('game-modal');
+        this.elements.openGameBtn = document.getElementById('open-game-modal');
+        this.elements.closeGameBtn = document.querySelector('#game-modal .close');
+      }
+
+      setupGameEventListeners() {
+        const { gameModal, openGameBtn, closeGameBtn } = this.elements;
+
+        if (!gameModal || !openGameBtn) return;
+        openGameBtn.addEventListener('click', () => this.openGameModal());
+
+        if (closeGameBtn) {
+          closeGameBtn.addEventListener('click', () => this.closeGameModal());
+        }
+
+        gameModal.addEventListener('click', (e) => {
+          if (e.target === gameModal) {
+            this.closeGameModal();
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.isGameModalOpen()) {
+            this.closeGameModal();
+          }
+        });
+      }
+
+      openGameModal() {
+        const { gameModal } = this.elements;
+        if (!gameModal) return;
+        document.body.style.overflow = 'hidden';
+        
+        gameModal.removeAttribute('hidden');
+        
+        requestAnimationFrame(() => {
+          gameModal.classList.add('show');
+        });
+
+        const closeBtn = gameModal.querySelector('.close');
+        if (closeBtn) {
+          closeBtn.focus();
+        }
+
+        console.log('Game modal opened');
+      }
+      
+      closeGameModal() {
+        const { gameModal } = this.elements;
+        if (!gameModal) return;
+
+        gameModal.classList.remove('show');
+        
+        setTimeout(() => {
+          gameModal.setAttribute('hidden', '');
+          document.body.style.overflow = '';
+        }, 250);
+
+        const openBtn = this.elements.openGameBtn;
+        if (openBtn) {
+          openBtn.focus();
+        }
+
+        console.log('Game modal closed');
+      }
+      
+      isGameModalOpen() {
+        const { gameModal } = this.elements;
+        return gameModal && gameModal.classList.contains('show');
+      }
+
       destroy() {
         document.body.style.overflow = '';
         this.closeMenu();
+        this.closeGameModal();
       }
     }
 
@@ -740,7 +823,6 @@
         isTablet: (/iPad/.test(userAgent)) || (maxTouchPoints > 0 && window.innerWidth > 768 && window.innerWidth <= 1024),
         isDesktop: !(/Mobi|Android|iPad|iPhone|iPod/.test(userAgent)) && maxTouchPoints === 0,
         
-        // Capabilities
         hasTouch: maxTouchPoints > 0 || 'ontouchstart' in window,
         isStandalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches
       };
@@ -797,7 +879,6 @@
         buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
         buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
       } else {
-        // Fallback for other systems
         buttons += `<button onclick="subscribeToGoogleCalendar()" class="primary-option">📊 Google Calendar</button>`;
         buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
         buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
