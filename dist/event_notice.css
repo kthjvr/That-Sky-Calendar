@@ -1,6 +1,4 @@
-/* ===============================
-   Heads Up Cards (Event Notices)
-   =============================== */
+/* ========Head Up Section======== */
 
 .event-notice {
   display: flex;
@@ -23,7 +21,7 @@
 }
 
 .event-notice::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -39,15 +37,14 @@
   opacity: 0.05;
 }
 
-/* ===============================
-   Notice Types & Colors
-   =============================== */
-
+/* ========Notice Elements======== */
 .event-notice.upcoming {
   border-left-color: var(--color-ts);
-  background: linear-gradient(135deg, 
-    rgba(205, 234, 192, 0.05) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(205, 234, 192, 0.05) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .event-notice.upcoming::before {
@@ -61,9 +58,11 @@
 
 .event-notice.starting {
   border-left-color: var(--color-accent);
-  background: linear-gradient(135deg, 
-    rgba(163, 196, 243, 0.05) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(163, 196, 243, 0.05) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .event-notice.starting::before {
@@ -77,9 +76,11 @@
 
 .event-notice.ending {
   border-left-color: var(--color-season);
-  background: linear-gradient(135deg, 
-    rgba(252, 213, 206, 0.05) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(252, 213, 206, 0.05) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .event-notice.ending::before {
@@ -93,9 +94,11 @@
 
 .event-notice.special {
   border-left-color: var(--color-special);
-  background: linear-gradient(135deg, 
-    rgba(190, 225, 230, 0.05) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(190, 225, 230, 0.05) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .event-notice.special::before {
@@ -109,9 +112,11 @@
 
 .event-notice.warning {
   border-left-color: var(--color-warning);
-  background: linear-gradient(135deg, 
-    rgba(255, 224, 102, 0.05) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 224, 102, 0.05) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .event-notice.warning::before {
@@ -125,9 +130,11 @@
 
 .event-notice.neutral {
   border-left-color: var(--color-shards);
-  background: linear-gradient(135deg, 
-    rgba(240, 239, 235, 0.05) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(240, 239, 235, 0.05) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .event-notice.neutral::before {
@@ -139,10 +146,7 @@
   border: 1px solid rgba(240, 239, 235, 0.4);
 }
 
-/* ===============================
-   Notice Icon Container
-   =============================== */
-
+/* ========Icon======== */
 .notice-icon {
   flex-shrink: 0;
   width: 50px;
@@ -173,10 +177,7 @@
   filter: grayscale(0%);
 }
 
-/* ===============================
-   Notice Text Content
-   =============================== */
-
+/* ========Text/Description======== */
 .notice-text {
   flex: 1;
   font-family: var(--font-body);
@@ -205,10 +206,7 @@
   line-height: 1.4;
 }
 
-/* ===============================
-   Notice Container
-   =============================== */
-
+/* ========Container======== */
 .notices-container {
   display: flex;
   flex-direction: column;
@@ -223,10 +221,7 @@
   margin-bottom: var(--spacing-lg);
 }
 
-/* ===============================
-   Animation Variants
-   =============================== */
-
+/* ========Animation======== */
 .event-notice.fade-in {
   animation: var(--animation-fade-up);
 }
@@ -251,7 +246,8 @@
 }
 
 @keyframes gentlePulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: var(--shadow-sm);
   }
@@ -261,10 +257,7 @@
   }
 }
 
-/* ===============================
-   Dismissible Notice (Optional)
-   =============================== */
-
+/* ========Event Notice dismissed - optional lang======== */
 .event-notice.dismissible {
   padding-right: 60px;
 }
@@ -293,44 +286,49 @@
 }
 
 .notice-dismiss::before {
-  content: '×';
+  content: "×";
   font-size: 18px;
   font-weight: bold;
   color: var(--color-text-muted);
   line-height: 1;
 }
 
-/* ===============================
-   Dark Mode Support
-   =============================== */
-
+/* ========Dark Theme======== */
 [data-theme="dark"] .event-notice {
   background: var(--color-surface);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .event-notice.upcoming {
-  background: linear-gradient(135deg, 
-    rgba(74, 107, 58, 0.1) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(74, 107, 58, 0.1) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 [data-theme="dark"] .event-notice.starting {
-  background: linear-gradient(135deg, 
-    rgba(122, 163, 216, 0.1) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(122, 163, 216, 0.1) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 [data-theme="dark"] .event-notice.ending {
-  background: linear-gradient(135deg, 
-    rgba(139, 75, 71, 0.1) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(139, 75, 71, 0.1) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 [data-theme="dark"] .event-notice.special {
-  background: linear-gradient(135deg, 
-    rgba(74, 114, 122, 0.1) 0%, 
-    var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(74, 114, 122, 0.1) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 [data-theme="dark"] .notice-dismiss {
@@ -341,31 +339,28 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* ===============================
-   Responsive Design
-   =============================== */
-
+/* ========Responsive======== */
 @media (max-width: 768px) {
   .event-notice {
     padding: var(--spacing-md);
     gap: var(--spacing-sm);
   }
-  
+
   .notice-icon {
     width: 40px;
     height: 40px;
   }
-  
+
   .notice-icon img {
     width: 20px;
     height: 20px;
   }
-  
+
   .notice-text p {
     font-size: 0.9rem;
     text-align: left;
   }
-  
+
   .notices-grid {
     grid-template-columns: 1fr;
   }
@@ -375,21 +370,18 @@
   .event-notice {
     padding: var(--spacing-sm) var(--spacing-md);
   }
-  
+
   .notice-text .notice-title {
     font-size: 1rem;
   }
-  
+
   .notice-text p {
     font-size: 0.85rem;
     text-align: left;
   }
 }
 
-/* ===============================
-   Utility Classes
-   =============================== */
-
+/* ========Utilities======== */
 .notice-bold {
   font-weight: 600;
 }

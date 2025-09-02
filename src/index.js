@@ -1,6 +1,22 @@
 // Import Firebase SDK components
 import { initializeApp } from "firebase/app";
-import {getFirestore, collection, getDocs, query, orderBy, } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  onSnapshot,
+  updateDoc,
+  doc,
+  writeBatch,
+  serverTimestamp,
+  increment,
+  getDocs,
+  getFirestore,
+  setDoc
+} from "firebase/firestore";
 
 // Day.js imports
 import dayjs from "dayjs";
@@ -121,11 +137,11 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         // Parse the stored dates as LA timezone (the source timezone)
         startLA = dayjs.tz(startRaw, "America/Los_Angeles").startOf("day");
         endLA = dayjs.tz(endRaw, "America/Los_Angeles").endOf("day");
-        
+
         // Convert to user's timezone to get the local date boundaries
         const startInUserTZ = startLA.tz(userTimezone);
         const endInUserTZ = endLA.tz(userTimezone);
-        
+
         startLocal = startInUserTZ.startOf("day");
         endLocal = endInUserTZ.startOf("day");
       }
@@ -197,10 +213,10 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
 
 // Add category filter to calendar
 function addCategoryFilter(calendar, eventsData) {
-    const categoryFilterDropdown = document.createElement("select");
-    categoryFilterDropdown.id = "category-filter";
-    categoryFilterDropdown.title = "category-filter";
-    categoryFilterDropdown.innerHTML = `
+  const categoryFilterDropdown = document.createElement("select");
+  categoryFilterDropdown.id = "category-filter";
+  categoryFilterDropdown.title = "category-filter";
+  categoryFilterDropdown.innerHTML = `
         <option value="">All Categories</option>
         <option value="special-event">Special Events</option>
         <option value="shard">Shard</option>
@@ -209,27 +225,27 @@ function addCategoryFilter(calendar, eventsData) {
         <option value="seasons">Seasons</option>
     `;
 
-    const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
-    calendarHeader.appendChild(categoryFilterDropdown);
+  const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
+  calendarHeader.appendChild(categoryFilterDropdown);
 
-    categoryFilterDropdown.addEventListener("change", function () {
-        const selectedCategory = this.value.toLowerCase();
-        
-        const filteredEvents = eventsData.filter((event) => {
-        if (selectedCategory === "hide") {
-            return !event.category || !event.category.toLowerCase().includes("shard");
+  categoryFilterDropdown.addEventListener("change", function () {
+    const selectedCategory = this.value.toLowerCase();
+
+    const filteredEvents = eventsData.filter((event) => {
+      if (selectedCategory === "hide") {
+        return !event.category || !event.category.toLowerCase().includes("shard");
+      } else {
+        if (event.category) {
+          return event.category.toLowerCase() === selectedCategory || selectedCategory === "";
         } else {
-            if (event.category) {
-            return event.category.toLowerCase() === selectedCategory || selectedCategory === "";
-            } else {
-            return selectedCategory === "";
-            }
+          return selectedCategory === "";
         }
-        });
-        
-        calendar.removeAllEventSources();
-        calendar.addEventSource(filteredEvents);
+      }
     });
+
+    calendar.removeAllEventSources();
+    calendar.addEventSource(filteredEvents);
+  });
 }
 
 function displayEventNotices(eventsData) {
@@ -250,7 +266,7 @@ function displayEventNotices(eventsData) {
   eventsData.forEach((event) => {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end);
-    
+
     const daysUntilStart = Math.ceil((eventStart - today) / (1000 * 60 * 60 * 24));
     const daysUntilEnd = Math.ceil((eventEnd - today) / (1000 * 60 * 60 * 24));
 
@@ -349,15 +365,15 @@ function createEmptyNoticeElement(className, iconSrc, labelText) {
 // ___________________________QUICK OVERVIEW_____________________________________
 function showQuickOverview(events) {
   const container = document.getElementById('event-cards-container');
-  
+
   if (!container) {
     console.warn('Quick overview container not found');
     return;
   }
-  
+
   // Clear loading state
   container.innerHTML = '';
-  
+
   // Filter events for quick overview (upcoming and current events)
   const currentDate = new Date();
   const relevantEvents = events
@@ -401,12 +417,12 @@ function createEventCard(event) {
   const card = document.createElement('div');
   card.className = 'event-card';
   card.setAttribute('data-event-id', event.id);
-  
+
   // Determine event status
   const currentDate = new Date();
   const startDate = new Date(event.start);
   const endDate = new Date(event.end);
-  
+
   let eventStatus = '';
   if (currentDate < startDate) {
     eventStatus = 'upcoming';
@@ -415,16 +431,16 @@ function createEventCard(event) {
   } else {
     eventStatus = 'past';
   }
-  
+
   card.classList.add(eventStatus);
   card.style.borderBottom = `4px solid ${event.color}`;
-  
+
   // Get badge info based on category
   const badgeInfo = getBadgeInfo(event.category);
-  
+
   // Format date range
   const dateRange = formatDateRange(startDate, endDate);
-  
+
   // Get countdown info
   const countdownInfo = getCountdownInfo(startDate, endDate, currentDate);
 
@@ -435,13 +451,13 @@ function createEventCard(event) {
   if (event.title.includes("Traveling Spirits")) {
     event.title = event.title.replace("Traveling Spirits", "TS");
   }
-  
+
   card.innerHTML = `
     <div class="event-image-container">
-      ${event.image ? 
-        `<img src="${event.image}" alt="${event.title}" loading="lazy" class="event-image" onerror="this.parentElement.innerHTML='<div class=\\"event-image-placeholder\\">🌟</div>` : 
-        `<div class="event-image-placeholder">🌟</div>`
-      }
+      ${event.image ?
+      `<img src="${event.image}" alt="${event.title}" loading="lazy" class="event-image" onerror="this.parentElement.innerHTML='<div class=\\"event-image-placeholder\\">🌟</div>` :
+      `<div class="event-image-placeholder">🌟</div>`
+    }
       <div class="event-badge ${badgeInfo.class}">${badgeInfo.text}</div>
     </div>
     <div class="event-content-overview">
@@ -455,7 +471,7 @@ function createEventCard(event) {
   `;
 
 
-  
+
   // Add click event to open event modal (if you have one)
   card.addEventListener('click', () => {
     if (typeof openEventModal === 'function') {
@@ -464,14 +480,14 @@ function createEventCard(event) {
       // console.log('Event clicked:', event.title);
     }
   });
-  
+
   return card;
 }
 
 // Helper function to get badge information
 function getBadgeInfo(category) {
   const categoryLower = category?.toLowerCase() || '';
-  
+
   if (categoryLower.includes('traveling') || categoryLower.includes('ts')) {
     return { class: 'ts', text: 'TS' };
   } else if (categoryLower.includes('season')) {
@@ -488,7 +504,7 @@ function formatDateRange(startDate, endDate) {
   const options = { month: 'short', day: 'numeric' };
   const start = startDate.toLocaleDateString('en-US', options);
   const end = endDate.toLocaleDateString('en-US', options);
-  
+
   // If same month, show "Jan 15 - 22"
   if (startDate.getMonth() === endDate.getMonth()) {
     const startDay = startDate.getDate();
@@ -496,7 +512,7 @@ function formatDateRange(startDate, endDate) {
     const month = startDate.toLocaleDateString('en-US', { month: 'short' });
     return `${month} ${startDay} - ${endDay}`;
   }
-  
+
   return `${start} - ${end}`;
 }
 
@@ -505,9 +521,9 @@ function getCountdownInfo(startDate, endDate, currentDate) {
   const msInDay = 24 * 60 * 60 * 1000;
   const msInHour = 60 * 60 * 1000;
   const msInMinute = 60 * 1000;
-  
+
   let timeDiff, label, className;
-  
+
   if (currentDate < startDate) {
     // Event hasn't started yet
     timeDiff = startDate - currentDate;
@@ -526,12 +542,12 @@ function getCountdownInfo(startDate, endDate, currentDate) {
       time: 'Ended'
     };
   }
-  
+
   // Calculate time components
   const days = Math.floor(timeDiff / msInDay);
   const hours = Math.floor((timeDiff % msInDay) / msInHour);
   const minutes = Math.floor((timeDiff % msInHour) / msInMinute);
-  
+
   let timeString = '';
   if (days > 0) {
     timeString = `${days}d ${hours}h ${minutes}m`;
@@ -542,7 +558,7 @@ function getCountdownInfo(startDate, endDate, currentDate) {
   } else {
     timeString = 'Now';
   }
-  
+
   return {
     class: className,
     label: label,
@@ -561,7 +577,7 @@ let countdownInterval = setInterval(() => {
   if (cards.length === 0) {
     return;
   }
-  
+
   cards.forEach(card => {
     const eventId = card.getAttribute('data-event-id');
     const event = allEvents.find(e => e.id === eventId);
@@ -570,11 +586,11 @@ let countdownInterval = setInterval(() => {
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       const countdownInfo = getCountdownInfo(startDate, endDate, currentDate);
-      
+
       const countdownElement = card.querySelector('.event-countdown');
       const labelElement = card.querySelector('.countdown-label');
       const timeElement = card.querySelector('.countdown-time');
-      
+
       if (countdownElement && labelElement && timeElement) {
         countdownElement.className = `event-countdown ${countdownInfo.class}`;
         labelElement.textContent = countdownInfo.label;
@@ -610,93 +626,93 @@ let currentMediaIndex = 0;
 let currentMediaItems = [];
 
 function openEventModal(event) {
-    const modal = document.getElementById('eventModal');
-    const modalImageContainer = document.getElementById('modalImageContainer');
-    const modalBadge = document.getElementById('modalBadge');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDescription = document.getElementById('modalDescription');
-    const modalNote = document.getElementById('modalNote');
-    const modalShareBtn = document.getElementById('modalShareBtn');
-    const modalCalendarBtn = document.getElementById('modalCalendarBtn');
-    
-    // Set up media carousel
-    setupMediaCarousel(event, modalImageContainer);
-    
-    // Set badge
-    const category = event.category || (event.extendedProps && event.extendedProps.category) || 'special';
-    const badgeInfo = getBadgeInfo(category);
-    modalBadge.textContent = badgeInfo.text;
-    modalBadge.className = `modal-badge ${badgeInfo.class}`;
-    
-    // Set title (clean up TS prefixes)
-    let cleanTitle = event.title || '';
-    cleanTitle = cleanTitle.replace("Traveling Spirit:", "TS:");
-    cleanTitle = cleanTitle.replace("Traveling Spirits", "TS");
-    cleanTitle = cleanTitle.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
-    modalTitle.textContent = cleanTitle;
-    
-    // Set quick info summary
-    setQuickInfoSummary(event);
-    
-    // Set description
-    const description = event.description || 
-                       (event.extendedProps && event.extendedProps.description);
-    
-    if (description && description.trim()) {
-        modalDescription.innerHTML = `
+  const modal = document.getElementById('eventModal');
+  const modalImageContainer = document.getElementById('modalImageContainer');
+  const modalBadge = document.getElementById('modalBadge');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDescription = document.getElementById('modalDescription');
+  const modalNote = document.getElementById('modalNote');
+  const modalShareBtn = document.getElementById('modalShareBtn');
+  const modalCalendarBtn = document.getElementById('modalCalendarBtn');
+
+  // Set up media carousel
+  setupMediaCarousel(event, modalImageContainer);
+
+  // Set badge
+  const category = event.category || (event.extendedProps && event.extendedProps.category) || 'special';
+  const badgeInfo = getBadgeInfo(category);
+  modalBadge.textContent = badgeInfo.text;
+  modalBadge.className = `modal-badge ${badgeInfo.class}`;
+
+  // Set title (clean up TS prefixes)
+  let cleanTitle = event.title || '';
+  cleanTitle = cleanTitle.replace("Traveling Spirit:", "TS:");
+  cleanTitle = cleanTitle.replace("Traveling Spirits", "TS");
+  cleanTitle = cleanTitle.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
+  modalTitle.textContent = cleanTitle;
+
+  // Set quick info summary
+  setQuickInfoSummary(event);
+
+  // Set description
+  const description = event.description ||
+    (event.extendedProps && event.extendedProps.description);
+
+  if (description && description.trim()) {
+    modalDescription.innerHTML = `
             <div class="description-title">Description</div>
             <div class="description-content">${description}</div>
         `;
-    } else {
-        modalDescription.innerHTML = `
+  } else {
+    modalDescription.innerHTML = `
             <div class="description-title">Description</div>
             <div class="description-content na">Information will be updated as it becomes available.</div>
         `;
-    }
-    
-    // Set note/reminder
-    const note = event.note || (event.extendedProps && event.extendedProps.note);
-    if (note && note.trim()) {
-        modalNote.innerHTML = `
+  }
+
+  // Set note/reminder
+  const note = event.note || (event.extendedProps && event.extendedProps.note);
+  if (note && note.trim()) {
+    modalNote.innerHTML = `
             <div class="note-title">Note</div>
             <div class="note-content">${note}</div>
         `;
-        modalNote.style.display = 'block';
-    } else {
-        modalNote.innerHTML = `
+    modalNote.style.display = 'block';
+  } else {
+    modalNote.innerHTML = `
             <div class="note-title">Reminder</div>
             <div class="note-content">Event details are subject to change. Please check back for updates.</div>
         `;
-        modalNote.style.display = 'block';
-    }
-    
-    // Set action buttons
-    modalShareBtn.onclick = () => shareEvent(event);
-    modalCalendarBtn.onclick = () => addToGoogleCalendar(event);
-    
-    // Show modal
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    modalNote.style.display = 'block';
+  }
+
+  // Set action buttons
+  modalShareBtn.onclick = () => shareEvent(event);
+  modalCalendarBtn.onclick = () => addToGoogleCalendar(event);
+
+  // Show modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 function setupMediaCarousel(event, container) {
-    // Enhanced media collection to handle both your current format and future video additions
-    currentMediaItems = collectMediaItems(event);
-    currentMediaIndex = 0;
-    
-    // console.log('Setting up carousel with media items:', currentMediaItems); // Debug log
-    
-    if (currentMediaItems.length === 0) {
-        // No media available
-        container.innerHTML = '<div class="modal-image-placeholder">🌟</div>';
-        return;
-    }
-    
-    if (currentMediaItems.length === 1) {
-        // Single media item
-        const mediaItem = currentMediaItems[0];
-        const mediaHtml = createMediaElement(mediaItem, event.title, true);
-        container.innerHTML = `
+  // Enhanced media collection to handle both your current format and future video additions
+  currentMediaItems = collectMediaItems(event);
+  currentMediaIndex = 0;
+
+  // console.log('Setting up carousel with media items:', currentMediaItems); // Debug log
+
+  if (currentMediaItems.length === 0) {
+    // No media available
+    container.innerHTML = '<div class="modal-image-placeholder">🌟</div>';
+    return;
+  }
+
+  if (currentMediaItems.length === 1) {
+    // Single media item
+    const mediaItem = currentMediaItems[0];
+    const mediaHtml = createMediaElement(mediaItem, event.title, true);
+    container.innerHTML = `
           ${mediaHtml}
           <div class="media-controls">
             <button type="button" class="media-control-btn" onclick="downloadMedia('${mediaItem.url.replace(/'/g, "\\'")}')" title="Download">
@@ -707,20 +723,20 @@ function setupMediaCarousel(event, container) {
             </button>
           </div>
         `;
-        return
-    }
-    
-    let carouselHTML = `
+    return
+  }
+
+  let carouselHTML = `
         <div class="media-carousel">
             <div class="media-slides" id="mediaSlides">
     `;
-    
-    currentMediaItems.forEach((mediaItem, index) => {
-        const mediaHtml = createMediaElement(mediaItem, event.title, index === 0);
-        carouselHTML += `<div class="media-slide">${mediaHtml}</div>`;
-    });
-    
-    carouselHTML += `
+
+  currentMediaItems.forEach((mediaItem, index) => {
+    const mediaHtml = createMediaElement(mediaItem, event.title, index === 0);
+    carouselHTML += `<div class="media-slide">${mediaHtml}</div>`;
+  });
+
+  carouselHTML += `
             </div>
             <button type="button" class="carousel-nav prev" onclick="prevMedia()" id="prevBtn">‹</button>
             <button type="button" class="carousel-nav next" onclick="nextMedia()" id="nextBtn">›</button>
@@ -734,328 +750,328 @@ function setupMediaCarousel(event, container) {
             </div>
             <div class="carousel-indicators" id="carouselIndicators">
     `;
-    
-    currentMediaItems.forEach((_, index) => {
-        carouselHTML += `<div class="carousel-indicator ${index === 0 ? 'active' : ''}" onclick="goToMedia(${index})"></div>`;
-    });
-    
-    carouselHTML += `
+
+  currentMediaItems.forEach((_, index) => {
+    carouselHTML += `<div class="carousel-indicator ${index === 0 ? 'active' : ''}" onclick="goToMedia(${index})"></div>`;
+  });
+
+  carouselHTML += `
             </div>
             <div class="media-counter">
                 <span id="mediaCounter">1 / ${currentMediaItems.length}</span>
             </div>
         </div>
     `;
-    
-    container.innerHTML = carouselHTML;
-    updateCarouselButtons();
+
+  container.innerHTML = carouselHTML;
+  updateCarouselButtons();
 }
 
 function normalizeToArray(input) {
-    if (!input) return [];
-    if (Array.isArray(input)) return input;
+  if (!input) return [];
+  if (Array.isArray(input)) return input;
 
-    if (typeof input === "string") {
-        const s = input.trim();
-        if (!s) return [];
+  if (typeof input === "string") {
+    const s = input.trim();
+    if (!s) return [];
 
-        // If the string looks like JSON array, try parsing
-        if ((s.startsWith("[") && s.endsWith("]")) || (s.startsWith('"') && s.endsWith('"'))) {
-            try {
-                const parsed = JSON.parse(s);
-                return Array.isArray(parsed) ? parsed : [s];
-            } catch (_) { 
-                // Fall through to string splitting
-            }
-        }
-
-        // Split on commas/newlines/pipes; trim and keep non-empty
-        return s.split(/[,|\n]/).map(v => v.trim()).filter(Boolean);
+    // If the string looks like JSON array, try parsing
+    if ((s.startsWith("[") && s.endsWith("]")) || (s.startsWith('"') && s.endsWith('"'))) {
+      try {
+        const parsed = JSON.parse(s);
+        return Array.isArray(parsed) ? parsed : [s];
+      } catch (_) {
+        // Fall through to string splitting
+      }
     }
 
-    // Sometimes a single object with { url } sneaks in
-    if (typeof input === "object" && input.url) return [input.url];
-    return [];
+    // Split on commas/newlines/pipes; trim and keep non-empty
+    return s.split(/[,|\n]/).map(v => v.trim()).filter(Boolean);
+  }
+
+  // Sometimes a single object with { url } sneaks in
+  if (typeof input === "object" && input.url) return [input.url];
+  return [];
 }
 
 function canonicalKey(url) {
-    try {
-        const u = new URL(url, window.location.href);
-        // Ignore query/hash so the same ImageKit asset with different ?updatedAt dedupes
-        return `${u.origin}${u.pathname}`;
-    } catch {
-        return (url || "").split("?")[0];
-    }
+  try {
+    const u = new URL(url, window.location.href);
+    // Ignore query/hash so the same ImageKit asset with different ?updatedAt dedupes
+    return `${u.origin}${u.pathname}`;
+  } catch {
+    return (url || "").split("?")[0];
+  }
 }
 
 function uniqueUrls(urls) {
-    const out = [];
-    const seen = new Set();
-    for (const item of urls) {
-        const u = typeof item === "string" ? item : item?.url;
-        if (!u) continue;
-        const key = canonicalKey(u);
-        if (!seen.has(key)) {
-            seen.add(key);
-            out.push(u);
-        }
+  const out = [];
+  const seen = new Set();
+  for (const item of urls) {
+    const u = typeof item === "string" ? item : item?.url;
+    if (!u) continue;
+    const key = canonicalKey(u);
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(u);
     }
-    return out;
+  }
+  return out;
 }
 
 function collectMediaItems(event) {
-    const items = [];
-    const props = event.extendedProps || {};
+  const items = [];
+  const props = event.extendedProps || {};
 
-    // console.log('Collecting media from event:', event); // Debug log
+  // console.log('Collecting media from event:', event); // Debug log
 
-    // Use gallery images for modal (not thumbnail images)
-    const rawImages = event.images ?? props.images ?? [];
-    const imageUrls = uniqueUrls(normalizeToArray(rawImages));
-    
-    // console.log('Raw images:', rawImages); // Debug log
-    // console.log('Processed image URLs:', imageUrls); // Debug log
+  // Use gallery images for modal (not thumbnail images)
+  const rawImages = event.images ?? props.images ?? [];
+  const imageUrls = uniqueUrls(normalizeToArray(rawImages));
 
-    for (const url of imageUrls) {
-        items.push({ 
-            url, 
-            type: determineMediaType(url), 
-            source: "gallery" 
-        });
+  // console.log('Raw images:', rawImages); // Debug log
+  // console.log('Processed image URLs:', imageUrls); // Debug log
+
+  for (const url of imageUrls) {
+    items.push({
+      url,
+      type: determineMediaType(url),
+      source: "gallery"
+    });
+  }
+
+  // Videos
+  const rawVideos = event.videos ?? props.videos ?? [];
+  const videoUrls = uniqueUrls(normalizeToArray(rawVideos));
+  for (const url of videoUrls) {
+    items.push({
+      url,
+      type: "video",
+      source: "video"
+    });
+  }
+
+  // Mixed media
+  const rawMedia = event.media ?? props.media ?? [];
+  const mediaList = normalizeToArray(rawMedia).map(m => (typeof m === "string" ? { url: m } : m));
+  for (const m of mediaList) {
+    const url = m?.url;
+    if (!url) continue;
+    const type = m.type || determineMediaType(url);
+    if (!items.some(it => canonicalKey(it.url) === canonicalKey(url))) {
+      items.push({
+        url,
+        type,
+        source: "media"
+      });
     }
+  }
 
-    // Videos
-    const rawVideos = event.videos ?? props.videos ?? [];
-    const videoUrls = uniqueUrls(normalizeToArray(rawVideos));
-    for (const url of videoUrls) {
-        items.push({ 
-            url, 
-            type: "video", 
-            source: "video" 
-        });
-    }
-
-    // Mixed media
-    const rawMedia = event.media ?? props.media ?? [];
-    const mediaList = normalizeToArray(rawMedia).map(m => (typeof m === "string" ? { url: m } : m));
-    for (const m of mediaList) {
-        const url = m?.url;
-        if (!url) continue;
-        const type = m.type || determineMediaType(url);
-        if (!items.some(it => canonicalKey(it.url) === canonicalKey(url))) {
-            items.push({ 
-                url, 
-                type, 
-                source: "media" 
-            });
-        }
-    }
-
-    // console.log('Final collected media items:', items); // Debug log
-    return items;
+  // console.log('Final collected media items:', items); // Debug log
+  return items;
 }
 
 function determineMediaType(url) {
-    const urlLower = url.toLowerCase();
-    
-    // Video file extensions
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.m4v', '.3gp'];
-    if (videoExtensions.some(ext => urlLower.includes(ext))) {
-        return 'video';
-    }
-    
-    // Animated image extensions (treat as video for controls)
-    if (urlLower.includes('.gif') || urlLower.includes('.webp')) {
-        return 'animated-image';
-    }
-    
-    // Default to image
-    return 'image';
+  const urlLower = url.toLowerCase();
+
+  // Video file extensions
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.m4v', '.3gp'];
+  if (videoExtensions.some(ext => urlLower.includes(ext))) {
+    return 'video';
+  }
+
+  // Animated image extensions (treat as video for controls)
+  if (urlLower.includes('.gif') || urlLower.includes('.webp')) {
+    return 'animated-image';
+  }
+
+  // Default to image
+  return 'image';
 }
 
 // Create appropriate media element based on type
 function createMediaElement(mediaItem, altText, shouldAutoplay = false) {
-    const { url, type } = mediaItem;
-    const safeUrl = url.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    
-    switch (type) {
-        case 'video':
-            return `
+  const { url, type } = mediaItem;
+  const safeUrl = url.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+
+  switch (type) {
+    case 'video':
+      return `
                 <video class="modal-video" ${shouldAutoplay ? 'controls autoplay muted loop' : 'controls muted'}>
                     <source src="${safeUrl}" type="${getVideoMimeType(url)}">
                     Your browser does not support the video tag.
                 </video>
             `;
-        
-        case 'animated-image':
-            return `
+
+    case 'animated-image':
+      return `
                 <img loading="lazy"  src="${safeUrl}" alt="${altText}" class="modal-image animated-image"
                      onclick="openZoomModal('${safeUrl}', '${type}')"
                      onerror="this.parentElement.innerHTML='<div class=&quot;media-error&quot;>Failed to load media</div>'">
             `;
-        
-        default:
-            return `
+
+    default:
+      return `
                 <img loading="lazy" src="${safeUrl}" alt="${altText}" class="modal-image"
                      onclick="openZoomModal('${safeUrl}', '${type}')"
                      onerror="this.parentElement.innerHTML='<div class=&quot;media-error&quot;>Failed to load image</div>'">
             `;
-    }
+  }
 }
 
 function prevMedia() {
-    if (currentMediaIndex > 0) {
-        currentMediaIndex--;
-        updateCarousel();
-    }
+  if (currentMediaIndex > 0) {
+    currentMediaIndex--;
+    updateCarousel();
+  }
 }
 
 function nextMedia() {
-    if (currentMediaIndex < currentMediaItems.length - 1) {
-        currentMediaIndex++;
-        updateCarousel();
-    }
+  if (currentMediaIndex < currentMediaItems.length - 1) {
+    currentMediaIndex++;
+    updateCarousel();
+  }
 }
 
 function goToMedia(index) {
-    if (index >= 0 && index < currentMediaItems.length) {
-        currentMediaIndex = index;
-        updateCarousel();
-    }
+  if (index >= 0 && index < currentMediaItems.length) {
+    currentMediaIndex = index;
+    updateCarousel();
+  }
 }
 
 function updateCarousel() {
-    const slides = document.getElementById('mediaSlides');
-    if (!slides) return;
-    
-    // Update slide position
-    slides.style.transform = `translateX(-${currentMediaIndex * 100}%)`;
-    
-    // Update indicators
-    const indicators = document.querySelectorAll('.carousel-indicator');
-    indicators.forEach((indicator, index) => {
-        indicator.classList.toggle('active', index === currentMediaIndex);
-    });
-    
-    // Update media counter
-    const mediaCounter = document.getElementById('mediaCounter');
-    if (mediaCounter) {
-        mediaCounter.textContent = `${currentMediaIndex + 1} / ${currentMediaItems.length}`;
-    }
-    
-    // Handle video/media playback
-    handleMediaPlayback();
-    
-    // Update navigation buttons
-    updateCarouselButtons();
+  const slides = document.getElementById('mediaSlides');
+  if (!slides) return;
+
+  // Update slide position
+  slides.style.transform = `translateX(-${currentMediaIndex * 100}%)`;
+
+  // Update indicators
+  const indicators = document.querySelectorAll('.carousel-indicator');
+  indicators.forEach((indicator, index) => {
+    indicator.classList.toggle('active', index === currentMediaIndex);
+  });
+
+  // Update media counter
+  const mediaCounter = document.getElementById('mediaCounter');
+  if (mediaCounter) {
+    mediaCounter.textContent = `${currentMediaIndex + 1} / ${currentMediaItems.length}`;
+  }
+
+  // Handle video/media playback
+  handleMediaPlayback();
+
+  // Update navigation buttons
+  updateCarouselButtons();
 }
 
 function handleMediaPlayback() {
-    // Pause all videos first
-    document.querySelectorAll('.modal-video').forEach(video => {
-        video.pause();
-    });
-    
-    // Play current video if it exists
-    const currentSlide = document.querySelectorAll('.media-slide')[currentMediaIndex];
-    if (currentSlide) {
-        const currentVideo = currentSlide.querySelector('.modal-video');
-        if (currentVideo) {
-            currentVideo.play().catch(() => {
-                // Auto-play failed, which is normal in many browsers
-                // console.log('Auto-play prevented by browser');
-            });
-        }
+  // Pause all videos first
+  document.querySelectorAll('.modal-video').forEach(video => {
+    video.pause();
+  });
+
+  // Play current video if it exists
+  const currentSlide = document.querySelectorAll('.media-slide')[currentMediaIndex];
+  if (currentSlide) {
+    const currentVideo = currentSlide.querySelector('.modal-video');
+    if (currentVideo) {
+      currentVideo.play().catch(() => {
+        // Auto-play failed, which is normal in many browsers
+        // console.log('Auto-play prevented by browser');
+      });
     }
+  }
 }
 
 function updateCarouselButtons() {
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    
-    if (prevBtn) {
-        prevBtn.disabled = currentMediaIndex === 0;
-        prevBtn.style.opacity = currentMediaIndex === 0 ? '0.5' : '1';
-    }
-    if (nextBtn) {
-        nextBtn.disabled = currentMediaIndex === currentMediaItems.length - 1;
-        nextBtn.style.opacity = currentMediaIndex === currentMediaItems.length - 1 ? '0.5' : '1';
-    }
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  if (prevBtn) {
+    prevBtn.disabled = currentMediaIndex === 0;
+    prevBtn.style.opacity = currentMediaIndex === 0 ? '0.5' : '1';
+  }
+  if (nextBtn) {
+    nextBtn.disabled = currentMediaIndex === currentMediaItems.length - 1;
+    nextBtn.style.opacity = currentMediaIndex === currentMediaItems.length - 1 ? '0.5' : '1';
+  }
 }
 
 function downloadCurrentMedia() {
-    if (currentMediaItems[currentMediaIndex]) {
-        downloadMedia(currentMediaItems[currentMediaIndex].url);
-    }
+  if (currentMediaItems[currentMediaIndex]) {
+    downloadMedia(currentMediaItems[currentMediaIndex].url);
+  }
 }
 
 function openCurrentMediaZoom() {
-    if (currentMediaItems[currentMediaIndex]) {
-        const item = currentMediaItems[currentMediaIndex];
-        openZoomModal(item.url, item.type);
-    }
+  if (currentMediaItems[currentMediaIndex]) {
+    const item = currentMediaItems[currentMediaIndex];
+    openZoomModal(item.url, item.type);
+  }
 }
 
 function getVideoMimeType(url) {
-    const urlLower = url.toLowerCase();
-    if (urlLower.includes('.mp4')) return 'video/mp4';
-    if (urlLower.includes('.webm')) return 'video/webm';
-    if (urlLower.includes('.ogg')) return 'video/ogg';
-    if (urlLower.includes('.mov')) return 'video/quicktime';
-    if (urlLower.includes('.avi')) return 'video/x-msvideo';
-    return 'video/mp4'; // default
+  const urlLower = url.toLowerCase();
+  if (urlLower.includes('.mp4')) return 'video/mp4';
+  if (urlLower.includes('.webm')) return 'video/webm';
+  if (urlLower.includes('.ogg')) return 'video/ogg';
+  if (urlLower.includes('.mov')) return 'video/quicktime';
+  if (urlLower.includes('.avi')) return 'video/x-msvideo';
+  return 'video/mp4'; // default
 }
 
 function downloadMedia(url) {
-    // Enhanced download with better ImageKit support
-    let downloadUrl = url;
-    
-    // For ImageKit URLs, add download parameter
-    if (url.includes('imagekit.io')) {
-        const separator = url.includes('?') ? '&' : '?';
-        downloadUrl = `${url}${separator}ik-attachment=true`;
-    }
-    
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = getFilenameFromUrl(url);
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    
-    // Add to DOM temporarily
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Enhanced download with better ImageKit support
+  let downloadUrl = url;
+
+  // For ImageKit URLs, add download parameter
+  if (url.includes('imagekit.io')) {
+    const separator = url.includes('?') ? '&' : '?';
+    downloadUrl = `${url}${separator}ik-attachment=true`;
+  }
+
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = getFilenameFromUrl(url);
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+
+  // Add to DOM temporarily
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function getFilenameFromUrl(url) {
-    try {
-        const pathname = new URL(url).pathname;
-        const filename = pathname.split('/').pop();
-        return filename || `sky-media-${Date.now()}`;
-    } catch (e) {
-        return `sky-media-${Date.now()}`;
-    }
+  try {
+    const pathname = new URL(url).pathname;
+    const filename = pathname.split('/').pop();
+    return filename || `sky-media-${Date.now()}`;
+  } catch (e) {
+    return `sky-media-${Date.now()}`;
+  }
 }
 
 function openZoomModal(mediaUrl, mediaType = null) {
-    let zoomModal = document.getElementById('zoomModal');
-    
-    if (!zoomModal) {
-        // Create zoom modal if it doesn't exist
-        zoomModal = document.createElement('div');
-        zoomModal.id = 'zoomModal';
-        zoomModal.className = 'zoom-modal';
-        document.body.appendChild(zoomModal);
-    }
-    
-    const type = mediaType || determineMediaType(mediaUrl);
-    const safeUrl = mediaUrl.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-    let zoomContent;
-    
-    switch (type) {
-        case 'video':
-            zoomContent = `
+  let zoomModal = document.getElementById('zoomModal');
+
+  if (!zoomModal) {
+    // Create zoom modal if it doesn't exist
+    zoomModal = document.createElement('div');
+    zoomModal.id = 'zoomModal';
+    zoomModal.className = 'zoom-modal';
+    document.body.appendChild(zoomModal);
+  }
+
+  const type = mediaType || determineMediaType(mediaUrl);
+  const safeUrl = mediaUrl.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  let zoomContent;
+
+  switch (type) {
+    case 'video':
+      zoomContent = `
                 <div class="zoom-content">
                     <video class="zoom-video" controls autoplay muted loop>
                         <source src="${safeUrl}" type="${getVideoMimeType(mediaUrl)}">
@@ -1071,10 +1087,10 @@ function openZoomModal(mediaUrl, mediaType = null) {
                     </div>
                 </div>
             `;
-            break;
-        
-        case 'animated-image':
-            zoomContent = `
+      break;
+
+    case 'animated-image':
+      zoomContent = `
                 <div class="zoom-content">
                     <img loading="lazy"  src="${safeUrl}" alt="Zoomed animated image" class="zoom-image">
                     <div class="zoom-controls">
@@ -1087,10 +1103,10 @@ function openZoomModal(mediaUrl, mediaType = null) {
                     </div>
                 </div>
             `;
-            break;
-        
-        default: // 'image'
-            zoomContent = `
+      break;
+
+    default: // 'image'
+      zoomContent = `
                 <div class="zoom-content">
                     <img loading="lazy"  src="${safeUrl}" alt="Zoomed media" class="zoom-image">
                     <div class="zoom-controls">
@@ -1103,246 +1119,246 @@ function openZoomModal(mediaUrl, mediaType = null) {
                     </div>
                 </div>
             `;
+  }
+
+  zoomModal.innerHTML = zoomContent;
+  zoomModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Close on click outside
+  zoomModal.onclick = (e) => {
+    if (e.target === zoomModal) {
+      closeZoomModal();
     }
-    
-    zoomModal.innerHTML = zoomContent;
-    zoomModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Close on click outside
-    zoomModal.onclick = (e) => {
-        if (e.target === zoomModal) {
-            closeZoomModal();
-        }
-    };
+  };
 }
 
 function closeZoomModal() {
-    const zoomModal = document.getElementById('zoomModal');
-    if (zoomModal) {
-        // Pause any videos in zoom modal
-        const zoomVideo = zoomModal.querySelector('.zoom-video');
-        if (zoomVideo) {
-            zoomVideo.pause();
-        }
-        
-        zoomModal.classList.remove('active');
-        if (!document.getElementById('eventModal').classList.contains('active')) {
-            document.body.style.overflow = '';
-        }
+  const zoomModal = document.getElementById('zoomModal');
+  if (zoomModal) {
+    // Pause any videos in zoom modal
+    const zoomVideo = zoomModal.querySelector('.zoom-video');
+    if (zoomVideo) {
+      zoomVideo.pause();
     }
+
+    zoomModal.classList.remove('active');
+    if (!document.getElementById('eventModal').classList.contains('active')) {
+      document.body.style.overflow = '';
+    }
+  }
 }
 
 function setQuickInfoSummary(event) {
-    const quickInfoContainer = document.getElementById('quickInfoSummary');
-    
-    // Get event data with fallbacks
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end || event.start);
-    const dateRange = formatDateRange(startDate, endDate);
-    
-    // Extract extended properties
-    const props = event.extendedProps || {};
-    const category = event.category || props.category || 'special';
-    
-    let infoItems = [];
-    
-    // Base info for all events
-    infoItems.push({ icon: '📅', label: 'Date:', value: dateRange });
-    
-    // Event-specific information based on category
-    if (category === 'ts') {
-        // Single Traveling Spirit
-        const realm = props.realm || event.realm || null;
-        const location = props.location || event.location || null;
-        const memoryType = props.memoryType || event.memoryType || null;
-        const emote = props.emote || event.emote || null;
-        
-        infoItems.push(
-            { icon: '🌍', label: 'Realm:', value: realm || 'To be announced' },
-            { icon: '📌', label: 'Location:', value: location || 'To be announced' },
-            { icon: '🎭', label: 'Memory Type:', value: memoryType || 'N/A' },
-            { icon: '🕊️', label: 'Emote:', value: emote || 'N/A' }
-        );
-    } else if (category === 'season') {
-        // Seasonal Events
-        const seasonType = props.seasonType || event.seasonType || null;
-        const spiritCount = props.spiritCount || event.spiritCount || null;
-        const duration = props.duration || event.duration || null;
-        const specialItems = props.specialItems || event.specialItems || null;
-        
-        infoItems.push(
-            { icon: '🎭', label: 'Season Type:', value: seasonType || 'To be announced' },
-            { icon: '👥', label: 'Spirits:', value: spiritCount || 'To be announced' },
-            { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
-            { icon: '✨', label: 'Special Items:', value: specialItems || 'To be announced' }
-        );
-    } else if (category === 'special') {
-        // Special Events (Days of Events, etc.)
-        const eventType = props.eventType || event.eventType || null;
-        const activities = props.activities || event.activities || null;
-        const rewards = props.rewards || event.rewards || null;
-        const requirements = props.requirements || event.requirements || null;
-        
-        infoItems.push(
-            { icon: '🎉', label: 'Event Type:', value: eventType || 'Special Event' },
-            { icon: '🎯', label: 'Activities:', value: activities || 'To be announced' },
-            { icon: '🎁', label: 'Rewards:', value: rewards || 'To be announced' },
-            { icon: '📋', label: 'Requirements:', value: requirements || 'None specified' }
-        );
-    } else if (category === 'group_ts' || event.title.toLowerCase().includes('traveling spirits')) {
-        // Group of Traveling Spirits
-        const spiritCount = props.spiritCount || event.spiritCount || null;
-        const realms = props.realms || event.realms || null;
-        const duration = props.duration || event.duration || null;
-        
-        infoItems.push(
-            { icon: '👥', label: 'Spirit Count:', value: spiritCount || 'To be announced' },
-            { icon: '🌍', label: 'Realms:', value: realms || 'Multiple realms' },
-            { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
-        );
-    } else {
-        // Default/Generic events
-        const eventType = props.eventType || event.eventType || null;
-        const location = props.location || event.location || null;
-        
-        infoItems.push(
-            { icon: '🎯', label: 'Event Type:', value: eventType || 'General Event' },
-            { icon: '📌', label: 'Location:', value: location || 'To be announced' }
-        );
-    }
-    
-    let infoHTML = '<div class="quick-info-title">Quick Info Summary</div>';
-    
-    infoItems.forEach(item => {
-        const isNA = !item.value || item.value === 'N/A' || item.value === 'To be announced' || item.value === 'None specified';
-        const valueClass = isNA ? 'info-value na' : 'info-value';
-        
-        infoHTML += `
+  const quickInfoContainer = document.getElementById('quickInfoSummary');
+
+  // Get event data with fallbacks
+  const startDate = new Date(event.start);
+  const endDate = new Date(event.end || event.start);
+  const dateRange = formatDateRange(startDate, endDate);
+
+  // Extract extended properties
+  const props = event.extendedProps || {};
+  const category = event.category || props.category || 'special';
+
+  let infoItems = [];
+
+  // Base info for all events
+  infoItems.push({ icon: '📅', label: 'Date:', value: dateRange });
+
+  // Event-specific information based on category
+  if (category === 'ts') {
+    // Single Traveling Spirit
+    const realm = props.realm || event.realm || null;
+    const location = props.location || event.location || null;
+    const memoryType = props.memoryType || event.memoryType || null;
+    const emote = props.emote || event.emote || null;
+
+    infoItems.push(
+      { icon: '🌍', label: 'Realm:', value: realm || 'To be announced' },
+      { icon: '📌', label: 'Location:', value: location || 'To be announced' },
+      { icon: '🎭', label: 'Memory Type:', value: memoryType || 'N/A' },
+      { icon: '🕊️', label: 'Emote:', value: emote || 'N/A' }
+    );
+  } else if (category === 'season') {
+    // Seasonal Events
+    const seasonType = props.seasonType || event.seasonType || null;
+    const spiritCount = props.spiritCount || event.spiritCount || null;
+    const duration = props.duration || event.duration || null;
+    const specialItems = props.specialItems || event.specialItems || null;
+
+    infoItems.push(
+      { icon: '🎭', label: 'Season Type:', value: seasonType || 'To be announced' },
+      { icon: '👥', label: 'Spirits:', value: spiritCount || 'To be announced' },
+      { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
+      { icon: '✨', label: 'Special Items:', value: specialItems || 'To be announced' }
+    );
+  } else if (category === 'special') {
+    // Special Events (Days of Events, etc.)
+    const eventType = props.eventType || event.eventType || null;
+    const activities = props.activities || event.activities || null;
+    const rewards = props.rewards || event.rewards || null;
+    const requirements = props.requirements || event.requirements || null;
+
+    infoItems.push(
+      { icon: '🎉', label: 'Event Type:', value: eventType || 'Special Event' },
+      { icon: '🎯', label: 'Activities:', value: activities || 'To be announced' },
+      { icon: '🎁', label: 'Rewards:', value: rewards || 'To be announced' },
+      { icon: '📋', label: 'Requirements:', value: requirements || 'None specified' }
+    );
+  } else if (category === 'group_ts' || event.title.toLowerCase().includes('traveling spirits')) {
+    // Group of Traveling Spirits
+    const spiritCount = props.spiritCount || event.spiritCount || null;
+    const realms = props.realms || event.realms || null;
+    const duration = props.duration || event.duration || null;
+
+    infoItems.push(
+      { icon: '👥', label: 'Spirit Count:', value: spiritCount || 'To be announced' },
+      { icon: '🌍', label: 'Realms:', value: realms || 'Multiple realms' },
+      { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
+    );
+  } else {
+    // Default/Generic events
+    const eventType = props.eventType || event.eventType || null;
+    const location = props.location || event.location || null;
+
+    infoItems.push(
+      { icon: '🎯', label: 'Event Type:', value: eventType || 'General Event' },
+      { icon: '📌', label: 'Location:', value: location || 'To be announced' }
+    );
+  }
+
+  let infoHTML = '<div class="quick-info-title">Quick Info Summary</div>';
+
+  infoItems.forEach(item => {
+    const isNA = !item.value || item.value === 'N/A' || item.value === 'To be announced' || item.value === 'None specified';
+    const valueClass = isNA ? 'info-value na' : 'info-value';
+
+    infoHTML += `
             <div class="info-item">
                 <span class="info-icon">${item.icon}</span>
                 <span class="info-label">${item.label}</span>
                 <span class="${valueClass}">${item.value}</span>
             </div>
         `;
-    });
-    
-    quickInfoContainer.innerHTML = infoHTML;
+  });
+
+  quickInfoContainer.innerHTML = infoHTML;
 }
 
 function closeEventModal() {
-    const modal = document.getElementById('eventModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-    
-    // Pause any playing videos when modal closes
-    modal.querySelectorAll('.modal-video').forEach(video => {
-        video.pause();
-    });
+  const modal = document.getElementById('eventModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+
+  // Pause any playing videos when modal closes
+  modal.querySelectorAll('.modal-video').forEach(video => {
+    video.pause();
+  });
 }
 
 function shareEvent(event) {
-    const shareData = {
-        title: event.title,
-        text: `Check out this Sky: Children of the Light event: ${event.title}`,
-        url: window.location.href
-    };
-    
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-        navigator.share(shareData).catch(() => {
-            // Fallback if share fails
-            fallbackShare(event);
-        });
-    } else {
-        // Fallback: copy to clipboard
-        fallbackShare(event);
-    }
+  const shareData = {
+    title: event.title,
+    text: `Check out this Sky: Children of the Light event: ${event.title}`,
+    url: window.location.href
+  };
+
+  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    navigator.share(shareData).catch(() => {
+      // Fallback if share fails
+      fallbackShare(event);
+    });
+  } else {
+    // Fallback: copy to clipboard
+    fallbackShare(event);
+  }
 }
 
 function fallbackShare(event) {
-    const shareText = `${event.title}\n${formatDateRange(new Date(event.start), new Date(event.end || event.start))}\n${window.location.href}`;
-    
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(shareText).then(() => {
-            showNotification('Event details copied to clipboard!');
-        }).catch(() => {
-            fallbackCopyToClipboard(shareText);
-        });
-    } else {
-        fallbackCopyToClipboard(shareText);
-    }
+  const shareText = `${event.title}\n${formatDateRange(new Date(event.start), new Date(event.end || event.start))}\n${window.location.href}`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareText).then(() => {
+      showNotification('Event details copied to clipboard!');
+    }).catch(() => {
+      fallbackCopyToClipboard(shareText);
+    });
+  } else {
+    fallbackCopyToClipboard(shareText);
+  }
 }
 
 function addToGoogleCalendar(event) {
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end || event.start);
-    
-    // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
-    const formatGoogleDate = (date) => {
-        return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    };
-    
-    const startStr = formatGoogleDate(startDate);
-    const endStr = formatGoogleDate(endDate);
-    
-    // Clean title
-    let cleanTitle = event.title.replace("Traveling Spirit:", "TS:");
-    cleanTitle = cleanTitle.replace("Traveling Spirits", "TS");
-    cleanTitle = cleanTitle.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
-    
-    // Prepare description
-    const props = event.extendedProps || {};
-    let details = `Sky: Children of the Light Event\n\n`;
-    
-    if (props.realm || event.realm) {
-        details += `Realm: ${props.realm || event.realm}\n`;
-    }
-    if (props.location || event.location) {
-        details += `Location: ${props.location || event.location}\n`;
-    }
-    if (props.memoryType || event.memoryType) {
-        details += `Memory Type: ${props.memoryType || event.memoryType}\n`;
-    }
-    if (props.emote || event.emote) {
-        details += `Emote: ${props.emote || event.emote}\n`;
-    }
-    
-    if (event.description || (props.description)) {
-        details += `\nDescription:\n${event.description || props.description}`;
-    }
-    
-    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
-        `&text=${encodeURIComponent(cleanTitle)}` +
-        `&dates=${startStr}/${endStr}` +
-        `&details=${encodeURIComponent(details)}` +
-        `&location=${encodeURIComponent('Sky: Children of the Light')}`;
-    
-    window.open(googleCalendarUrl, '_blank');
+  const startDate = new Date(event.start);
+  const endDate = new Date(event.end || event.start);
+
+  // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
+  const formatGoogleDate = (date) => {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  };
+
+  const startStr = formatGoogleDate(startDate);
+  const endStr = formatGoogleDate(endDate);
+
+  // Clean title
+  let cleanTitle = event.title.replace("Traveling Spirit:", "TS:");
+  cleanTitle = cleanTitle.replace("Traveling Spirits", "TS");
+  cleanTitle = cleanTitle.replace(/^[\p{Emoji}\p{Extended_Pictographic}]+\s*/u, "");
+
+  // Prepare description
+  const props = event.extendedProps || {};
+  let details = `Sky: Children of the Light Event\n\n`;
+
+  if (props.realm || event.realm) {
+    details += `Realm: ${props.realm || event.realm}\n`;
+  }
+  if (props.location || event.location) {
+    details += `Location: ${props.location || event.location}\n`;
+  }
+  if (props.memoryType || event.memoryType) {
+    details += `Memory Type: ${props.memoryType || event.memoryType}\n`;
+  }
+  if (props.emote || event.emote) {
+    details += `Emote: ${props.emote || event.emote}\n`;
+  }
+
+  if (event.description || (props.description)) {
+    details += `\nDescription:\n${event.description || props.description}`;
+  }
+
+  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+    `&text=${encodeURIComponent(cleanTitle)}` +
+    `&dates=${startStr}/${endStr}` +
+    `&details=${encodeURIComponent(details)}` +
+    `&location=${encodeURIComponent('Sky: Children of the Light')}`;
+
+  window.open(googleCalendarUrl, '_blank');
 }
 
 function fallbackCopyToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
-    try {
-        document.execCommand('copy');
-        showNotification('Event details copied to clipboard!');
-    } catch (err) {
-        showNotification('Unable to copy to clipboard');
-    } finally {
-        document.body.removeChild(textArea);
-    }
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    document.execCommand('copy');
+    showNotification('Event details copied to clipboard!');
+  } catch (err) {
+    showNotification('Unable to copy to clipboard');
+  } finally {
+    document.body.removeChild(textArea);
+  }
 }
 
 function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
+  const notification = document.createElement('div');
+  notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -1355,65 +1371,65 @@ function showNotification(message) {
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         transition: opacity 0.3s ease;
     `;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
+  notification.textContent = message;
+
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.style.opacity = '0';
     setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
+      if (notification.parentNode) {
+        document.body.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
 }
 
 // Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Close modal button
-    const closeBtn = document.getElementById('closeModal');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeEventModal);
-    }
-    
-    // Close modal when clicking overlay
-    const modalOverlay = document.getElementById('eventModal');
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeEventModal();
-            }
-        });
-    }
-    
-    // Close on ESC key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const eventModal = document.getElementById('eventModal');
-            const zoomModal = document.getElementById('zoomModal');
-            
-            if (zoomModal && zoomModal.classList.contains('active')) {
-                closeZoomModal();
-            } else if (eventModal && eventModal.classList.contains('active')) {
-                closeEventModal();
-            }
-        }
+document.addEventListener('DOMContentLoaded', function () {
+  // Close modal button
+  const closeBtn = document.getElementById('closeModal');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeEventModal);
+  }
+
+  // Close modal when clicking overlay
+  const modalOverlay = document.getElementById('eventModal');
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeEventModal();
+      }
     });
-    
-    // Keyboard navigation for carousel
-    document.addEventListener('keydown', (e) => {
-        const eventModal = document.getElementById('eventModal');
-        if (eventModal && eventModal.classList.contains('active')) {
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                prevMedia();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                nextMedia();
-            }
-        }
-    });
+  }
+
+  // Close on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const eventModal = document.getElementById('eventModal');
+      const zoomModal = document.getElementById('zoomModal');
+
+      if (zoomModal && zoomModal.classList.contains('active')) {
+        closeZoomModal();
+      } else if (eventModal && eventModal.classList.contains('active')) {
+        closeEventModal();
+      }
+    }
+  });
+
+  // Keyboard navigation for carousel
+  document.addEventListener('keydown', (e) => {
+    const eventModal = document.getElementById('eventModal');
+    if (eventModal && eventModal.classList.contains('active')) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevMedia();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextMedia();
+      }
+    }
+  });
 });
 
 // Global function exports for onclick handlers
@@ -1440,12 +1456,12 @@ class SkyEventsManager {
     this.searchTerm = '';
     this.countdownIntervals = new Map();
     this.calendar = null;
-    
+
     // Pagination properties
     this.currentPage = 1;
     this.eventsPerPage = 6;
     this.filteredEvents = [];
-    
+
     this.init();
   }
 
@@ -1480,7 +1496,7 @@ class SkyEventsManager {
       blogUrl: event.blogUrl,
       credits: event.credits
     }));
-    
+
     // Sort events by start date (latest first)
     return events.sort((a, b) => {
       const dateA = new Date(a.start);
@@ -1497,16 +1513,18 @@ class SkyEventsManager {
       const endDate = new Date(event.end);
 
       const isActive = now >= startDate && now <= endDate;
+      const isUpcoming = now <= startDate;
 
-      const matchesFilter = 
+      const matchesFilter =
         this.currentFilter === 'all' ||
         this.currentFilter === event.category ||
         (this.currentFilter === 'favorites' && this.favorites.includes(event.id)) ||
-        (this.currentFilter === 'in-progress' && isActive);
+        (this.currentFilter === 'in-progress' && isActive) ||
+        (this.currentFilter === 'coming-soon' && isUpcoming);
 
       const searchLower = this.searchTerm.toLowerCase();
-      const matchesSearch = this.searchTerm === '' || 
-                            event.title.toLowerCase().includes(searchLower);
+      const matchesSearch = this.searchTerm === '' ||
+        event.title.toLowerCase().includes(searchLower);
 
       return matchesFilter && matchesSearch;
     });
@@ -1536,7 +1554,7 @@ class SkyEventsManager {
     eventsGrid.innerHTML = ''; // Clear existing cards
 
     const currentPageEvents = this.getCurrentPageEvents();
-    
+
     if (currentPageEvents.length === 0) {
       this.showEmptyState();
       this.updatePagination();
@@ -1550,7 +1568,7 @@ class SkyEventsManager {
 
     this.updateFavoriteButtons();
     this.updatePagination();
-    
+
     // Start countdowns after DOM is fully updated
     setTimeout(() => {
       this.startCountdowns();
@@ -1621,21 +1639,21 @@ class SkyEventsManager {
   formatDateRange(startDate, endDate) {
     const start = this.formatDate(startDate);
     const end = this.formatDate(endDate);
-    
+
     // If same month, show "Jun 18 - 25, 2025"
-    if (startDate.getMonth() === endDate.getMonth() && 
-        startDate.getFullYear() === endDate.getFullYear()) {
+    if (startDate.getMonth() === endDate.getMonth() &&
+      startDate.getFullYear() === endDate.getFullYear()) {
       const startDay = startDate.getDate();
       const endDay = endDate.getDate();
       const month = startDate.toLocaleDateString('en-US', { month: 'short' });
       const year = startDate.getFullYear();
-      
+
       if (startDay === endDay) {
         return `${month} ${startDay}, ${year}`;
       }
       return `${month} ${startDay} - ${endDay}, ${year}`;
     }
-    
+
     // Different months: "Jun 18, 2025 - Jul 18, 2025"
     return `${start} - ${end}`;
   }
@@ -1701,7 +1719,6 @@ class SkyEventsManager {
     `;
   }
 
-
   formatDate(date) {
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -1727,7 +1744,7 @@ class SkyEventsManager {
       if (e.target.classList.contains('event-list-filter-btn')) {
         this.handleFilterClick(e.target);
       }
-      
+
       if (e.target.closest('.event-list-favorite-btn')) {
         this.handleFavoriteClick(e.target.closest('.event-list-favorite-btn'));
       }
@@ -1775,18 +1792,18 @@ class SkyEventsManager {
 
   handleFilterClick(button) {
     // Remove active class from all filter buttons
-    document.querySelectorAll('.event-list-filter-btn').forEach(btn => 
+    document.querySelectorAll('.event-list-filter-btn').forEach(btn =>
       btn.classList.remove('active')
     );
-    
+
     // Add active class to clicked button
     button.classList.add('active');
-    
+
     // Update current filter
     this.currentFilter = button.dataset.filter;
     this.filterEvents();
     this.renderCurrentPage();
-    
+
     // Restart countdowns after a brief delay to ensure DOM is updated
     setTimeout(() => {
       this.startCountdowns();
@@ -1796,7 +1813,7 @@ class SkyEventsManager {
   handleFavoriteClick(button) {
     const eventId = button.dataset.eventId;
     const index = this.favorites.indexOf(eventId);
-    
+
     if (index > -1) {
       this.favorites.splice(index, 1);
       button.classList.remove('favorited');
@@ -1804,7 +1821,7 @@ class SkyEventsManager {
       this.favorites.push(eventId);
       button.classList.add('favorited');
     }
-    
+
     localStorage.setItem('skyEventsFavorites', JSON.stringify(this.favorites));
     this.updateFavoriteButton(button, eventId);
   }
@@ -1812,7 +1829,7 @@ class SkyEventsManager {
   updateFavoriteButton(button, eventId) {
     const isFavorited = this.favorites.includes(eventId);
     button.classList.toggle('favorited', isFavorited);
-    
+
     button.style.transform = 'scale(1.2)';
     setTimeout(() => {
       button.style.transform = '';
@@ -1878,7 +1895,7 @@ class SkyEventsManager {
     if (!paginationContainer) {
       paginationContainer = document.createElement('div');
       paginationContainer.className = 'event-list-pagination';
-      
+
       const eventsGrid = document.getElementById('eventsGrid');
       if (eventsGrid && eventsGrid.parentNode) {
         eventsGrid.parentNode.insertBefore(paginationContainer, eventsGrid.nextSibling);
@@ -1891,7 +1908,7 @@ class SkyEventsManager {
     if (!paginationContainer) return;
 
     const totalPages = this.getTotalPages();
-    
+
     if (totalPages <= 1) {
       paginationContainer.innerHTML = '';
       return;
@@ -1914,7 +1931,7 @@ class SkyEventsManager {
     const maxVisiblePages = 5;
     let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -1960,13 +1977,13 @@ class SkyEventsManager {
     if (!filtersContainer) {
       filtersContainer = document.createElement('div');
       filtersContainer.className = 'event-list-filters';
-      
+
       const eventsGrid = document.getElementById('eventsGrid');
       if (eventsGrid) {
         eventsGrid.parentNode.insertBefore(filtersContainer, eventsGrid);
       }
     }
-    
+
     const filters = [
       { key: 'all', label: 'All Events' },
       { key: 'seasons', label: 'Seasons' },
@@ -1974,10 +1991,11 @@ class SkyEventsManager {
       { key: 'special-event', label: 'Special Events' },
       { key: 'days-of-events', label: 'Days of Events' },
       { key: 'favorites', label: 'Favorites' },
-      { key: 'in-progress', label: 'In Progress' }
+      { key: 'in-progress', label: 'In Progress' },
+      { key: 'coming-soon', label: 'Coming Soon' }
     ];
-    
-    filtersContainer.innerHTML = filters.map(filter => 
+
+    filtersContainer.innerHTML = filters.map(filter =>
       `<button type="button" class="event-list-filter-btn ${filter.key === 'all' ? 'active' : ''}" data-filter="${filter.key}">
         ${filter.label}
       </button>`
@@ -1988,37 +2006,37 @@ class SkyEventsManager {
 
   startCountdowns() {
     // console.log('Starting countdowns...'); // Debug log
-    
+
     // Clear existing intervals
     this.countdownIntervals.forEach(interval => clearInterval(interval));
     this.countdownIntervals.clear();
 
     const countdownElements = document.querySelectorAll('.event-list-countdown');
     // console.log('Found countdown elements:', countdownElements.length); // Debug log
-    
+
     countdownElements.forEach(countdown => {
       if (countdown.classList.contains('event-list-countdown-ended')) return;
-      
+
       const eventCard = countdown.closest('.event-list-card');
       if (!eventCard) return;
-      
+
       const eventId = eventCard.dataset.eventId;
       const targetDate = countdown.dataset.targetDate;
-      
+
       // console.log(`Setting up countdown for event ${eventId} with target date ${targetDate}`); // Debug log
-      
+
       if (targetDate && eventId) {
         const interval = setInterval(() => {
           this.updateCountdown(countdown, targetDate);
         }, 1000);
-        
+
         this.countdownIntervals.set(eventId, interval);
-        
+
         // Update immediately
         this.updateCountdown(countdown, targetDate);
       }
     });
-    
+
     // console.log('Active countdown intervals:', this.countdownIntervals.size); // Debug log
   }
 
@@ -2026,7 +2044,7 @@ class SkyEventsManager {
     const now = new Date().getTime();
     const targetDate = new Date(targetDateStr).getTime();
     const distance = targetDate - now;
-    
+
     if (distance < 0) {
       element.innerHTML = `
         <div class="event-list-countdown-content">
@@ -2037,13 +2055,13 @@ class SkyEventsManager {
       element.className = 'event-list-countdown event-list-countdown-ended';
       return;
     }
-    
+
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     const timeElement = element.querySelector('.event-list-countdown-time');
-    
+
     if (timeElement) {
       // Format the time as "XD XH XM"
       const timeText = `${days}D ${hours}H ${minutes}M`;
@@ -2054,7 +2072,7 @@ class SkyEventsManager {
   toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
+
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('skyEventsTheme', newTheme);
   }
@@ -2073,7 +2091,7 @@ class SkyEventsManager {
 
     if (notificationTime > now) {
       const timeUntilNotification = notificationTime.getTime() - now.getTime();
-      
+
       setTimeout(() => {
         if (Notification.permission === 'granted') {
           new Notification(`Sky COTL Event Reminder`, {
@@ -2091,7 +2109,7 @@ class SkyEventsManager {
     // Clean up intervals
     this.countdownIntervals.forEach(interval => clearInterval(interval));
     this.countdownIntervals.clear();
-    
+
     if (this.calendar) {
       this.calendar.destroy();
     }
@@ -2103,10 +2121,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load saved theme
   const savedTheme = localStorage.getItem('skyEventsTheme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  
+
   // Initialize events manager
   window.skyEventsManager = new SkyEventsManager();
-  
+
   // Create search input if it doesn't exist - ensure this runs after manager is created
   setTimeout(() => {
     if (!document.getElementById('eventListSearch')) {
@@ -2121,7 +2139,7 @@ document.addEventListener('DOMContentLoaded', () => {
           aria-label="Search events"
         >
       `;
-      
+
       const eventsGrid = document.getElementById('eventsGrid');
       if (eventsGrid) {
         eventsGrid.parentNode.insertBefore(searchContainer, eventsGrid);
@@ -2133,7 +2151,290 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 100);
 });
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = SkyEventsManager;
 }
+
+
+// ___________________________STICKER NOTES_____________________________________
+class SimpleNoteWidget {
+  constructor(firestoreDb) {
+    this.db = firestoreDb;
+    this.isExpanded = false;
+    this.isVisible = false;
+    this.elements = {};
+    this.unsubscribe = null;
+    this.init();
+  }
+
+  init() {
+    this.elements = {
+      sticker: document.getElementById('noteSticker'),
+      content: document.getElementById('noteContent'),
+      message: document.getElementById('noteMessage'),
+      typeIcon: document.getElementById('noteTypeIcon'),
+      typeText: document.getElementById('noteTypeText'),
+      timestamp: document.getElementById('noteTimestamp')
+    };
+    this.setupEventListeners();
+    this.startListening();
+  }
+
+  setupEventListeners() {
+    document.addEventListener('click', (e) => {
+      if (this.isExpanded && this.elements.sticker && !this.elements.sticker.contains(e.target)) {
+        this.collapse();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isExpanded) {
+        this.collapse();
+      }
+    });
+  }
+
+  startListening() {
+    // Use a specific document "note#1"
+    const noteDocRef = doc(this.db, 'updateNotes', 'note#1');
+
+    this.unsubscribe = onSnapshot(noteDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const noteData = docSnapshot.data();
+
+        // Only show if the note is active and not expired
+        if (this.shouldShowNote(noteData)) {
+          this.displayNote(noteData);
+        } else {
+          this.hide();
+        }
+      } else {
+        this.hide();
+      }
+    }, (error) => {
+      console.error('Error listening to note:', error);
+    });
+  }
+
+  shouldShowNote(noteData) {
+    // Check if note is active
+    if (!noteData.isActive) return false;
+
+    // Check if note has expired
+    if (noteData.expiresAt) {
+      const now = new Date();
+      const expiresAt = noteData.expiresAt.toDate ? noteData.expiresAt.toDate() : new Date(noteData.expiresAt);
+      if (now > expiresAt) return false;
+    }
+
+    return true;
+  }
+
+  displayNote(noteData) {
+    const typeInfo = this.getTypeInfo(noteData.type);
+    if (this.elements.typeIcon) this.elements.typeIcon.textContent = typeInfo.icon;
+    if (this.elements.typeText) this.elements.typeText.textContent = typeInfo.title;
+    if (this.elements.message) this.elements.message.textContent = noteData.message || '';
+
+    const timestamp = this.formatTimestamp(noteData.createdAt);
+    if (this.elements.timestamp) this.elements.timestamp.textContent = timestamp;
+
+    // Update color based on priority and type
+    this.updateTriggerStyle(typeInfo.color, noteData.priority);
+    this.show();
+  }
+
+  show() {
+    if (!this.elements.sticker) return;
+
+    this.elements.sticker.style.display = 'block';
+    this.isVisible = true;
+
+    requestAnimationFrame(() => {
+      this.elements.sticker.style.opacity = '0';
+      this.elements.sticker.style.transform = 'translateY(20px) scale(0.8)';
+
+      setTimeout(() => {
+        this.elements.sticker.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        this.elements.sticker.style.opacity = '1';
+        this.elements.sticker.style.transform = 'translateY(0) scale(1)';
+      }, 50);
+    });
+  }
+
+  hide() {
+    if (!this.isVisible || !this.elements.sticker) return;
+    this.collapse();
+
+    setTimeout(() => {
+      this.elements.sticker.style.transition = 'all 0.3s ease-out';
+      this.elements.sticker.style.opacity = '0';
+      this.elements.sticker.style.transform = 'translateY(20px) scale(0.8)';
+
+      setTimeout(() => {
+        this.elements.sticker.style.display = 'none';
+        this.isVisible = false;
+      }, 300);
+    }, 100);
+  }
+
+  toggle() {
+    if (this.isExpanded) {
+      this.collapse();
+    } else {
+      this.expand();
+    }
+  }
+
+  expand() {
+    if (!this.isVisible || !this.elements.content) return;
+    this.isExpanded = true;
+    this.elements.content.classList.add('show');
+  }
+
+  collapse() {
+    this.isExpanded = false;
+    if (this.elements.content) {
+      this.elements.content.classList.remove('show');
+    }
+  }
+
+  getTypeInfo(type) {
+    const types = {
+      update: { icon: '✨', title: 'Update', color: '#ff6b6b' },
+      correction: { icon: '📝', title: 'Correction', color: '#f39c12' },
+      delay: { icon: '⏰', title: 'Notice', color: '#3498db' },
+      personal: { icon: '💙', title: 'Personal Note', color: '#9b59b6' },
+      celebration: { icon: '🎉', title: 'Celebration', color: '#2ecc71' },
+      alert: { icon: '⚠️', title: 'Alert', color: '#e74c3c' },
+      info: { icon: 'ℹ️', title: 'Info', color: '#17a2b8' }
+    };
+    return types[type] || types.update;
+  }
+
+  updateTriggerStyle(color, priority = 'normal') {
+    if (!this.elements.sticker) return;
+    const trigger = this.elements.sticker.querySelector('.note-trigger');
+    if (!trigger) return;
+
+    let finalColor = color;
+    if (priority === 'high') {
+      finalColor = this.brightenColor(color, 20);
+    } else if (priority === 'low') {
+      finalColor = this.darkenColor(color, 20);
+    }
+
+    trigger.style.background = `linear-gradient(135deg, ${finalColor} 0%, ${this.darkenColor(finalColor, 10)} 100%)`;
+    trigger.style.boxShadow = `0 6px 20px ${finalColor}40, 0 2px 8px rgba(0, 0, 0, 0.1)`;
+
+    if (priority === 'high') {
+      trigger.classList.add('pulse-high-priority');
+    } else {
+      trigger.classList.remove('pulse-high-priority');
+    }
+  }
+
+  brightenColor(color, percent) {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
+      (G < 255 ? G : 255) * 0x100 +
+      (B < 255 ? B : 255)).toString(16).slice(1);
+  }
+
+  darkenColor(color, percent) {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+  }
+
+  formatTimestamp(timestamp) {
+    if (!timestamp) return 'Just now';
+
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  destroy() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+}
+
+// initialize the widget
+let noteWidget;
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof db !== 'undefined') {
+    noteWidget = new SimpleNoteWidget(db);
+  } else {
+    console.error('Firebase db not found. Make sure Firebase is initialized first.');
+  }
+});
+
+window.toggleNote = function () {
+  if (noteWidget) {
+    noteWidget.toggle();
+  }
+};
+
+window.updateNote = async function (type, message, priority) {
+  if (!db) {
+    console.error('Firebase not initialized');
+    return;
+  }
+
+  try {
+    const noteDocRef = doc(db, 'updateNotes', 'note#1');
+    const updateData = {
+      isActive: true,
+      createdAt: serverTimestamp(),
+      createdBy: 'admin'
+    };
+
+    if (type !== undefined) updateData.type = type;
+    if (message !== undefined) updateData.message = message;
+    if (priority !== undefined) updateData.priority = priority;
+
+    await updateDoc(noteDocRef, updateData);
+    console.log('Note updated successfully');
+  } catch (error) {
+    console.error('Error updating note:', error);
+  }
+};
+
+window.hideNote = async function () {
+  if (!db) {
+    console.error('Firebase not initialized');
+    return;
+  }
+
+  try {
+    const noteDocRef = doc(db, 'updateNotes', 'note#1');
+    await updateDoc(noteDocRef, {
+      isActive: false
+    });
+    console.log('Note hidden successfully');
+  } catch (error) {
+    console.error('Error hiding note:', error);
+  }
+};

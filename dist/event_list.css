@@ -1,6 +1,4 @@
-/* ===============================
-   Event List Cards Styles
-   =============================== */
+/* ========Event List with pagination======== */
 
 .events-grid {
   display: grid;
@@ -34,7 +32,7 @@
   border-color: var(--color-accent);
 }
 
-/* Category-specific card borders */
+/* ========Card Events======== */
 .event-list-card.seasonal {
   border-color: var(--color-season);
 }
@@ -71,10 +69,7 @@
   box-shadow: 0 4px 20px rgba(240, 239, 235, 0.3);
 }
 
-/* ===============================
-   Event List Badge - Inline with Status
-   =============================== */
-
+/* ========Badge======== */
 .event-list-badge {
   position: static;
   margin-bottom: 2px;
@@ -126,10 +121,7 @@
   color: var(--color-surface);
 }
 
-/* ===============================
-   Event List Icon - Compact
-   =============================== */
-
+/* ========Icon======== */
 .event-list-icon {
   width: 48px;
   height: 48px;
@@ -149,10 +141,7 @@
   height: 24px;
 }
 
-/* ===============================
-   Event List Content - Vertical Layout with Badge on Top
-   =============================== */
-
+/* ========Section and Content======== */
 .event-list-content {
   display: flex;
   flex-direction: column;
@@ -179,10 +168,7 @@
   line-height: 1.2;
 }
 
-/* ===============================
-   Event List Status - Inline with Badge
-   =============================== */
-
+/* ========Status======== */
 .event-list-status {
   display: flex;
   align-items: center;
@@ -214,9 +200,7 @@
   color: #7b1fa2;
 }
 
-/* ===============================
-   Event List Actions
-   =============================== */
+/* ========Actions======== */
 
 .event-list-actions {
   display: flex;
@@ -282,9 +266,7 @@
   fill: currentColor;
 }
 
-/* ===============================
-   Event List Filter and Search Styles
-   =============================== */
+/* ========Filter and Search======== */
 
 .event-list-filters {
   display: flex;
@@ -342,10 +324,7 @@
   box-shadow: 0 0 0 3px rgba(163, 196, 243, 0.1);
 }
 
-/* ===============================
-   Event List Empty State
-   =============================== */
-
+/* ========When event list is empty======== */
 .event-list-empty-message {
   grid-column: 1 / -1;
   display: flex;
@@ -380,10 +359,7 @@
   margin: 0;
 }
 
-/* ===============================
-   Event List Pagination Styles
-   =============================== */
-
+/* ========Pagination======== */
 .event-list-pagination {
   display: flex;
   flex-direction: column;
@@ -470,82 +446,14 @@
   min-width: 32px;
 }
 
-/* ===============================
-   Responsive Design - Mobile
-   =============================== */
-
-@media (max-width: 768px) {
-  .events-grid {
-    grid-template-columns: 1fr;
-    padding: var(--spacing-sm);
-    gap: var(--spacing-xs);
-  }
-  
-  .event-list-card {
-    min-height: 80px;
-    padding: var(--spacing-xs);
-    gap: var(--spacing-xs);
-    align-items: flex-start;
-  }
-  
-  .event-list-icon {
-    width: 40px;
-    height: 40px;
-  }
-  
-  .event-list-icon svg {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .event-list-title {
-    font-size: 0.9rem;
-  }
-  
-  .event-list-dates {
-    font-size: 0.75rem;
-  }
-  
-  .event-list-btn-primary {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-  }
-  
-  .event-list-btn-secondary {
-    width: 28px;
-    height: 28px;
-  }
-  
-  .event-list-btn-secondary svg {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .event-list-card {
-    min-height: 70px;
-  }
-  
-  .event-list-icon {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .event-list-title {
-    font-size: 0.85rem;
-  }
-}
-
-/* ===============================
-   Loading State
-   =============================== */
-
+/* ========Load State======== */
 .event-list-loading-skeleton {
-  background: linear-gradient(90deg, 
-    rgba(163, 196, 243, 0.1) 0%, 
-    rgba(163, 196, 243, 0.2) 50%, 
-    rgba(163, 196, 243, 0.1) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(163, 196, 243, 0.1) 0%,
+    rgba(163, 196, 243, 0.2) 50%,
+    rgba(163, 196, 243, 0.1) 100%
+  );
   background-size: 200px 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);
@@ -556,10 +464,7 @@
   width: 100%;
 }
 
-/* ===============================
-   Theme Toggle
-   =============================== */
-
+/* ========Theme toggle======== */
 .event-list-theme-toggle {
   position: fixed;
   top: 20px;
@@ -583,10 +488,7 @@
   background: #8bb3e8;
 }
 
-/* ===============================
-   Animations
-   =============================== */
-
+/* ========Animation======== */
 @keyframes shimmer {
   0% {
     background-position: -200px 0;
@@ -596,9 +498,7 @@
   }
 }
 
-/* ===============================
-   Dark Theme Support
-   =============================== */
+/* ========Dark Theme======== */
 
 [data-theme="dark"] .event-list-card {
   background: var(--color-surface-dark, #1a1a1a);
@@ -634,10 +534,7 @@
   background: rgba(163, 196, 243, 0.1);
 }
 
-/* ===============================
-   Accessibility
-   =============================== */
-
+/* ========Accesibility======== */
 .event-list-btn:focus,
 .event-list-filter-btn:focus,
 .event-list-search-input:focus,
@@ -651,24 +548,88 @@
   outline-offset: 2px;
 }
 
+/* ========Responsive======== */
 @media (prefers-reduced-motion: reduce) {
   .event-list-card {
     animation: none;
   }
-  
+
   .event-list-card:hover {
     transform: none;
   }
-  
+
   .event-list-btn:hover {
     transform: none;
   }
-  
+
   .pagination-btn:hover {
     transform: none;
   }
-  
+
   .event-list-loading-skeleton {
     animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .events-grid {
+    grid-template-columns: 1fr;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+
+  .event-list-card {
+    min-height: 80px;
+    padding: var(--spacing-xs);
+    gap: var(--spacing-xs);
+    align-items: flex-start;
+  }
+
+  .event-list-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .event-list-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .event-list-title {
+    font-size: 0.9rem;
+  }
+
+  .event-list-dates {
+    font-size: 0.75rem;
+  }
+
+  .event-list-btn-primary {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .event-list-btn-secondary {
+    width: 28px;
+    height: 28px;
+  }
+
+  .event-list-btn-secondary svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-list-card {
+    min-height: 70px;
+  }
+
+  .event-list-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .event-list-title {
+    font-size: 0.85rem;
   }
 }

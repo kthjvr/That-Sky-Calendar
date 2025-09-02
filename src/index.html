@@ -63,7 +63,8 @@
   <link rel="stylesheet" href="credits.css">
   <link rel="stylesheet" href="subscription.css">
   <link rel="stylesheet" href="game_modal.css">
-  
+  <link rel="stylesheet" href="sticker.css">
+
 
   <link rel="icon" type="image/x-icon"
     href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705">
@@ -71,7 +72,8 @@
   <!-- CALENDAR -->
   <script defer src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+  <script defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
 
 </head>
 
@@ -86,9 +88,7 @@
     <div class="nav-container">
       <!-- Logo -->
       <a href="#home" class="logo-link">
-        <img 
-          class="logo" 
-          src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" 
+        <img class="logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705"
           alt="That Sky Events Calendar Logo - Sky: Children of the Light">
       </a>
 
@@ -106,7 +106,8 @@
         <li><a href="#about">About</a></li>
         <li>
           <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
               <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -117,7 +118,8 @@
               <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
-            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
               <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
             </svg>
           </button>
@@ -134,30 +136,24 @@
   <section class="hero-banner" id="home">
     <picture class="hero-background">
       <!-- Mobile image -->
-      <source 
-        media="(max-width: 768px)" 
-        srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img-port.jpg?tr=w-768,q-70,f-webp" 
-        type="image/webp">
+      <source media="(max-width: 768px)"
+        srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img-port.jpg?tr=w-768,q-70,f-webp" type="image/webp">
 
       <!-- Desktop image -->
-      <source 
-        media="(min-width: 769px)" 
-        srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70,f-webp" 
-        type="image/webp">
+      <source media="(min-width: 769px)"
+        srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70,f-webp" type="image/webp">
 
       <!-- Fallback JPEG (in case WebP not supported) -->
-      <img 
-        src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70" 
-        alt="That Sky Events Hero Background" 
-        width="1600" height="900"
-        loading="eager">
+      <img src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70"
+        alt="That Sky Events Hero Background" width="1600" height="900" loading="eager">
     </picture>
 
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
       <h1 class="hero-title">That Sky Events</h1>
-      <p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.</p>
+      <p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the
+        world of Sky.</p>
       <div class="hero-cta-container">
         <button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">
           📅 Subscribe to Sky Events Calendar
@@ -171,16 +167,35 @@
         <h2>Heads Up</h2>
       </div>
       <div class="info-container game">
-          <h2>Fancy a game?</h2>
-          <p class="game-description">Challenge yourself with a round of memory game! Click to play.</p>
-          <button type="button" id="open-game-modal">Play Game</button>
+        <h2>Fancy a game?</h2>
+        <p class="game-description">Challenge yourself with a round of memory game! Click to play.</p>
+        <button type="button" id="open-game-modal">Play Game</button>
       </div>
     </div>
   </section>
 
+  <!-- Floating Note Sticker Widget -->
+  <div class="floating-note-sticker" id="noteSticker" style="display: none;">
+    <div class="note-trigger" onclick="toggleNote()" aria-label="Toggle update note">
+      <span class="note-icon">📌</span>
+    </div>
+    <div class="note-content" id="noteContent">
+      <div class="note-header">
+        <div class="note-title">
+          <span id="noteTypeIcon">✨</span>
+          <span id="noteTypeText">Update</span>
+        </div>
+        <button class="note-close" onclick="toggleNote()" aria-label="Close note">×</button>
+      </div>
+      <div class="note-message" id="noteMessage"></div>
+      <div class="note-timestamp" id="noteTimestamp"></div>
+    </div>
+  </div>
+
   <!-- Scroll to Top Button -->
   <button type="button" id="scrollTopBtn" aria-label="Scroll to top">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
   </button>
@@ -222,110 +237,117 @@
 
   <!-- Credits Container -->
   <section class="credits-section" id="about">
-      <h1>Image Credits & Acknowledgments</h1>
-      
-      <div class="credits-intro">
-          <strong>That Sky Events</strong> is a community-created calendar and resource website for Sky: Children of the Light players. This is an unofficial fan project designed to help the Sky community stay informed about events and game information.
-      </div>
+    <h1>Image Credits & Acknowledgments</h1>
 
-      <h2>Game Assets & Screenshots</h2>
-      <div class="credits-grid">
-          <div class="credit-item">
-              <div class="credit-label">Original Game:</div>
-              <div class="credit-value">Sky: Children of the Light</div>
-          </div>
-          <div class="credit-item">
-              <div class="credit-label">Developer/Publisher:</div>
-              <div class="credit-value">thatgamecompany</div>
-          </div>
-          <div class="credit-item">
-              <div class="credit-label">Copyright:</div>
-              <div class="credit-value">© thatgamecompany. All rights reserved.</div>
-          </div>
-      </div>
-      
-      <p>All Sky: Children of the Light game imagery, assets, and screenshots are the intellectual property of <strong>thatgamecompany</strong>. These images are used for informational and educational purposes to help the Sky community.</p>
+    <div class="credits-intro">
+      <strong>That Sky Events</strong> is a community-created calendar and resource website for Sky: Children of the
+      Light players. This is an unofficial fan project designed to help the Sky community stay informed about events and
+      game information.
+    </div>
 
-      <h2>Community Documentation</h2>
+    <h2>Game Assets & Screenshots</h2>
+    <div class="credits-grid">
       <div class="credit-item">
-          <div class="credit-label">Primary Source:</div>
-          <div class="credit-value">
-              <a href="https://sky-children-of-the-light.fandom.com/" target="_blank" rel="noopener">Sky: Children of the Light Wiki</a> hosted on Fandom
-          </div>
+        <div class="credit-label">Original Game:</div>
+        <div class="credit-value">Sky: Children of the Light</div>
       </div>
-
-      <h3>Special Recognition</h3>
-      <p>We acknowledge and thank all contributors to the Sky: Children of the Light Wiki, including administrators, editors, and image uploaders who have made comprehensive documentation possible. The wiki serves as an invaluable resource for the Sky community, and this calendar project would not be possible without their dedicated work.</p>
-
-      <div class="legal-notice">
-          <h3>Copyright Notice</h3>
-          <p>All copyrighted materials used on this website remain the property of their respective copyright holders. Images are used for educational and informational purposes only, with no commercial intent.</p>
-          
-          <p>If you are a copyright holder and would like content removed or have concerns about usage, please contact us and we will promptly address your request.</p>
+      <div class="credit-item">
+        <div class="credit-label">Developer/Publisher:</div>
+        <div class="credit-value">thatgamecompany</div>
       </div>
-
-      <div class="disclaimer">
-          That Sky Events is an independent fan-created resource and is not affiliated with or endorsed by thatgamecompany. Sky: Children of the Light is a trademark of thatgamecompany.
+      <div class="credit-item">
+        <div class="credit-label">Copyright:</div>
+        <div class="credit-value">© thatgamecompany. All rights reserved.</div>
       </div>
+    </div>
+
+    <p>All Sky: Children of the Light game imagery, assets, and screenshots are the intellectual property of
+      <strong>thatgamecompany</strong>. These images are used for informational and educational purposes to help the Sky
+      community.</p>
+
+    <h2>Community Documentation</h2>
+    <div class="credit-item">
+      <div class="credit-label">Primary Source:</div>
+      <div class="credit-value">
+        <a href="https://sky-children-of-the-light.fandom.com/" target="_blank" rel="noopener">Sky: Children of the
+          Light Wiki</a> hosted on Fandom
+      </div>
+    </div>
+
+    <h3>Special Recognition</h3>
+    <p>We acknowledge and thank all contributors to the Sky: Children of the Light Wiki, including administrators,
+      editors, and image uploaders who have made comprehensive documentation possible. The wiki serves as an invaluable
+      resource for the Sky community, and this calendar project would not be possible without their dedicated work.</p>
+
+    <div class="legal-notice">
+      <h3>Copyright Notice</h3>
+      <p>All copyrighted materials used on this website remain the property of their respective copyright holders.
+        Images are used for educational and informational purposes only, with no commercial intent.</p>
+
+      <p>If you are a copyright holder and would like content removed or have concerns about usage, please contact us
+        and we will promptly address your request.</p>
+    </div>
+
+    <div class="disclaimer">
+      That Sky Events is an independent fan-created resource and is not affiliated with or endorsed by thatgamecompany.
+      Sky: Children of the Light is a trademark of thatgamecompany.
+    </div>
   </section>
 
 
   <!-- Modal -->
   <div class="modal-overlay" id="eventModal">
-      <div class="event-modal">
-          <div class="modal-header">
-              <div class="modal-image-container" id="modalImageContainer">
-                  <!-- Image carousel will be inserted here -->
-              </div>
-              <button type="button" class="modal-close" id="closeModal">&times;</button>
-              <div class="modal-badge" id="modalBadge"><!-- Badge text --></div>
-          </div>
-          <div class="modal-body">
-              <h2 class="modal-title" id="modalTitle">Event Title</h2>
-              
-              <div class="quick-info-summary" id="quickInfoSummary">
-                  <!-- Quick info will be populated by JavaScript -->
-              </div>
-              
-              <div class="modal-description" id="modalDescription">
-                  <!-- Description will be populated by JavaScript -->
-              </div>
-              
-              <div class="modal-note" id="modalNote">
-                  <!-- Note/Reminder will be populated by JavaScript -->
-              </div>
-              
-              <div class="modal-actions">
-                  <button type="button" class="modal-btn share" id="modalShareBtn">
-                      <span class="btn-icon">📤</span>
-                      Share Event
-                  </button>
-                  <button type="button" class="modal-btn calendar" id="modalCalendarBtn">
-                      <span class="btn-icon">📅</span>
-                      Add to Calendar
-                  </button>
-              </div>
-          </div>
+    <div class="event-modal">
+      <div class="modal-header">
+        <div class="modal-image-container" id="modalImageContainer">
+          <!-- Image carousel will be inserted here -->
+        </div>
+        <button type="button" class="modal-close" id="closeModal">&times;</button>
+        <div class="modal-badge" id="modalBadge"><!-- Badge text --></div>
       </div>
+      <div class="modal-body">
+        <h2 class="modal-title" id="modalTitle">Event Title</h2>
+
+        <div class="quick-info-summary" id="quickInfoSummary">
+          <!-- Quick info will be populated by JavaScript -->
+        </div>
+
+        <div class="modal-description" id="modalDescription">
+          <!-- Description will be populated by JavaScript -->
+        </div>
+
+        <div class="modal-note" id="modalNote">
+          <!-- Note/Reminder will be populated by JavaScript -->
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="modal-btn share" id="modalShareBtn">
+            <span class="btn-icon">📤</span>
+            Share Event
+          </button>
+          <button type="button" class="modal-btn calendar" id="modalCalendarBtn">
+            <span class="btn-icon">📅</span>
+            Add to Calendar
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Zoom Modal -->
   <div class="zoom-modal" id="zoomModal">
-      <!-- Zoom content will be inserted here -->
+    <!-- Zoom content will be inserted here -->
   </div>
 
   <!-- Game Modal -->
   <div id="game-modal" class="game-modal" hidden>
-      <div class="game-modal-content">
-          <span class="close" aria-label="Close game modal">&times;</span>
-          <div class="iframe-container">
-              <iframe 
-                  src="https://echoes-of-light.netlify.app/" 
-                  title="Echoes of Light Memory Game" 
-                  loading="lazy">
-              </iframe>
-          </div>
+    <div class="game-modal-content">
+      <span class="close" aria-label="Close game modal">&times;</span>
+      <div class="iframe-container">
+        <iframe src="https://echoes-of-light.netlify.app/" title="Echoes of Light Memory Game" loading="lazy">
+        </iframe>
       </div>
+    </div>
   </div>
 
   <!-- Footer Section -->
@@ -334,11 +356,13 @@
       <!-- Left Section -->
       <div class="footer-left">
         <a href="#home" class="footer-logo-link">
-          <img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo">
+          <img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705"
+            alt="That Sky Events Calendar Logo">
         </a>
         <p class="footer-text">
-          Made with ❤️ by 
-          <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank" rel="noopener" class="footer-link">Kathy</a>  
+          Made with ❤️ by
+          <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank" rel="noopener"
+            class="footer-link">Kathy</a>
           © 2024 ThatSkyEvents. All rights reserved.
         </p>
       </div>
@@ -372,7 +396,7 @@
           isMenuOpen: false,
           currentTheme: null
         };
-        
+
         this.elements = {};
         this.init();
       }
@@ -413,7 +437,7 @@
 
       initMobileMenu() {
         const { menuToggle, navLinks, navOverlay, closeBtn } = this.elements;
-        
+
         if (!menuToggle || !navLinks) return;
 
         // Set initial state properly
@@ -464,24 +488,24 @@
 
       openMenu() {
         const { menuToggle, navLinks, navOverlay } = this.elements;
-        
+
         this.state.isMenuOpen = true;
-        
+
         if (navLinks) {
           navLinks.style.display = 'block';
           navLinks.classList.add('active');
-          
+
           // Use requestAnimationFrame to ensure smooth animation
           requestAnimationFrame(() => {
             navLinks.style.transform = 'translateX(0)';
           });
         }
-        
+
         if (navOverlay) {
           navOverlay.classList.add('active');
           navOverlay.style.display = 'block';
         }
-        
+
         if (menuToggle) {
           menuToggle.setAttribute('aria-expanded', 'true');
         }
@@ -491,13 +515,13 @@
 
       closeMenu() {
         const { menuToggle, navLinks, navOverlay } = this.elements;
-        
+
         this.state.isMenuOpen = false;
-        
+
         if (navLinks) {
           navLinks.classList.remove('active');
           navLinks.style.transform = 'translateX(100%)'; // Slide off-screen
-          
+
           // Hide after transition completes
           setTimeout(() => {
             if (!this.state.isMenuOpen) {
@@ -505,12 +529,12 @@
             }
           }, 300);
         }
-        
+
         if (navOverlay) {
           navOverlay.classList.remove('active');
           navOverlay.style.display = 'none';
         }
-        
+
         if (menuToggle) {
           menuToggle.setAttribute('aria-expanded', 'false');
         }
@@ -520,7 +544,7 @@
 
       setInitialMenuState() {
         const { navLinks, navOverlay, menuToggle } = this.elements;
-        
+
         if (this.isMobile()) {
           // On mobile, ensure menu is hidden
           if (navLinks) {
@@ -528,12 +552,12 @@
             navLinks.style.display = 'none';
             navLinks.style.transform = 'translateX(100%)';
           }
-          
+
           if (navOverlay) {
             navOverlay.classList.remove('active');
             navOverlay.style.display = 'none';
           }
-          
+
           if (menuToggle) {
             menuToggle.setAttribute('aria-expanded', 'false');
           }
@@ -543,12 +567,12 @@
             navLinks.style.display = 'flex';
             navLinks.style.transform = 'translateX(0)';
           }
-          
+
           if (navOverlay) {
             navOverlay.style.display = 'none';
           }
         }
-        
+
         this.state.isMenuOpen = false;
         document.body.style.overflow = '';
       }
@@ -564,14 +588,14 @@
 
       initScrollToTop() {
         const { scrollTopBtn } = this.elements;
-        
+
         if (!scrollTopBtn) return;
 
         let scrollTimeout = null;
-        
+
         window.addEventListener('scroll', () => {
           if (scrollTimeout) return;
-          
+
           scrollTimeout = setTimeout(() => {
             this.handleScroll();
             scrollTimeout = null;
@@ -588,7 +612,7 @@
 
       handleScroll() {
         const { scrollTopBtn } = this.elements;
-        
+
         if (window.scrollY > 200) {
           scrollTopBtn?.classList.add('show');
         } else {
@@ -598,7 +622,7 @@
 
       initThemeManager() {
         const { themeToggle } = this.elements;
-        
+
         this.state.currentTheme = this.getStoredTheme() || this.getSystemTheme();
         this.applyTheme(this.state.currentTheme);
 
@@ -633,7 +657,7 @@
       applyTheme(theme) {
         this.state.currentTheme = theme;
         document.documentElement.setAttribute('data-theme', theme);
-        
+
         const { metaTheme } = this.elements;
         if (metaTheme) {
           const themeColor = theme === 'dark' ? '#1a1f2e' : '#fafafa';
@@ -645,14 +669,14 @@
         const newTheme = this.state.currentTheme === 'light' ? 'dark' : 'light';
         this.applyTheme(newTheme);
         this.setStoredTheme(newTheme);
-        
+
         this.addToggleAnimation();
       }
 
       addToggleAnimation() {
         const { themeToggle } = this.elements;
         if (!themeToggle) return;
-        
+
         themeToggle.style.transform = 'scale(0.95)';
         setTimeout(() => {
           themeToggle.style.transform = '';
@@ -661,7 +685,7 @@
 
       setupSystemThemeListener() {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
+
         mediaQuery.addEventListener('change', (e) => {
           if (!this.getStoredTheme()) {
             this.applyTheme(e.matches ? 'dark' : 'light');
@@ -703,7 +727,7 @@
         } catch (error) {
           console.warn('Could not clear theme from localStorage:', error);
         }
-        
+
         this.applyTheme(this.getSystemTheme());
       }
 
@@ -753,9 +777,9 @@
         const { gameModal } = this.elements;
         if (!gameModal) return;
         document.body.style.overflow = 'hidden';
-        
+
         gameModal.removeAttribute('hidden');
-        
+
         requestAnimationFrame(() => {
           gameModal.classList.add('show');
         });
@@ -767,13 +791,13 @@
 
         console.log('Game modal opened');
       }
-      
+
       closeGameModal() {
         const { gameModal } = this.elements;
         if (!gameModal) return;
 
         gameModal.classList.remove('show');
-        
+
         setTimeout(() => {
           gameModal.setAttribute('hidden', '');
           document.body.style.overflow = '';
@@ -786,7 +810,7 @@
 
         console.log('Game modal closed');
       }
-      
+
       isGameModalOpen() {
         const { gameModal } = this.elements;
         return gameModal && gameModal.classList.contains('show');
@@ -804,35 +828,35 @@
       const userAgent = navigator.userAgent;
       const platform = navigator.platform;
       const maxTouchPoints = navigator.maxTouchPoints || 0;
-      
+
       // Detect specific devices and platforms
       const detection = {
         // Mobile Operating Systems
         isIOS: /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream,
         isAndroid: /Android/.test(userAgent),
         isWindowsPhone: /Windows Phone/.test(userAgent),
-        
+
         // Desktop Operating Systems
         isWindows: /Win/.test(platform) || /Windows/.test(userAgent),
         isMacOS: /Mac/.test(platform) && !(/iPad|iPhone|iPod/.test(userAgent)),
         isLinux: /Linux/.test(platform) && !/Android/.test(userAgent),
         isChromebook: /CrOS/.test(userAgent),
-        
+
         // Browsers
         isChrome: /Chrome/.test(userAgent) && !/Edge|Edg/.test(userAgent),
         isSafari: /Safari/.test(userAgent) && !/Chrome|Edge|Edg/.test(userAgent),
         isFirefox: /Firefox/.test(userAgent),
         isEdge: /Edge|Edg/.test(userAgent),
-        
+
         // Device types
         isMobile: /Mobi|Android/i.test(userAgent) || maxTouchPoints > 0 && window.innerWidth <= 768,
         isTablet: (/iPad/.test(userAgent)) || (maxTouchPoints > 0 && window.innerWidth > 768 && window.innerWidth <= 1024),
         isDesktop: !(/Mobi|Android|iPad|iPhone|iPod/.test(userAgent)) && maxTouchPoints === 0,
-        
+
         hasTouch: maxTouchPoints > 0 || 'ontouchstart' in window,
         isStandalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches
       };
-      
+
       // Determine primary platform category
       if (detection.isIOS) detection.platform = 'ios';
       else if (detection.isAndroid) detection.platform = 'android';
@@ -840,12 +864,12 @@
       else if (detection.isWindows) detection.platform = 'windows';
       else if (detection.isLinux) detection.platform = 'linux';
       else detection.platform = 'unknown';
-      
+
       // Determine device category
       if (detection.isMobile) detection.deviceType = 'mobile';
       else if (detection.isTablet) detection.deviceType = 'tablet';
       else detection.deviceType = 'desktop';
-      
+
       return detection;
     }
 
@@ -854,14 +878,14 @@
       const device = detectDevice();
       const modal = document.createElement('div');
       modal.className = 'calendar-instructions-modal';
-      
-      console.log('Device detection:', device); // For debugging
-      
+
+      // console.log('Device detection:', device); // For debugging
+
       // Build dynamic content based on device
       let title = 'Subscribe to Sky Events Calendar';
       let description = 'Add this calendar to stay updated with all Sky events:';
       let buttons = '';
-      
+
       // Customize based on platform
       if (device.isIOS) {
         title = '📱 Add to your iPhone/iPad Calendar';
@@ -889,10 +913,10 @@
         buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
         buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
       }
-      
+
       // Always include copy URL option
       buttons += `<button onclick="copyCalendarUrl()" class="secondary-option">📋 Copy Calendar URL</button>`;
-      
+
       // Add device-specific instructions
       let instructions = '';
       if (device.isMobile && device.isIOS) {
@@ -902,7 +926,7 @@
       } else if (device.isDesktop) {
         instructions = '<p class="device-instructions">💡 Links will open in your default browser and calendar application.</p>';
       }
-      
+
       modal.innerHTML = `
         <div class="modal-content">
           <h3>${title}</h3>
@@ -939,7 +963,7 @@
 
     if (typeof window !== 'undefined') {
       websiteManager = new WebsiteManager();
-      
+
       window.setTheme = (theme) => websiteManager?.setTheme(theme);
       window.resetTheme = () => websiteManager?.resetToSystemTheme();
       window.getCurrentTheme = () => websiteManager?.getCurrentTheme();

@@ -1,14 +1,14 @@
-/* ===============================
-   Quick Overview Section
-   =============================== */
+/* ========Quick Overview Section======== */
 
 .quick-overview {
   padding: calc(var(--spacing-lg) * 2) var(--spacing-lg);
   margin: var(--spacing-lg) 0;
-  background: linear-gradient(135deg, 
-    rgba(163, 196, 243, 0.05) 0%, 
-    rgba(190, 225, 230, 0.05) 50%, 
-    rgba(252, 213, 206, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(163, 196, 243, 0.05) 0%,
+    rgba(190, 225, 230, 0.05) 50%,
+    rgba(252, 213, 206, 0.05) 100%
+  );
   border-radius: var(--radius-lg);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -25,7 +25,7 @@
 }
 
 .section-title::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -10px;
   left: 50%;
@@ -36,9 +36,7 @@
   border-radius: var(--radius-sm);
 }
 
-/* ===============================
-   Event Cards Container
-   =============================== */
+/* ========Cards Container======== */
 
 .event-cards-overview {
   display: grid;
@@ -68,10 +66,7 @@
   max-width: 250px;
 }
 
-/* ===============================
-   Individual Event Card
-   =============================== */
-
+/* ========Card Design======== */
 .event-card {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
@@ -99,10 +94,7 @@
   animation-delay: 0.2s;
 }
 
-/* ===============================
-   Event Card Image
-   =============================== */
-
+/* ========Card Image======== */
 .event-image-container {
   position: relative;
   width: 100%;
@@ -113,11 +105,11 @@
 }
 
 .event-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center top;
-    transition: transform var(--transition-slow);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform var(--transition-slow);
 }
 
 .event-card:hover .event-image {
@@ -130,16 +122,17 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-special));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-special)
+  );
   color: white;
   font-size: 3rem;
   opacity: 0.8;
 }
 
-/* ===============================
-   Event Badge
-   =============================== */
-
+/* ========Badge======== */
 .event-badge {
   position: absolute;
   top: var(--spacing-md);
@@ -158,7 +151,6 @@
   transition: all var(--transition-fast);
 }
 
-/* Badge Categories */
 .event-badge.ts {
   background: rgba(205, 234, 192, 0.9);
   color: #2d5016;
@@ -187,10 +179,7 @@
   transform: scale(1.1);
 }
 
-/* ===============================
-   Event Card Content
-   =============================== */
-
+/* ========Content======== */
 .event-content-overview {
   padding: var(--spacing-md);
 }
@@ -219,14 +208,11 @@
 }
 
 .event-date::before {
-  content: '📅';
+  content: "📅";
   font-size: 1rem;
 }
 
-/* ===============================
-   Countdown Section
-   =============================== */
-
+/* ========Countdown Section======== */
 .event-countdown {
   background: rgba(163, 196, 243, 0.1);
   border: 1px solid rgba(163, 196, 243, 0.2);
@@ -252,7 +238,7 @@
   color: var(--color-accent);
 }
 
-/* Different countdown states */
+/* ========Countdown utilities======== */
 .event-countdown.starting {
   background: rgba(205, 234, 192, 0.1);
   border-color: rgba(205, 234, 192, 0.3);
@@ -280,10 +266,7 @@
   color: var(--color-text-muted);
 }
 
-/* ===============================
-   Loading State
-   =============================== */
-
+/* ========Loading state======== */
 .event-cards-overview.loading {
   display: flex;
   justify-content: center;
@@ -300,10 +283,7 @@
   animation: spin 1s linear infinite;
 }
 
-/* ===============================
-   Empty State
-   =============================== */
-
+/* ========When card list is empty======== */
 .empty-state {
   text-align: center;
   padding: calc(var(--spacing-lg) * 2);
@@ -330,15 +310,12 @@
   opacity: 0.7;
 }
 
-/* ===============================
-   Mobile Event Cards
-   =============================== */
-
+/* ========Responsive======== */
 @media (max-width: 768px) {
   .quick-overview {
     padding: var(--spacing-lg) var(--spacing-md);
   }
-  
+
   .event-cards-overview {
     display: flex;
     flex-direction: column;
@@ -346,7 +323,7 @@
     max-width: 100%;
     align-items: center;
   }
-  
+
   .event-card {
     display: flex;
     flex-direction: row;
@@ -357,14 +334,14 @@
     justify-self: stretch;
     min-height: 120px;
   }
-  
+
   .event-image-container {
-    width: 120px; 
+    width: 120px;
     height: 100%;
     flex-shrink: 0;
     border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   }
-  
+
   .event-content-overview {
     flex: 1;
     padding: var(--spacing-sm) var(--spacing-md);
@@ -373,7 +350,7 @@
     justify-content: space-between;
     min-width: 0;
   }
-  
+
   .event-title {
     font-size: 1rem;
     font-weight: 600;
@@ -385,13 +362,13 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .event-date {
     font-size: 0.85rem;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-muted);
   }
-  
+
   .event-countdown {
     padding: 0;
     margin-top: 0;
@@ -403,17 +380,17 @@
     justify-content: space-evenly;
     align-items: flex-end;
   }
-  
+
   .countdown-label {
     font-size: 0.7rem;
     margin-bottom: 2px;
   }
-  
+
   .countdown-time {
     font-size: 0.9rem;
     font-weight: 600;
   }
-  
+
   .event-badge {
     top: var(--spacing-sm);
     left: var(--spacing-sm);
@@ -422,14 +399,33 @@
     z-index: 10;
     width: fit-content;
   }
-  
+
   .event-card:hover {
-    transform: none; 
+    transform: none;
   }
-  
+
   .event-card:active {
     transform: scale(0.98);
     transition: transform 0.1s ease;
+  }
+
+  .event-cards-overview:has(.event-card:only-child),
+  .event-cards-overview.single-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .event-cards-overview:has(.event-card:only-child) .event-card,
+  .event-cards-overview.single-card .event-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .event-card.featured::before {
+    top: var(--spacing-xs);
+    left: var(--spacing-xs);
+    font-size: 1.2rem;
   }
 }
 
@@ -442,87 +438,43 @@
     height: 100px;
     min-height: 100px;
   }
-  
+
   .event-image-container {
     width: 100px;
   }
-  
-  
+
   .event-title {
     font-size: 0.95rem;
     -webkit-line-clamp: 1;
     line-clamp: 1;
   }
-  
+
   .event-date {
     font-size: 0.8rem;
   }
-  
+
   .countdown-time {
     font-size: 0.85rem;
   }
-  
+
   .event-badge {
     font-size: 0.6rem;
     padding: 3px 6px;
   }
-
-
 }
 
-/* ===============================
-   Mobile-specific utility classes
-   =============================== */
-
-@media (max-width: 768px) {
-  .event-cards-overview:has(.event-card:only-child),
-  .event-cards-overview.single-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-  }
-  
-  .event-cards-overview:has(.event-card:only-child) .event-card,
-  .event-cards-overview.single-card .event-card {
-    width: 100%;
-    max-width: 100%;
-  }
-  
-  .event-card.featured::before {
-    top: var(--spacing-xs);
-    left: var(--spacing-xs);
-    font-size: 1.2rem;
-  }
-}
-
-/* ===============================
-   Animation Keyframes
-   =============================== */
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* ===============================
-   Utility Classes for Cards
-   =============================== */
-
+/* ========Utility======== */
 .event-card.featured {
   border: 2px solid var(--color-accent);
-  background: linear-gradient(135deg, 
-    rgba(163, 196, 243, 0.02) 0%, 
-    rgba(190, 225, 230, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(163, 196, 243, 0.02) 0%,
+    rgba(190, 225, 230, 0.02) 100%
+  );
 }
 
 .event-card.featured::before {
-  content: '⭐';
+  content: "⭐";
   position: absolute;
   top: var(--spacing-md);
   left: var(--spacing-md);
@@ -533,4 +485,16 @@
 .event-card.past {
   opacity: 0.7;
   filter: grayscale(20%);
+}
+
+/* ========Animation======== */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }

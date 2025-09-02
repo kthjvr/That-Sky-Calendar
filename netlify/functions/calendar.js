@@ -29,10 +29,10 @@ export async function handler(event, context) {
     const calendar = ical({
       name: "Sky CotL Events",
       description: "Sky: Children of the Light Events Calendar",
-      prodId: { 
-        company: "thatskyevents", 
-        product: "calendar", 
-        language: "EN" 
+      prodId: {
+        company: "thatskyevents",
+        product: "calendar",
+        language: "EN"
       },
       url: "https://development--thatskyevents.netlify.app/.netlify/functions/calendar",
       method: "PUBLISH",
@@ -87,7 +87,7 @@ export async function handler(event, context) {
 
       // Create event with more complete properties
       calendar.createEvent({
-        uid: `${doc.id}@thatskyevents.netlify.app`, // Unique ID
+        uid: `${doc.id}@thatskyevents.netlify.app`,
         start: startDate.toDate(),
         end: endDate.toDate(),
         summary: data.title || "Untitled Event",
@@ -101,14 +101,14 @@ export async function handler(event, context) {
           email: 'events@thatskyevents.netlify.app'
         }
       });
-      
+
       eventCount++;
     });
 
     console.log(`Generated calendar with ${eventCount} events`);
 
     const calendarString = calendar.toString();
-    
+
     console.log("Calendar preview:", calendarString.split('\n').slice(0, 10).join('\n'));
 
     return {

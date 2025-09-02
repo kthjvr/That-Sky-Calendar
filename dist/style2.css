@@ -1,7 +1,6 @@
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap");
 
-/* Root CSS Variables */
+/* ========Root Variables======== */
 :root {
   /* Color Palette */
   --color-bg: #fafafa;
@@ -19,8 +18,8 @@
   --color-warning: #ffe066;
 
   /* Other variables remain the same */
-  --font-heading: 'Poppins', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
   --radius-sm: 0.5rem;
   --radius-md: 1rem;
   --radius-lg: 2rem;
@@ -29,9 +28,9 @@
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 2rem;
-  --shadow-sm: 0 2px 6px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-  --shadow-lg: 0 6px 20px rgba(0,0,0,0.15);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.15);
   --transition-fast: 0.15s ease-in-out;
   --transition-base: 0.25s ease-in-out;
   --transition-slow: 0.4s ease-in-out;
@@ -41,7 +40,7 @@
   --easing-soft: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark Theme */
+/* ========Dark Theme======== */
 [data-theme="dark"] {
   --color-bg: #0f1419;
   --color-surface: #1a1f2e;
@@ -57,14 +56,10 @@
   --color-warning: #b8930f;
 
   /* Dark mode specific shadows */
-  --shadow-sm: 0 2px 6px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 6px 20px rgba(0,0,0,0.5);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
-
-/* ===============================
-   Dark Mode Navigation Updates
-   =============================== */
 
 [data-theme="dark"] .navbar {
   background: rgba(26, 31, 46, 0.95);
@@ -79,15 +74,8 @@
   background: var(--color-accent);
 }
 
-/* ===============================
-   Dark Mode Hero Section Updates
-   =============================== */
-
 [data-theme="dark"] .hero-background {
-  background: linear-gradient(135deg, 
-    #1a2b4c 0%, 
-    #2c3e50 50%, 
-    #34495e 100%);
+  background: linear-gradient(135deg, #1a2b4c 0%, #2c3e50 50%, #34495e 100%);
 }
 
 [data-theme="dark"] .info-container {
@@ -95,18 +83,10 @@
   border-color: rgba(255, 255, 255, 0.15);
 }
 
-/* ===============================
-   Dark Mode Footer Updates
-   =============================== */
-
 [data-theme="dark"] .footer {
   background: linear-gradient(135deg, var(--color-surface), #151a24);
   border-top-color: rgba(255, 255, 255, 0.1);
 }
-
-/* ===============================
-   Dark Mode Card Updates
-   =============================== */
 
 [data-theme="dark"] .event-card {
   background: var(--color-surface);
@@ -162,7 +142,6 @@
   transform: rotate(180deg) scale(0.5);
 }
 
-/* Dark mode states */
 [data-theme="dark"] .theme-toggle .sun-icon {
   opacity: 0;
   transform: rotate(-180deg) scale(0.5);
@@ -173,9 +152,7 @@
   transform: rotate(0deg) scale(1);
 }
 
-/* ===============================
-   Base Styles & Reset
-   =============================== */
+/* ========Base Style======== */
 
 *,
 *::before,
@@ -199,16 +176,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===============================
-   Keyframe Animations
-   =============================== */
+/* ========Keyframes======== */
 
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
+  from {
+    opacity: 0;
   }
-  to { 
-    opacity: 1; 
+  to {
+    opacity: 1;
   }
 }
 
@@ -224,7 +199,11 @@ body {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -236,7 +215,8 @@ body {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -253,9 +233,7 @@ body {
   }
 }
 
-/* ===============================
-   Loading Overlay
-   =============================== */
+/* ========Loading Overlay======== */
 
 .overlay {
   position: fixed;
@@ -263,7 +241,11 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-special));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-special)
+  );
   display: flex;
   justify-content: center;
   align-items: center;
@@ -288,13 +270,15 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-/* ===============================
-   Navigation Bar
-   =============================== */
+/* ========Navigation======== */
 
 .navbar {
   top: 0;
@@ -378,7 +362,7 @@ body {
 }
 
 .nav-links a::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -398,9 +382,7 @@ body {
   width: 80%;
 }
 
-/* ===============================
-   Hero Section
-   =============================== */
+/* ========Hero Section======== */
 
 .hero-banner {
   position: relative;
@@ -408,8 +390,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;   
-  min-height: 100vh;         
+  justify-content: center;
+  min-height: 100vh;
   text-align: center;
   padding: var(--spacing-lg);
   box-sizing: border-box;
@@ -432,16 +414,27 @@ body {
 }
 
 .hero-background::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(255,255,255,0.2) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+  background: radial-gradient(
+      circle at 20% 50%,
+      rgba(255, 255, 255, 0.2) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 50%
+    );
   animation: float 6s ease-in-out infinite;
   z-index: 1;
 }
@@ -459,7 +452,7 @@ body {
 .hero-content {
   z-index: 10;
   max-width: 800px;
-  margin-bottom: var(--spacing-xl); 
+  margin-bottom: var(--spacing-xl);
   animation: var(--animation-fade-up);
 }
 
@@ -469,7 +462,7 @@ body {
   font-weight: 700;
   color: white;
   margin-bottom: var(--spacing-md);
-  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   letter-spacing: -0.02em;
 }
 
@@ -479,7 +472,7 @@ body {
   margin-bottom: var(--spacing-lg);
   font-weight: 300;
   line-height: 1.5;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .cta-button {
@@ -503,25 +496,23 @@ body {
 .cta-button:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .cta-button:active {
   transform: translateY(-1px);
 }
 
-/* ===============================
-   Info Section
-   =============================== */
+/* ========Info Section======== */
 
 .info-section {
   display: flex;
   gap: var(--spacing-lg);
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: auto;          
-  margin-bottom: var(--spacing-lg); 
-  z-index: 10;               
+  margin-top: auto;
+  margin-bottom: var(--spacing-lg);
+  z-index: 10;
 }
 
 .info-container {
@@ -550,7 +541,7 @@ body {
   font-family: var(--font-heading);
   font-size: 1.5rem;
   margin-bottom: var(--spacing-md);
-  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .game-description {
@@ -578,9 +569,7 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* ===============================
-   Scroll to Top Button
-   =============================== */
+/* ========Scroll to top======== */
 
 #scrollTopBtn {
   position: fixed;
@@ -621,13 +610,15 @@ body {
   height: 20px;
 }
 
-/* ===============================
-   Footer
-   =============================== */
+/* ========Footer======== */
 
 .footer {
-  background: linear-gradient(135deg, var(--color-surface), var(--color-shards));
-  border-top: 1px solid rgba(0,0,0,0.1);
+  background: linear-gradient(
+    135deg,
+    var(--color-surface),
+    var(--color-shards)
+  );
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
   margin-top: var(--spacing-lg);
   padding: var(--spacing-lg) 0;
 }
@@ -733,9 +724,7 @@ body {
   transition: all var(--transition-fast);
 }
 
-/* ===============================
-   Mobile Navigation
-   =============================== */
+/* ========Mobile Nav======== */
 
 .nav-overlay {
   position: fixed;
@@ -766,13 +755,13 @@ body {
   color: inherit;
   cursor: pointer;
   line-height: 1;
-  z-index: 1001; 
-  display: none; 
+  z-index: 1001;
+  display: none;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .close-btn:hover {
-  color: #ff5252; 
+  color: #ff5252;
   transform: rotate(90deg);
 }
 
@@ -780,10 +769,7 @@ body {
   display: block;
 }
 
-
-/* ===============================
-   Responsive Design
-   =============================== */
+/* ========Responsive======== */
 
 @media (max-width: 768px) {
   .navbar {
@@ -821,7 +807,7 @@ body {
 
   .nav-links.active {
     right: 0;
-     display: block !important; 
+    display: block !important;
   }
 
   .nav-links li {
@@ -898,9 +884,7 @@ body {
   }
 }
 
-/* ===============================
-   Utility Classes
-   =============================== */
+/* ========Utility======== */
 
 .fade-in {
   animation: var(--animation-fade-in);
@@ -918,9 +902,7 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
-/* ===============================
-   Focus States (Accessibility)
-   =============================== */
+/* ========Focus States (Accessibility======== */
 
 *:focus {
   outline: 2px solid var(--color-accent);

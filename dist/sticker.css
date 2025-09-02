@@ -1,0 +1,201 @@
+.floating-note-sticker {
+  position: fixed;
+  bottom: 90px;
+  right: 35px;
+  z-index: 1000;
+  font-family: inherit;
+}
+
+.note-trigger {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: gentlePulse 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.note-trigger::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0;
+  animation: gradientRotate 4s linear infinite;
+}
+
+.note-trigger:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.note-trigger:hover::before {
+  opacity: 0.3;
+}
+
+.note-icon {
+  font-size: 1.5rem;
+  color: white;
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+.note-content {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.98);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 107, 107, 0.2);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+  transform: translateY(20px) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.note-content.show {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 107, 107, 0.1);
+}
+
+.note-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.note-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note-close:hover {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+.note-message {
+  color: #34495e;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.note-timestamp {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  text-align: right;
+  font-style: italic;
+}
+
+/* ========Animation======== */
+@keyframes gentlePulse {
+  0%,
+  100% {
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6),
+      0 3px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes gradientRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========Responsive======== */
+@media (max-width: 768px) {
+  .floating-note-sticker {
+    right: 15px;
+    bottom: 75px;
+  }
+
+  .note-content {
+    width: calc(100vw - 50px);
+    max-width: 300px;
+    right: -10px;
+  }
+
+  .note-trigger {
+    width: 45px;
+    height: 45px;
+  }
+
+  .note-icon {
+    font-size: 1.3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-trigger {
+    animation: none;
+  }
+
+  .note-icon {
+    animation: none;
+  }
+
+  .note-trigger::before {
+    animation: none;
+  }
+}

@@ -221,8 +221,8 @@ body {
 }
 
 .notice-icon img {
-    width: 32px;
-    height: 32px;
+  width: 32px;
+  height: 32px;
 }
 
 .notice-text {
@@ -392,7 +392,7 @@ body {
   color: var(--secondary-color);
 }
 
-.fc-daygrid-day-number{
+.fc-daygrid-day-number {
   color: var(--dark-text);
 }
 
@@ -1031,11 +1031,11 @@ body {
 }
 
 .notification-setup {
-    background: #f0f0f0;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 8px;
-    text-align: center;
+  background: #f0f0f0;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 8px;
+  text-align: center;
 }
 
 .notif h3 {
@@ -1045,58 +1045,57 @@ body {
 }
 
 .subscribe-btn {
-    background-color: #4caf50;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 12px;
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 12px;
 }
 
 .subscribe-btn:hover {
-    background: #45a049;
+  background: #45a049;
 }
 
 .subscribe-btn:disabled {
-    background: #cccccc;
-    cursor: not-allowed;
+  background: #cccccc;
+  cursor: not-allowed;
 }
 
 .notification-status {
-    margin-top: 10px;
-    font-style: italic;
+  margin-top: 10px;
+  font-style: italic;
 }
 
 @media (max-width: 768px) {
-
-  .info-container.game h2{
+  .info-container.game h2 {
     line-height: 8px;
   }
 
-  .hero-content{
+  .hero-content {
     margin-bottom: 0.5rem;
   }
 
-  button#open-game-modal{
+  button#open-game-modal {
     font-size: small;
   }
 
-  .info-section{
+  .info-section {
     font-size: small;
   }
 
-  .notice-icon img{
+  .notice-icon img {
     width: 32px;
     height: 32px;
   }
 
-  .image-zoom-overlay{
+  .image-zoom-overlay {
     align-items: flex-center;
   }
 
@@ -1107,18 +1106,18 @@ body {
     top: 5px;
     right: 5px;
   }
-  
+
   .zoom-container {
     max-width: 100vw;
     max-height: 100vh;
   }
-  
+
   .zoom-close-btn {
     width: 35px;
     height: 35px;
     font-size: 20px;
   }
-  
+
   .hero-title {
     font-size: 2.5rem;
     text-align: center;
@@ -1135,7 +1134,7 @@ body {
     margin-left: 0;
   }
 
-  .info-section{
+  .info-section {
     width: auto;
     flex-direction: column;
   }
@@ -1190,15 +1189,15 @@ body {
     font-size: 14px;
   }
 
-  #modalDescription{
+  #modalDescription {
     font-size: 14px;
   }
 
-  #modalTitle{
+  #modalTitle {
     font-size: 16px;
   }
 
-  .cta-btn{
+  .cta-btn {
     font-size: 14px;
   }
 
@@ -1267,7 +1266,7 @@ body {
     width: 90px;
   }
 
-  .event-content-overview{
+  .event-content-overview {
     width: 70%;
   }
 
@@ -1334,9 +1333,9 @@ body {
   }
 
   .zoom-image {
-  max-width: 100%;
-  max-height: 100%;
-}
+    max-width: 100%;
+    max-height: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1356,30 +1355,30 @@ body {
     align-items: flex-end;
   }
 
-  .events-list{
+  .events-list {
     align-self: center;
   }
 }
 
 @media (max-width: 860px) {
-  .info-section{
+  .info-section {
     width: auto;
     flex-direction: column;
   }
 }
 
 @media (max-width: 1020px) {
-  .info-section{
+  .info-section {
     width: auto;
     flex-direction: column;
     align-items: stretch;
   }
 
-  .hero-content{
+  .hero-content {
     text-align: center;
   }
 
-  .events-list{
+  .events-list {
     align-self: center;
   }
 }
