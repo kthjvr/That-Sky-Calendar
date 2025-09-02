@@ -87,18 +87,17 @@ export async function handler(event, context) {
 
       // Create event with more complete properties
       calendar.createEvent({
-        uid: `${doc.id}@thatskyevents.netlify.app`,
+        uid: `${doc.id}@thatskyevents.netlify.app`, // Unique ID
         start: startDate.toDate(),
         end: endDate.toDate(),
         summary: data.title || "Untitled Event",
-        description: data.description || "",
         location: data.location || "",
         created: new Date(),
         lastModified: new Date(),
         status: 'CONFIRMED',
         organizer: {
           name: 'Sky Events',
-          email: 'events@thatskyevents.netlify.app'
+          email: 'thatskyevents@gmail.com'
         }
       });
 

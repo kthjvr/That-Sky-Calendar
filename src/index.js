@@ -51,55 +51,6 @@ let eventsByMonthYear = {};
 let currentMonthYearIndex = 0;
 let monthYearKeys = [];
 
-// Initialize FullCalendar with event data
-function initializeCalendar(eventsData) {
-  const calendarEl = document.getElementById("calendar");
-
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    fixedWeekCount: false,
-    aspectRatio: 1.35,
-    height: "auto",
-    events: eventsData,
-
-    // Enhanced event display with time
-    eventContent: function (info) {
-      const iconPath = info.event.extendedProps.icon;
-      if (iconPath) {
-        return {
-          html: `
-            <div class="event-icon-container">
-              <img src="${iconPath}" class="event-icon" alt="event icon" loading="lazy"/>
-            </div>
-          `,
-        };
-      } else {
-        return {
-          html: `
-            <div class="event-content">
-              <span class="fc-event-title">${info.event.title}</span>
-            </div>
-          `,
-        };
-      }
-    },
-
-    eventOrder: "start",
-    eventClick: function (info) {
-      openEventModal(info.event);
-    },
-
-    // Show different views based on your needs
-    headerToolbar: {
-      right: 'prev,next today',
-    }
-  });
-
-  calendar.render();
-  addCategoryFilter(calendar, eventsData);
-  // console.log(eventsData);
-}
-
 // Fetch events and shard events, then combine and initialize the calendar
 Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
   .then(([eventsSnapshot]) => {
@@ -183,8 +134,17 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
         image: doc.data().image,
         credits: doc.data().credits,
         category: doc.data().category || "special",
+        emote: doc.data().emote,
+        memoryType: doc.data().memoryType,
+        location: doc.data().location,
+        realm: doc.data().realm,
+        note: doc.data().note,
+        spiritCount: doc.data().spiritCount
       });
     });
+
+    console.log(events);
+    
 
     // Store globally
     allEvents = events;
@@ -210,6 +170,55 @@ Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
       `;
     }
   });
+
+// Initialize FullCalendar with event data
+function initializeCalendar(eventsData) {
+  const calendarEl = document.getElementById("calendar");
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    fixedWeekCount: false,
+    aspectRatio: 1.35,
+    height: "auto",
+    events: eventsData,
+
+    // Enhanced event display with time
+    eventContent: function (info) {
+      const iconPath = info.event.extendedProps.icon;
+      if (iconPath) {
+        return {
+          html: `
+            <div class="event-icon-container">
+              <img src="${iconPath}" class="event-icon" alt="event icon" loading="lazy"/>
+            </div>
+          `,
+        };
+      } else {
+        return {
+          html: `
+            <div class="event-content">
+              <span class="fc-event-title">${info.event.title}</span>
+            </div>
+          `,
+        };
+      }
+    },
+
+    eventOrder: "start",
+    eventClick: function (info) {
+      openEventModal(info.event);
+    },
+
+    // Show different views based on your needs
+    headerToolbar: {
+      right: 'prev,next today',
+    }
+  });
+
+  calendar.render();
+  addCategoryFilter(calendar, eventsData);
+  // console.log(eventsData);
+}
 
 // Add category filter to calendar
 function addCategoryFilter(calendar, eventsData) {
@@ -470,8 +479,6 @@ function createEventCard(event) {
     </div>
   `;
 
-
-
   // Add click event to open event modal (if you have one)
   card.addEventListener('click', () => {
     if (typeof openEventModal === 'function') {
@@ -681,7 +688,7 @@ function openEventModal(event) {
   } else {
     modalNote.innerHTML = `
             <div class="note-title">Reminder</div>
-            <div class="note-content">Event details are subject to change. Please check back for updates.</div>
+            <div class="modal-note-content">Event details are subject to change. Please check back for updates.</div>
         `;
     modalNote.style.display = 'block';
   }
@@ -1157,9 +1164,15 @@ function setQuickInfoSummary(event) {
   const endDate = new Date(event.end || event.start);
   const dateRange = formatDateRange(startDate, endDate);
 
-  // Extract extended properties
+  // Extract extended properties with better fallback handling
   const props = event.extendedProps || {};
-  const category = event.category || props.category || 'special';
+  
+  // Helper function to get property from either direct event or extendedProps
+  const getProp = (propName) => {
+    return event[propName] || props[propName] || null;
+  };
+
+  const category = getProp('category') || 'special';
 
   let infoItems = [];
 
@@ -1167,12 +1180,12 @@ function setQuickInfoSummary(event) {
   infoItems.push({ icon: '📅', label: 'Date:', value: dateRange });
 
   // Event-specific information based on category
-  if (category === 'ts') {
+  if (category === 'travelling-spirits') {
     // Single Traveling Spirit
-    const realm = props.realm || event.realm || null;
-    const location = props.location || event.location || null;
-    const memoryType = props.memoryType || event.memoryType || null;
-    const emote = props.emote || event.emote || null;
+    const realm = getProp('realm');
+    const location = getProp('location');
+    const memoryType = getProp('memoryType');
+    const emote = getProp('emote');
 
     infoItems.push(
       { icon: '🌍', label: 'Realm:', value: realm || 'To be announced' },
@@ -1180,25 +1193,28 @@ function setQuickInfoSummary(event) {
       { icon: '🎭', label: 'Memory Type:', value: memoryType || 'N/A' },
       { icon: '🕊️', label: 'Emote:', value: emote || 'N/A' }
     );
-  } else if (category === 'season') {
+    
+  } else if (category === 'seasons') {
     // Seasonal Events
-    const seasonType = props.seasonType || event.seasonType || null;
-    const spiritCount = props.spiritCount || event.spiritCount || null;
-    const duration = props.duration || event.duration || null;
-    const specialItems = props.specialItems || event.specialItems || null;
+    const seasonType = getProp('seasonType');
+    const spiritCount = getProp('spiritCount');
+    const duration = getProp('duration');
+    const specialItems = getProp('specialItems');
 
     infoItems.push(
-      { icon: '🎭', label: 'Season Type:', value: seasonType || 'To be announced' },
       { icon: '👥', label: 'Spirits:', value: spiritCount || 'To be announced' },
-      { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
-      { icon: '✨', label: 'Special Items:', value: specialItems || 'To be announced' }
     );
-  } else if (category === 'special') {
+  } else if (category === 'days-of-events') {
+    const location = getProp('location');
+    infoItems.push(
+      { icon: '📌', label: 'Location:', value: location || 'To be announced' },
+    );
+  } else if (category === 'special-events') {
     // Special Events (Days of Events, etc.)
-    const eventType = props.eventType || event.eventType || null;
-    const activities = props.activities || event.activities || null;
-    const rewards = props.rewards || event.rewards || null;
-    const requirements = props.requirements || event.requirements || null;
+    const eventType = getProp('eventType');
+    const activities = getProp('activities');
+    const rewards = getProp('rewards');
+    const requirements = getProp('requirements');
 
     infoItems.push(
       { icon: '🎉', label: 'Event Type:', value: eventType || 'Special Event' },
@@ -1208,9 +1224,9 @@ function setQuickInfoSummary(event) {
     );
   } else if (category === 'group_ts' || event.title.toLowerCase().includes('traveling spirits')) {
     // Group of Traveling Spirits
-    const spiritCount = props.spiritCount || event.spiritCount || null;
-    const realms = props.realms || event.realms || null;
-    const duration = props.duration || event.duration || null;
+    const spiritCount = getProp('spiritCount');
+    const realms = getProp('realms');
+    const duration = getProp('duration');
 
     infoItems.push(
       { icon: '👥', label: 'Spirit Count:', value: spiritCount || 'To be announced' },
@@ -1219,8 +1235,8 @@ function setQuickInfoSummary(event) {
     );
   } else {
     // Default/Generic events
-    const eventType = props.eventType || event.eventType || null;
-    const location = props.location || event.location || null;
+    const eventType = getProp('eventType');
+    const location = getProp('location');
 
     infoItems.push(
       { icon: '🎯', label: 'Event Type:', value: eventType || 'General Event' },
@@ -1494,7 +1510,13 @@ class SkyEventsManager {
       image: event.image,
       images: event.images,
       blogUrl: event.blogUrl,
-      credits: event.credits
+      credits: event.credits,
+      emote: event.emote,
+      realm: event.realm,
+      location: event.location,
+      memoryType: event.memoryType,
+      note: event.note,
+      spiritCount: event.spiritCount
     }));
 
     // Sort events by start date (latest first)

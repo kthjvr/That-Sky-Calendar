@@ -6,6 +6,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   max-width: 1200px;
+  margin: var(--spacing-lg) auto;
 }
 
 .calendar-info {
