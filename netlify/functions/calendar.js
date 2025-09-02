@@ -84,7 +84,6 @@ export async function handler(event, context) {
         return;
       }
 
-      // Create event with more complete properties
       calendar.createEvent({
         uid: `${doc.id}@thatskyevents.netlify.app`, // Unique ID
         start: startDate.toDate(),
@@ -97,7 +96,20 @@ export async function handler(event, context) {
         organizer: {
           name: 'Sky Events',
           email: 'thatskyevents@gmail.com'
-        }
+        },
+        alarms: [
+          {
+            type: 'display',
+            trigger: -30 * 60, // 30 minutes before start
+            description: `Reminder: "${data.title}" starts soon`
+          },
+          {
+            type: 'display',
+            trigger: -30 * 60, // 30 minutes before end
+            triggerBefore: 'end',
+            description: `Reminder: "${data.title}" ends soon`
+          }
+        ]
       });
 
       eventCount++;
