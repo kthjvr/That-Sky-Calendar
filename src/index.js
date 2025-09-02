@@ -31,13 +31,13 @@ dayjs.extend(customParseFormat);
 const userTimezone = dayjs.tz.guess();
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDChyRMRZw13CIheI4_vd5bsrFLBprMC20",
-  authDomain: "that-sky-calendar-ffd49.firebaseapp.com",
-  projectId: "that-sky-calendar-ffd49",
-  storageBucket: "that-sky-calendar-ffd49.appspot.com",
-  messagingSenderId: "994867085966",
-  appId: "1:994867085966:web:ea6d5b05bccb508eb73fdf",
-  measurementId: "G-FXXSH6NS6Z",
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase services
