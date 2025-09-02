@@ -22,20 +22,18 @@
     visibility: visible;
 }
 
-.game-modal .modal-content {
+.game-modal .game-modal-content {
     position: relative;
     background: var(--color-surface);
-    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     max-width: 60vw;
     max-height: 90vh;
     overflow: hidden;
     transform: scale(0.7) translateY(50px);
     transition: all var(--transition-base);
-    border: 2px solid var(--color-accent);
 }
 
-.game-modal.show .modal-content {
+.game-modal.show .game-modal-content {
     transform: scale(1) translateY(0);
 }
 
@@ -80,16 +78,13 @@
     height: 650px;
     max-width: 90vw;
     max-height: 80vh;
-    border-radius: var(--radius-md);
 }
 
 /* Game Button Styling */
 #open-game-modal {
     background: var(--color-accent);
     color: white;
-    border: none;
     padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--radius-md);
     font-weight: 600;
     font-family: var(--font-heading);
     cursor: pointer;
@@ -124,7 +119,6 @@
         width: 95vw;
         height: 70vh;
         border: none;
-        border-radius: var(--radius-md);
     }
     
     .game-modal .close {
@@ -135,18 +129,16 @@
         font-size: 1.5rem;
     }
 
-    .game-modal .modal-content {
-        padding: var(--spacing-sm);
+    .game-modal .game-modal-content {
         max-width: 80vw;
     }
 }
 
 @media (max-width: 480px) {
     .iframe-container {
-        width: 80vw;
+        width: 89vw;
         height: 65vh;
         border: none;
-        border-radius: var(--radius-md);
     }
     
     .game-modal .close {

@@ -814,10 +814,14 @@ body {
     transition: all var(--transition-base);
     box-shadow: var(--shadow-lg);
     z-index: 1000;
+    display: none !important;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
   }
 
   .nav-links.active {
     right: 0;
+     display: block !important; 
   }
 
   .nav-links li {

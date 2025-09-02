@@ -316,7 +316,7 @@
 
   <!-- Game Modal -->
   <div id="game-modal" class="game-modal" hidden>
-      <div class="modal-content">
+      <div class="game-modal-content">
           <span class="close" aria-label="Close game modal">&times;</span>
           <div class="iframe-container">
               <iframe 
@@ -403,6 +403,7 @@
 
       initializeComponents() {
         this.cacheElements();
+        this.setInitialMenuState();
         this.initMobileMenu();
         this.initScrollToTop();
         this.initThemeManager();
@@ -467,10 +468,10 @@
         this.state.isMenuOpen = true;
         
         if (navLinks) {
-          navLinks.classList.add('active');
-          // Force display block before adding active class for smooth transition
           navLinks.style.display = 'block';
-          // Use requestAnimationFrame to ensure display takes effect before transition
+          navLinks.classList.add('active');
+          
+          // Use requestAnimationFrame to ensure smooth animation
           requestAnimationFrame(() => {
             navLinks.style.transform = 'translateX(0)';
           });
@@ -495,8 +496,8 @@
         
         if (navLinks) {
           navLinks.classList.remove('active');
-          // Reset transform to initial position
-          navLinks.style.transform = '';
+          navLinks.style.transform = 'translateX(100%)'; // Slide off-screen
+          
           // Hide after transition completes
           setTimeout(() => {
             if (!this.state.isMenuOpen) {
@@ -521,10 +522,11 @@
         const { navLinks, navOverlay, menuToggle } = this.elements;
         
         if (this.isMobile()) {
+          // On mobile, ensure menu is hidden
           if (navLinks) {
             navLinks.classList.remove('active');
             navLinks.style.display = 'none';
-            navLinks.style.transform = '';
+            navLinks.style.transform = 'translateX(100%)';
           }
           
           if (navOverlay) {
@@ -536,10 +538,14 @@
             menuToggle.setAttribute('aria-expanded', 'false');
           }
         } else {
-          // On desktop, ensure menu is visible
           if (navLinks) {
-            navLinks.style.display = '';
-            navLinks.style.transform = '';
+            navLinks.classList.remove('active');
+            navLinks.style.display = 'flex';
+            navLinks.style.transform = 'translateX(0)';
+          }
+          
+          if (navOverlay) {
+            navOverlay.style.display = 'none';
           }
         }
         
