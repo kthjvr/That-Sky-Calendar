@@ -28,7 +28,6 @@ export async function handler(event, context) {
 
     const calendar = ical({
       name: "Sky CotL Events",
-      description: "Sky: Children of the Light Events Calendar",
       prodId: {
         company: "thatskyevents",
         product: "calendar",
