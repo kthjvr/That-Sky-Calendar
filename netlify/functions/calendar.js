@@ -100,13 +100,12 @@ export async function handler(event, context) {
         alarms: [
           {
             type: 'display',
-            trigger: -30 * 60, // 30 minutes before start
+            trigger: { minutes: 30, before: true }, // 30 minutes before start
             description: `Reminder: "${data.title}" starts soon`
           },
           {
             type: 'display',
-            trigger: -30 * 60, // 30 minutes before end
-            triggerBefore: 'end',
+            trigger: { minutes: 30, before: true, related: 'end' }, // 30 minutes before end
             description: `Reminder: "${data.title}" ends soon`
           }
         ]
