@@ -28,6 +28,7 @@ export async function handler(event, context) {
     const snapshot = await db.collection("events").get();
     console.log(`Found ${snapshot.size} documents in events collection`);
 
+    const now = new Date();
     const calendar = ical({
       name: "Sky CotL Events",
       prodId: {
@@ -35,8 +36,10 @@ export async function handler(event, context) {
         product: "calendar",
         language: "EN"
       },
-      url: "https://development--thatskyevents.netlify.app/.netlify/functions/calendar",
-      method: "PUBLISH"
+      url: "http://development--thatskyevents.netlify.app/.netlify/functions/calendar",
+      method: "PUBLISH",
+      description: `Sky: Children of the Light Events - Last updated: ${now.toISOString()}`,
+      lastModified: now
     });
 
     console.log("Generating calendar...");
@@ -49,7 +52,6 @@ export async function handler(event, context) {
       console.log(`\n--- Processing document ${doc.id} ---`);
       console.log("Raw Firestore data:", JSON.stringify(data, null, 2));
 
-      // Check for required fields
       if (!data.title) {
         console.warn("❌ Skipping event: missing title");
         skippedCount++;
@@ -121,7 +123,6 @@ export async function handler(event, context) {
           end: endJSDate.toISOString()
         });
 
-        // Create the event
         const eventConfig = {
           uid: `${doc.id}@thatskyevents.netlify.app`,
           start: startJSDate,
@@ -129,14 +130,16 @@ export async function handler(event, context) {
           summary: data.title,
           location: data.location || "",
           created: new Date(),
-          lastModified: new Date()
+          lastModified: new Date(),
+          sequence: Math.floor(Date.now() / 1000) 
         };
 
         console.log("📝 Creating event with config:", JSON.stringify({
           uid: eventConfig.uid,
           start: eventConfig.start.toISOString(),
           end: eventConfig.end.toISOString(),
-          summary: eventConfig.summary
+          summary: eventConfig.summary,
+          sequence: eventConfig.sequence
         }, null, 2));
 
         calendar.createEvent(eventConfig);
@@ -159,6 +162,10 @@ export async function handler(event, context) {
     const calendarString = calendar.toString();
     console.log("Calendar preview:\n", calendarString.split("\n").slice(0, 10).join("\n"));
 
+    const contentHash = Buffer.from(calendarString).toString('base64').substring(0, 16);
+    const timestamp = Date.now();
+    const uniqueETag = `"${contentHash}-${timestamp}"`;
+
     return {
       statusCode: 200,
       headers: {
@@ -167,11 +174,20 @@ export async function handler(event, context) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Access-Control-Allow-Headers": "Content-Type",
-        "Cache-Control": "no-cache, no-store, must-revalidate", 
+        
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0",
         "Pragma": "no-cache",
         "Expires": "0",
+        
+        "ETag": uniqueETag,
+        "Last-Modified": new Date().toUTCString(),
+        
         "X-Content-Type-Options": "nosniff",
-        "ETag": `"${Date.now()}"`
+        "Vary": "Accept-Encoding, User-Agent",
+        
+        "X-Generated-At": new Date().toISOString(),
+        "X-Events-Count": eventCount.toString(),
+        "X-Calendar-Version": timestamp.toString()
       },
       body: calendarString
     };
@@ -186,18 +202,4 @@ export async function handler(event, context) {
       body: `Error generating calendar: ${error.message}`
     };
   }
-}
-
-function getTimezoneGenerator() {
-  return [
-    "BEGIN:VTIMEZONE",
-    "TZID:UTC",
-    "BEGIN:STANDARD",
-    "DTSTART:19700101T000000",
-    "TZNAME:UTC",
-    "TZOFFSETFROM:+0000",
-    "TZOFFSETTO:+0000",
-    "END:STANDARD",
-    "END:VTIMEZONE"
-  ].join("\r\n");
 }
