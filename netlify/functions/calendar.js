@@ -26,6 +26,7 @@ console.log("Firebase initialized");
 export async function handler(event, context) {
   try {
     const snapshot = await db.collection("events").get();
+    console.log(`Found ${snapshot.size} documents in events collection`);
 
     const calendar = ical({
       name: "Sky CotL Events",
@@ -35,88 +36,125 @@ export async function handler(event, context) {
         language: "EN"
       },
       url: "https://development--thatskyevents.netlify.app/.netlify/functions/calendar",
-      method: "PUBLISH",
-      timezone: {
-        name: "UTC",
-        generator: getTimezoneGenerator
-      }
+      method: "PUBLISH"
     });
 
     console.log("Generating calendar...");
 
     let eventCount = 0;
+    let skippedCount = 0;
 
     snapshot.forEach((doc) => {
       const data = doc.data();
-      console.log("Raw Firestore data:", data);
+      console.log(`\n--- Processing document ${doc.id} ---`);
+      console.log("Raw Firestore data:", JSON.stringify(data, null, 2));
 
-      if (!data.title || !data.start || !data.end) {
-        console.warn("Skipping event with missing fields:", data);
+      // Check for required fields
+      if (!data.title) {
+        console.warn("❌ Skipping event: missing title");
+        skippedCount++;
+        return;
+      }
+      if (!data.start) {
+        console.warn("❌ Skipping event: missing start date");
+        skippedCount++;
+        return;
+      }
+      if (!data.end) {
+        console.warn("❌ Skipping event: missing end date");
+        skippedCount++;
         return;
       }
 
-      console.log("Parsing event:", data.title, data.start, data.end);
+      console.log(`✅ Event has required fields: "${data.title}"`);
+      console.log(`📅 Dates - start: "${data.start}", end: "${data.end}"`);
 
       try {
-        // Parse dates more carefully and convert to native Date objects
-        const startDate = dayjs.tz(data.start, "YYYY-MM-DD", LA_TZ)
-          .hour(0).minute(0).second(0).millisecond(0)
-          .utc();
+        let startJSDate, endJSDate;
 
-        const endDate = dayjs.tz(data.end, "YYYY-MM-DD", LA_TZ)
-          .hour(23).minute(59).second(59).millisecond(999)
-          .utc();
-
-        if (!startDate.isValid() || !endDate.isValid()) {
-          console.error(`Invalid date for "${data.title}" → start=${data.start}, end=${data.end}`);
+        if (data.start instanceof Date) {
+          startJSDate = new Date(data.start);
+        } else if (typeof data.start === 'number') {
+          startJSDate = new Date(data.start);
+        } else if (typeof data.start === 'string') {
+          if (data.start.includes('T') || data.start.includes(' ')) {
+            startJSDate = new Date(data.start);
+          } else {
+            startJSDate = new Date(`${data.start}T00:00:00-08:00`);
+          }
+        } else {
+          console.error("❌ Unknown start date format:", typeof data.start, data.start);
+          skippedCount++;
           return;
         }
 
-        // Convert to native Date objects explicitly
-        const startJSDate = new Date(startDate.valueOf());
-        const endJSDate = new Date(endDate.valueOf());
+        if (data.end instanceof Date) {
+          endJSDate = new Date(data.end);
+        } else if (typeof data.end === 'number') {
+          endJSDate = new Date(data.end);
+        } else if (typeof data.end === 'string') {
+          if (data.end.includes('T') || data.end.includes(' ')) {
+            endJSDate = new Date(data.end);
+          } else {
+            endJSDate = new Date(`${data.end}T23:59:59-08:00`);
+          }
+        } else {
+          console.error("❌ Unknown end date format:", typeof data.end, data.end);
+          skippedCount++;
+          return;
+        }
 
-        console.log(`Converted dates for "${data.title}":`, {
+        // Validate dates
+        if (isNaN(startJSDate.getTime()) || isNaN(endJSDate.getTime())) {
+          console.error(`❌ Invalid dates for "${data.title}":`, {
+            startInput: data.start,
+            endInput: data.end,
+            startParsed: startJSDate,
+            endParsed: endJSDate
+          });
+          skippedCount++;
+          return;
+        }
+
+        console.log(`✅ Successfully parsed dates:`, {
           start: startJSDate.toISOString(),
           end: endJSDate.toISOString()
         });
 
-        // Create the event with native Date objects
-        calendar.createEvent({
+        // Create the event
+        const eventConfig = {
           uid: `${doc.id}@thatskyevents.netlify.app`,
           start: startJSDate,
           end: endJSDate,
-          summary: data.title || "Untitled Event",
+          summary: data.title,
           location: data.location || "",
           created: new Date(),
-          lastModified: new Date(),
-          status: "CONFIRMED",
-          organizer: {
-            name: "Sky Events",
-            email: "thatskyevents@gmail.com"
-          },
-          alarms: [
-            {
-              type: "display",
-              trigger: { minutes: 30, before: true },
-              description: `Reminder: "${data.title}" starts soon`
-            },
-            {
-              type: "display",
-              trigger: { minutes: 30, before: true, related: "end" },
-              description: `Reminder: "${data.title}" ends soon`
-            }
-          ]
-        });
+          lastModified: new Date()
+        };
 
+        console.log("📝 Creating event with config:", JSON.stringify({
+          uid: eventConfig.uid,
+          start: eventConfig.start.toISOString(),
+          end: eventConfig.end.toISOString(),
+          summary: eventConfig.summary
+        }, null, 2));
+
+        calendar.createEvent(eventConfig);
         eventCount++;
+        console.log(`✅ Event "${data.title}" added successfully!`);
+
       } catch (dateError) {
-        console.error(`Error processing dates for event "${data.title}":`, dateError);
+        console.error(`❌ Error processing dates for event "${data.title}":`, dateError);
+        console.error("Error stack:", dateError.stack);
+        skippedCount++;
         return;
       }
     });
 
-    console.log(`Generated calendar with ${eventCount} events`);
+    console.log(`\n=== SUMMARY ===`);
+    console.log(`📊 Total documents: ${snapshot.size}`);
+    console.log(`✅ Events created: ${eventCount}`);
+    console.log(`❌ Events skipped: ${skippedCount}`);
 
     const calendarString = calendar.toString();
     console.log("Calendar preview:\n", calendarString.split("\n").slice(0, 10).join("\n"));
@@ -147,103 +185,6 @@ export async function handler(event, context) {
   }
 }
 
-// Alternative approach - if the above doesn't work, try this version
-export async function handlerAlternative(event, context) {
-  try {
-    const snapshot = await db.collection("events").get();
-
-    const calendar = ical({
-      name: "Sky CotL Events",
-      prodId: {
-        company: "thatskyevents",
-        product: "calendar",
-        language: "EN"
-      },
-      url: "https://development--thatskyevents.netlify.app/.netlify/functions/calendar",
-      method: "PUBLISH"
-    });
-
-    console.log("Generating calendar...");
-
-    let eventCount = 0;
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      console.log("Raw Firestore data:", data);
-
-      if (!data.title || !data.start || !data.end) {
-        console.warn("Skipping event with missing fields:", data);
-        return;
-      }
-
-      try {
-        // Simpler date parsing - create Date objects directly
-        const startStr = `${data.start}T00:00:00-08:00`; // PST/PDT offset
-        const endStr = `${data.end}T23:59:59-08:00`;
-        
-        const startDate = new Date(startStr);
-        const endDate = new Date(endStr);
-
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-          console.error(`Invalid date for "${data.title}" → start=${data.start}, end=${data.end}`);
-          return;
-        }
-
-        console.log(`Dates for "${data.title}":`, {
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        });
-
-        calendar.createEvent({
-          uid: `${doc.id}@thatskyevents.netlify.app`,
-          start: startDate,
-          end: endDate,
-          summary: data.title || "Untitled Event",
-          location: data.location || "",
-          created: new Date(),
-          lastModified: new Date(),
-          status: "CONFIRMED",
-          organizer: {
-            name: "Sky Events",
-            email: "thatskyevents@gmail.com"
-          }
-        });
-
-        eventCount++;
-      } catch (dateError) {
-        console.error(`Error processing dates for event "${data.title}":`, dateError);
-        return;
-      }
-    });
-
-    console.log(`Generated calendar with ${eventCount} events`);
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "text/calendar; charset=utf-8",
-        "Content-Disposition": 'inline; filename="sky-events.ics"',
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Cache-Control": "public, max-age=300",
-        "X-Content-Type-Options": "nosniff"
-      },
-      body: calendar.toString()
-    };
-  } catch (error) {
-    console.error("Calendar generation failed:", error);
-    console.error("Error stack:", error.stack);
-    return {
-      statusCode: 500,
-      headers: {
-        "Content-Type": "text/plain"
-      },
-      body: `Error generating calendar: ${error.message}`
-    };
-  }
-}
-
-// Timezone generator helper
 function getTimezoneGenerator() {
   return [
     "BEGIN:VTIMEZONE",
