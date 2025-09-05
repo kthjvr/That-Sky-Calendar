@@ -14,7 +14,6 @@ import {
   serverTimestamp,
   increment,
   getDocs,
-  getDoc,
   getFirestore,
   setDoc
 } from "firebase/firestore";
@@ -52,145 +51,18 @@ let eventsByMonthYear = {};
 let currentMonthYearIndex = 0;
 let monthYearKeys = [];
 
-// Optimized Firebase Implementation with Caching and Efficient Reads
-
-// 1. IMPLEMENT CLIENT-SIDE CACHING
-class FirebaseCacheManager {
-  constructor() {
-    this.cache = new Map();
-    this.cacheExpiry = new Map();
-    this.defaultTTL = 5 * 60 * 1000; // 5 minutes
-  }
-
-  set(key, data, ttl = this.defaultTTL) {
-    this.cache.set(key, data);
-    this.cacheExpiry.set(key, Date.now() + ttl);
-  }
-
-  get(key) {
-    if (this.cache.has(key)) {
-      const expiry = this.cacheExpiry.get(key);
-      if (Date.now() < expiry) {
-        return this.cache.get(key);
-      } else {
-        this.cache.delete(key);
-        this.cacheExpiry.delete(key);
-      }
-    }
-    return null;
-  }
-
-  clear() {
-    this.cache.clear();
-    this.cacheExpiry.clear();
-  }
-}
-
-// EVENT FETCHING WITH PAGINATION
-class OptimizedEventManager {
-  constructor() {
-    this.cacheManager = new FirebaseCacheManager();
-    this.fetchInterval = 5 * 60 * 1000; // 5 minutes
-    this.isOnline = navigator.onLine;
-    this.setupNetworkListeners();
-  }
-
-  setupNetworkListeners() {
-    window.addEventListener('online', () => {
-      this.isOnline = true;
-      // Refresh data when coming back online
-      this.fetchEventsIfNeeded(true);
-    });
-
-    window.addEventListener('offline', () => {
-      this.isOnline = false;
-    });
-
-    // Page visibility API to pause fetching when tab is hidden
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.fetchEventsIfNeeded();
-      }
-    });
-  }
-
-  async fetchEventsIfNeeded(forceRefresh = false) {
-    const now = Date.now();
-    
-    const cacheKey = 'events_data';
-    const cachedData = this.cacheManager.get(cacheKey);
-
-    if (!forceRefresh && cachedData) {
-      console.log('Using cached events data');
-      return cachedData;
-    }
-
-    if (!forceRefresh && cachedData && this.isOnline) {
-      console.log('Using memory cached events');
-      this.eventCache = cachedData;
-      return cachedData;
-    }
-
-    if (!this.isOnline) {
-      const cachedData = this.cacheManager.get('events_data');
-      if (cachedData) {
-        console.log('Offline: using cached data');
-        return cachedData;
-      }
-    }
-
-    try {
-      console.log('Fetching fresh events data from Firebase');
-      const events = await this.fetchEventsFromFirebase();
-      
-      this.cacheManager.set(cacheKey, events, this.fetchInterval);
-      
-      return events;
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      
-      if (this.eventCache) {
-        console.log('Error occurred: using cached events');
-        return this.eventCache;
-      }
-      
-      throw error;
-    }
-  }
-
-  async fetchEventsFromFirebase() {
-    // Use query optimization - only fetch events from last 30 days to future
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 60);
-    
-    const eventsQuery = query(
-      colRef,
-      where("start", ">=", thirtyDaysAgo.toISOString().split('T')[0]), // Only recent/future events
-      orderBy("start", "desc"),
-      limit(50) // Limit initial load
-    );
-
-    const snapshot = await getDocs(eventsQuery);
+// Fetch events and shard events, then combine and initialize the calendar
+Promise.all([getDocs(query(colRef, orderBy("start", "asc")))])
+  .then(([eventsSnapshot]) => {
     const events = [];
 
-    snapshot.docs.forEach((doc) => {
-      const eventData = this.processEventData(doc);
-      if (eventData) {
-        events.push(eventData);
-      }
-    });
+    eventsSnapshot.docs.forEach((doc) => {
+      const startRaw = (doc.data().start || "").trim();
+      const endRaw = (doc.data().end || "").trim();
+      const startTime = doc.data().startTime;
 
-    return events;
-  }
+      let startLA, endLA, startLocal, endLocal;
 
-  processEventData(doc) {
-    const startRaw = (doc.data().start || "").trim();
-    const endRaw = (doc.data().end || "").trim();
-    const startTime = doc.data().startTime;
-
-    let startLA, endLA, startLocal, endLocal;
-
-    try {
       if (startTime) {
         // Timed event
         startLA = dayjs.tz(
@@ -213,9 +85,11 @@ class OptimizedEventManager {
         startLocal = startLA.tz(userTimezone);
         endLocal = endLA.tz(userTimezone);
       } else {
+        // Parse the stored dates as LA timezone (the source timezone)
         startLA = dayjs.tz(startRaw, "America/Los_Angeles").startOf("day");
         endLA = dayjs.tz(endRaw, "America/Los_Angeles").endOf("day");
 
+        // Convert to user's timezone to get the local date boundaries
         const startInUserTZ = startLA.tz(userTimezone);
         const endInUserTZ = endLA.tz(userTimezone);
 
@@ -231,17 +105,28 @@ class OptimizedEventManager {
           endRaw,
           startTime,
         });
-        return null;
+        return;
       }
 
-      const eventId = doc.id || this.generateEventId(doc.data().title);
+      const eventId = doc.id || generateEventId(doc.data().title);
 
-      return {
+      // for debug
+      // console.log("Event processing debug:", {
+      //   title: doc.data().title,
+      //   isAllDay: !startTime,
+      //   startRaw,
+      //   endRaw,
+      //   startLA: startLA.format(),
+      //   endLA: endLA.format(),
+      //   userTimezone
+      // });
+
+      events.push({
         id: eventId,
         title: doc.data().title,
         start: startLA.toDate(),
         end: endLA.toDate(),
-        allDay: !startTime,
+        allDay: startTime,
         color: doc.data().color,
         description: doc.data().description,
         images: doc.data().images,
@@ -255,465 +140,36 @@ class OptimizedEventManager {
         realm: doc.data().realm,
         note: doc.data().note,
         spiritCount: doc.data().spiritCount
-      };
-    } catch (error) {
-      console.warn("Error processing event:", doc.id, error);
-      return null;
-    }
-  }
-
-  generateEventId(title) {
-    return title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-  }
-}
-
-// NOTE WIDGET WITH REDUCED LISTENERS
-// ___________________________ OPTIMIZED STICKER NOTES ___________________________
-class OptimizedNoteWidget {
-  constructor(firestoreDb) {
-    this.db = firestoreDb;
-    this.isExpanded = false;
-    this.isVisible = false;
-    this.elements = {};
-    this.pollInterval = null;
-    this.cacheManager = new FirebaseCacheManager();
-    this.checkInterval = 2 * 60 * 1000; // Poll every 2 minutes
-    this.init();
-  }
-
-  init() {
-    this.elements = {
-      sticker: document.getElementById("noteSticker"),
-      content: document.getElementById("noteContent"),
-      message: document.getElementById("noteMessage"),
-      typeIcon: document.getElementById("noteTypeIcon"),
-      typeText: document.getElementById("noteTypeText"),
-      timestamp: document.getElementById("noteTimestamp"),
-    };
-
-    this.setupEventListeners();
-    this.startListening();
-  }
-
-  setupEventListeners() {
-    document.addEventListener("click", (e) => {
-      if (this.isExpanded && this.elements.sticker && !this.elements.sticker.contains(e.target)) {
-        this.collapse();
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && this.isExpanded) {
-        this.collapse();
-      }
-    });
-
-    const prevBtn = document.getElementById("prevNote");
-    const nextBtn = document.getElementById("nextNote");
-
-    if (prevBtn) {
-      prevBtn.addEventListener("click", () => this.showPrevNote());
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => this.showNextNote());
-    }
-  }
-
-  showPrevNote() {
-    if (!this.notes || this.notes.length === 0) return;
-    this.currentNoteIndex = (this.currentNoteIndex - 1 + this.notes.length) % this.notes.length;
-    this.displayNote(this.notes[this.currentNoteIndex]);
-  }
-
-  showNextNote() {
-    if (!this.notes || this.notes.length === 0) return;
-    this.currentNoteIndex = (this.currentNoteIndex + 1) % this.notes.length;
-    this.displayNote(this.notes[this.currentNoteIndex]);
-  }
-
-  startListening() {
-    const notesColRef = collection(this.db, "updateNotes");
-
-    this.unsubscribe = onSnapshot(notesColRef, (snapshot) => {
-      const notes = [];
-      snapshot.forEach((doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          if (this.shouldShowNote(data)) {
-            notes.push({ id: doc.id, ...data });
-          }
-        }
       });
-
-      if (notes.length > 0) {
-        this.handleMultipleNotes(notes);
-      } else {
-        this.hide();
-      }
-    }, (error) => {
-      console.error("Error listening to notes:", error);
     });
-  }
 
-  handleMultipleNotes(notes) {
-    this.notes = notes;        
-    this.currentNoteIndex = 0;
-    this.displayNote(this.notes[this.currentNoteIndex]);
-  }
-
-
-
-  async checkForNotes() {
-    const cacheKey = "note_data";
-    const cachedNote = this.cacheManager.get(cacheKey);
-    if (cachedNote) {
-      this.handleNoteData(cachedNote);
-      return;
-    }
-
-    try {
-      const noteDocRef = doc(this.db, "updateNotes", "note#1");
-      const docSnapshot = await getDoc(noteDocRef);
-
-      if (docSnapshot.exists()) {
-        const noteData = docSnapshot.data();
-        this.cacheManager.set(cacheKey, noteData, 60000); // cache for 1 min
-        this.handleNoteData(noteData);
-      } else {
-        this.hide();
-      }
-    } catch (error) {
-      console.error("Error fetching note:", error);
-    }
-  }
-
-  handleNoteData(noteData) {
-    if (this.shouldShowNote(noteData)) {
-      this.displayNote(noteData);
-    } else {
-      this.hide();
-    }
-  }
-
-  shouldShowNote(noteData) {
-    if (!noteData.isActive) return false;
-
-    if (noteData.expiresAt) {
-      const now = new Date();
-      const expiresAt = noteData.expiresAt.toDate
-        ? noteData.expiresAt.toDate()
-        : new Date(noteData.expiresAt);
-      if (now > expiresAt) return false;
-    }
-
-    return true;
-  }
-
-  displayNote(noteData) {
-    const typeInfo = this.getTypeInfo(noteData.type);
-
-    if (this.elements.typeIcon) this.elements.typeIcon.textContent = typeInfo.icon;
-    if (this.elements.typeText) this.elements.typeText.textContent = typeInfo.title;
-    if (this.elements.message) this.elements.message.textContent = noteData.message || "";
-
-    if (this.elements.timestamp) {
-      this.elements.timestamp.textContent = this.formatTimestamp(noteData.createdAt);
-    }
-
-    this.updateTriggerStyle(typeInfo.color, noteData.priority);
-    this.show();
-  }
-
-  show() {
-    if (!this.elements.sticker) return;
-    this.elements.sticker.style.display = "block";
-    this.isVisible = true;
-
-    requestAnimationFrame(() => {
-      this.elements.sticker.style.opacity = "0";
-      this.elements.sticker.style.transform = "translateY(20px) scale(0.8)";
-
-      setTimeout(() => {
-        this.elements.sticker.style.transition = "all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)";
-        this.elements.sticker.style.opacity = "1";
-        this.elements.sticker.style.transform = "translateY(0) scale(1)";
-      }, 50);
-    });
-  }
-
-  hide() {
-    if (!this.isVisible || !this.elements.sticker) return;
-    this.collapse();
-
-    setTimeout(() => {
-      this.elements.sticker.style.transition = "all 0.3s ease-out";
-      this.elements.sticker.style.opacity = "0";
-      this.elements.sticker.style.transform = "translateY(20px) scale(0.8)";
-
-      setTimeout(() => {
-        this.elements.sticker.style.display = "none";
-        this.isVisible = false;
-      }, 300);
-    }, 100);
-  }
-
-  toggle() {
-    if (this.isExpanded) {
-      this.collapse();
-    } else {
-      this.expand();
-    }
-  }
-
-  expand() {
-    if (!this.isVisible || !this.elements.content) return;
-    this.isExpanded = true;
-    this.elements.content.classList.add("show");
-  }
-
-  collapse() {
-    this.isExpanded = false;
-    if (this.elements.content) {
-      this.elements.content.classList.remove("show");
-    }
-  }
-
-  getTypeInfo(type) {
-    const types = {
-      update: { icon: "✨", title: "Update", color: "#ff6b6b" },
-      correction: { icon: "📝", title: "Correction", color: "#f39c12" },
-      delay: { icon: "⏰", title: "Notice", color: "#3498db" },
-      personal: { icon: "💙", title: "Personal Note", color: "#9b59b6" },
-      celebration: { icon: "🎉", title: "Celebration", color: "#2ecc71" },
-      alert: { icon: "⚠️", title: "Alert", color: "#e74c3c" },
-      info: { icon: "ℹ️", title: "Info", color: "#17a2b8" },
-    };
-    return types[type] || types.update;
-  }
-
-  updateTriggerStyle(color, priority = "normal") {
-    if (!this.elements.sticker) return;
-    const trigger = this.elements.sticker.querySelector(".note-trigger");
-    if (!trigger) return;
-
-    let finalColor = color;
-    if (priority === "high") {
-      finalColor = this.brightenColor(color, 20);
-    } else if (priority === "low") {
-      finalColor = this.darkenColor(color, 20);
-    }
-
-    trigger.style.background = `linear-gradient(135deg, ${finalColor} 0%, ${this.darkenColor(finalColor, 10)} 100%)`;
-    trigger.style.boxShadow = `0 6px 20px ${finalColor}40, 0 2px 8px rgba(0, 0, 0, 0.1)`;
-
-    if (priority === "high") {
-      trigger.classList.add("pulse-high-priority");
-    } else {
-      trigger.classList.remove("pulse-high-priority");
-    }
-  }
-
-  brightenColor(color, percent) {
-    const num = parseInt(color.replace("#", ""), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = (num >> 16) + amt;
-    const G = ((num >> 8) & 0x00ff) + amt;
-    const B = (num & 0x0000ff) + amt;
-    return (
-      "#" +
-      (0x1000000 +
-        (R < 255 ? R : 255) * 0x10000 +
-        (G < 255 ? G : 255) * 0x100 +
-        (B < 255 ? B : 255))
-        .toString(16)
-        .slice(1)
-    );
-  }
-
-  darkenColor(color, percent) {
-    const num = parseInt(color.replace("#", ""), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = (num >> 16) - amt;
-    const G = ((num >> 8) & 0x00ff) - amt;
-    const B = (num & 0x0000ff) - amt;
-    return (
-      "#" +
-      (0x1000000 +
-        (R < 1 ? 0 : R) * 0x10000 +
-        (G < 1 ? 0 : G) * 0x100 +
-        (B < 1 ? 0 : B))
-        .toString(16)
-        .slice(1)
-    );
-  }
-
-  formatTimestamp(timestamp) {
-    if (!timestamp) return "Just now";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return "Just now";
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  }
-
-  destroy() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-      this.unsubscribe = null;
-    }
-  }
-}
-
-let noteWidget;
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof db !== "undefined") {
-    noteWidget = new OptimizedNoteWidget(db);
-  } else {
-    console.error("Firebase db not found. Make sure Firebase is initialized first.");
-  }
-});
-
-// Global helpers (same API as before)
-window.toggleNote = function () {
-  if (noteWidget) {
-    noteWidget.toggle();
-  }
-};
-
-window.updateNote = async function (type, message, priority) {
-  if (!db) {
-    console.error("Firebase not initialized");
-    return;
-  }
-
-  try {
-    const noteDocRef = doc(db, "updateNotes", "note#1");
-    const updateData = {
-      isActive: true,
-      createdAt: serverTimestamp(),
-      createdBy: "admin",
-    };
-
-    if (type !== undefined) updateData.type = type;
-    if (message !== undefined) updateData.message = message;
-    if (priority !== undefined) updateData.priority = priority;
-
-    await updateDoc(noteDocRef, updateData);
-    console.log("Note updated successfully");
-  } catch (error) {
-    console.error("Error updating note:", error);
-  }
-};
-
-window.hideNote = async function () {
-  if (!db) {
-    console.error("Firebase not initialized");
-    return;
-  }
-
-  try {
-    const noteDocRef = doc(db, "updateNotes", "note#1");
-    await updateDoc(noteDocRef, { isActive: false });
-    console.log("Note hidden successfully");
-  } catch (error) {
-    console.error("Error hiding note:", error);
-  }
-};
-
-// MAIN INITIALIZATION
-const optimizedEventManager = new OptimizedEventManager();
-
-// Replace your existing Promise.all fetch with this optimized version
-async function initializeMain() {
-  try {
-    console.log('Initializing optimized app...');
+    console.log(events);
     
-    const events = await optimizedEventManager.fetchEventsIfNeeded();
-    
-    console.log(`Loaded ${events.length} events from cache/Firebase`);
-    
+
     // Store globally
     allEvents = events;
-    
+
     // Pass to manager
     window.skyEventsManager?.setEventsData(events);
-    
+
     // Render calendar
     initializeCalendar(events);
     displayEventNotices(events);
     showQuickOverview(events);
-    
-  } catch (error) {
-    console.error("Error initializing app: ", error);
-    handleInitializationError();
-  }
-}
-
-function handleInitializationError() {
-  const eventsGrid = document.getElementById("eventsGrid");
-  if (eventsGrid) {
-    eventsGrid.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-        <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
-        <div class="empty-state-text" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Failed to load events</div>
-        <div class="empty-state-subtext" style="color: var(--color-text-muted);">Please check your connection and try again.</div>
-        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Retry</button>
-      </div>
-    `;
-  }
-}
-
-// PERIODIC REFRESH SETUP
-function setupPeriodicRefresh() {
-  // Refresh data every 10 minutes when page is visible
-  setInterval(async () => {
-    if (document.visibilityState === 'visible' && navigator.onLine) {
-      try {
-        const events = await optimizedEventManager.fetchEventsIfNeeded();
-        
-        // Update displays if data changed
-        if (window.skyEventsManager) {
-          window.skyEventsManager.setEventsData(events);
-        }
-        
-        // Update calendar if initialized
-        if (typeof updateCalendarEvents === 'function') {
-          updateCalendarEvents(events);
-        }
-        
-        console.log('Data refreshed successfully');
-      } catch (error) {
-        console.error('Background refresh failed:', error);
-      }
+  })
+  .catch((error) => {
+    console.error("Error getting documents: ", error);
+    const eventsGrid = document.getElementById("eventsGrid");
+    if (eventsGrid) {
+      eventsGrid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+          <div class="empty-state-icon" style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+          <div class="empty-state-text" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Failed to load events</div>
+          <div class="empty-state-subtext" style="color: var(--color-text-muted);">Please check your connection and try again.</div>
+        </div>
+      `;
     }
-  }, 10 * 60 * 1000); // 10 minutes
-}
-
-function cleanupPeriodicRefresh() {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-    refreshInterval = null;
-  }
-}
-
-// Initialize everything when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  initializeMain();
-  setupPeriodicRefresh();
-  
-  // Initialize optimized note widget
-  if (typeof db !== 'undefined') {
-    noteWidget = new OptimizedNoteWidget(db);
-  }
-});
-
-// Export for use in other parts of your application
-window.optimizedEventManager = optimizedEventManager;
+  });
 
 // Initialize FullCalendar with event data
 function initializeCalendar(eventsData) {
@@ -770,11 +226,12 @@ function addCategoryFilter(calendar, eventsData) {
   categoryFilterDropdown.id = "category-filter";
   categoryFilterDropdown.title = "category-filter";
   categoryFilterDropdown.innerHTML = `
-        <option class='category-filter-option' value="">All Categories</option>
-        <option class='category-filter-option' value="special-event">Special Events</option>
-        <option class='category-filter-option' value="days-of-events">Days of Events</option>
-        <option class='category-filter-option' value="travelling-spirits">Travelling Spirits</option>
-        <option class='category-filter-option' value="seasons">Seasons</option>
+        <option value="">All Categories</option>
+        <option value="special-event">Special Events</option>
+        <option value="shard">Shard</option>
+        <option value="days-of-events">Days of Events</option>
+        <option value="travelling-spirits">Travelling Spirits</option>
+        <option value="seasons">Seasons</option>
     `;
 
   const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
@@ -1152,17 +609,10 @@ let countdownInterval = setInterval(() => {
 
 // Clean up interval when page unloads
 window.addEventListener('beforeunload', () => {
-  cleanupPeriodicRefresh();
-  cleanupCountdown();
-});
-
-function cleanupCountdown() {
   if (countdownInterval) {
     clearInterval(countdownInterval);
-    countdownInterval = null;
   }
-}
-
+});
 
 // Debug function to check if Quick Overview is working
 // window.debugQuickOverview = function() {
@@ -2729,6 +2179,240 @@ if (typeof module !== 'undefined' && module.exports) {
 
 
 // ___________________________STICKER NOTES_____________________________________
+class SimpleNoteWidget {
+  constructor(firestoreDb) {
+    this.db = firestoreDb;
+    this.isExpanded = false;
+    this.isVisible = false;
+    this.elements = {};
+    this.unsubscribe = null;
+    this.init();
+  }
+
+  init() {
+    this.elements = {
+      sticker: document.getElementById('noteSticker'),
+      content: document.getElementById('noteContent'),
+      message: document.getElementById('noteMessage'),
+      typeIcon: document.getElementById('noteTypeIcon'),
+      typeText: document.getElementById('noteTypeText'),
+      timestamp: document.getElementById('noteTimestamp')
+    };
+    this.setupEventListeners();
+    this.startListening();
+  }
+
+  setupEventListeners() {
+    document.addEventListener('click', (e) => {
+      if (this.isExpanded && this.elements.sticker && !this.elements.sticker.contains(e.target)) {
+        this.collapse();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isExpanded) {
+        this.collapse();
+      }
+    });
+  }
+
+  startListening() {
+    // Use a specific document "note#1"
+    const noteDocRef = doc(this.db, 'updateNotes', 'note#1');
+
+    this.unsubscribe = onSnapshot(noteDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const noteData = docSnapshot.data();
+
+        // Only show if the note is active and not expired
+        if (this.shouldShowNote(noteData)) {
+          this.displayNote(noteData);
+        } else {
+          this.hide();
+        }
+      } else {
+        this.hide();
+      }
+    }, (error) => {
+      console.error('Error listening to note:', error);
+    });
+  }
+
+  shouldShowNote(noteData) {
+    // Check if note is active
+    if (!noteData.isActive) return false;
+
+    // Check if note has expired
+    if (noteData.expiresAt) {
+      const now = new Date();
+      const expiresAt = noteData.expiresAt.toDate ? noteData.expiresAt.toDate() : new Date(noteData.expiresAt);
+      if (now > expiresAt) return false;
+    }
+
+    return true;
+  }
+
+  displayNote(noteData) {
+    const typeInfo = this.getTypeInfo(noteData.type);
+    if (this.elements.typeIcon) this.elements.typeIcon.textContent = typeInfo.icon;
+    if (this.elements.typeText) this.elements.typeText.textContent = typeInfo.title;
+    if (this.elements.message) this.elements.message.textContent = noteData.message || '';
+
+    const timestamp = this.formatTimestamp(noteData.createdAt);
+    if (this.elements.timestamp) this.elements.timestamp.textContent = timestamp;
+
+    // Update color based on priority and type
+    this.updateTriggerStyle(typeInfo.color, noteData.priority);
+    this.show();
+  }
+
+  show() {
+    if (!this.elements.sticker) return;
+
+    this.elements.sticker.style.display = 'block';
+    this.isVisible = true;
+
+    requestAnimationFrame(() => {
+      this.elements.sticker.style.opacity = '0';
+      this.elements.sticker.style.transform = 'translateY(20px) scale(0.8)';
+
+      setTimeout(() => {
+        this.elements.sticker.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        this.elements.sticker.style.opacity = '1';
+        this.elements.sticker.style.transform = 'translateY(0) scale(1)';
+      }, 50);
+    });
+  }
+
+  hide() {
+    if (!this.isVisible || !this.elements.sticker) return;
+    this.collapse();
+
+    setTimeout(() => {
+      this.elements.sticker.style.transition = 'all 0.3s ease-out';
+      this.elements.sticker.style.opacity = '0';
+      this.elements.sticker.style.transform = 'translateY(20px) scale(0.8)';
+
+      setTimeout(() => {
+        this.elements.sticker.style.display = 'none';
+        this.isVisible = false;
+      }, 300);
+    }, 100);
+  }
+
+  toggle() {
+    if (this.isExpanded) {
+      this.collapse();
+    } else {
+      this.expand();
+    }
+  }
+
+  expand() {
+    if (!this.isVisible || !this.elements.content) return;
+    this.isExpanded = true;
+    this.elements.content.classList.add('show');
+  }
+
+  collapse() {
+    this.isExpanded = false;
+    if (this.elements.content) {
+      this.elements.content.classList.remove('show');
+    }
+  }
+
+  getTypeInfo(type) {
+    const types = {
+      update: { icon: '✨', title: 'Update', color: '#ff6b6b' },
+      correction: { icon: '📝', title: 'Correction', color: '#f39c12' },
+      delay: { icon: '⏰', title: 'Notice', color: '#3498db' },
+      personal: { icon: '💙', title: 'Personal Note', color: '#9b59b6' },
+      celebration: { icon: '🎉', title: 'Celebration', color: '#2ecc71' },
+      alert: { icon: '⚠️', title: 'Alert', color: '#e74c3c' },
+      info: { icon: 'ℹ️', title: 'Info', color: '#17a2b8' }
+    };
+    return types[type] || types.update;
+  }
+
+  updateTriggerStyle(color, priority = 'normal') {
+    if (!this.elements.sticker) return;
+    const trigger = this.elements.sticker.querySelector('.note-trigger');
+    if (!trigger) return;
+
+    let finalColor = color;
+    if (priority === 'high') {
+      finalColor = this.brightenColor(color, 20);
+    } else if (priority === 'low') {
+      finalColor = this.darkenColor(color, 20);
+    }
+
+    trigger.style.background = `linear-gradient(135deg, ${finalColor} 0%, ${this.darkenColor(finalColor, 10)} 100%)`;
+    trigger.style.boxShadow = `0 6px 20px ${finalColor}40, 0 2px 8px rgba(0, 0, 0, 0.1)`;
+
+    if (priority === 'high') {
+      trigger.classList.add('pulse-high-priority');
+    } else {
+      trigger.classList.remove('pulse-high-priority');
+    }
+  }
+
+  brightenColor(color, percent) {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R : 255) * 0x10000 +
+      (G < 255 ? G : 255) * 0x100 +
+      (B < 255 ? B : 255)).toString(16).slice(1);
+  }
+
+  darkenColor(color, percent) {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+  }
+
+  formatTimestamp(timestamp) {
+    if (!timestamp) return 'Just now';
+
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  destroy() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+}
+
+// initialize the widget
+let noteWidget;
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof db !== 'undefined') {
+    noteWidget = new SimpleNoteWidget(db);
+  } else {
+    console.error('Firebase db not found. Make sure Firebase is initialized first.');
+  }
+});
+
 window.toggleNote = function () {
   if (noteWidget) {
     noteWidget.toggle();

@@ -73,6 +73,7 @@ class FirebaseCacheManager {
       if (Date.now() < expiry) {
         return this.cache.get(key);
       } else {
+        // Expired, remove from cache
         this.cache.delete(key);
         this.cacheExpiry.delete(key);
       }
@@ -90,6 +91,8 @@ class FirebaseCacheManager {
 class OptimizedEventManager {
   constructor() {
     this.cacheManager = new FirebaseCacheManager();
+    this.eventCache = null;
+    this.lastFetchTime = 0;
     this.fetchInterval = 5 * 60 * 1000; // 5 minutes
     this.isOnline = navigator.onLine;
     this.setupNetworkListeners();
@@ -116,39 +119,42 @@ class OptimizedEventManager {
 
   async fetchEventsIfNeeded(forceRefresh = false) {
     const now = Date.now();
-    
     const cacheKey = 'events_data';
-    const cachedData = this.cacheManager.get(cacheKey);
-
-    if (!forceRefresh && cachedData) {
+    
+    // Check if we have fresh cached data
+    if (!forceRefresh && this.eventCache && (now - this.lastFetchTime) < this.fetchInterval) {
       console.log('Using cached events data');
-      return cachedData;
+      return this.eventCache;
     }
 
+    // Check cache first
+    const cachedData = this.cacheManager.get(cacheKey);
     if (!forceRefresh && cachedData && this.isOnline) {
       console.log('Using memory cached events');
       this.eventCache = cachedData;
       return cachedData;
     }
 
-    if (!this.isOnline) {
-      const cachedData = this.cacheManager.get('events_data');
-      if (cachedData) {
-        console.log('Offline: using cached data');
-        return cachedData;
-      }
+    // Only fetch if online
+    if (!this.isOnline && this.eventCache) {
+      console.log('Offline: using existing cache');
+      return this.eventCache;
     }
 
     try {
       console.log('Fetching fresh events data from Firebase');
       const events = await this.fetchEventsFromFirebase();
       
+      // Cache the data
+      this.eventCache = events;
+      this.lastFetchTime = now;
       this.cacheManager.set(cacheKey, events, this.fetchInterval);
       
       return events;
     } catch (error) {
       console.error('Error fetching events:', error);
       
+      // Return cached data if available
       if (this.eventCache) {
         console.log('Error occurred: using cached events');
         return this.eventCache;
@@ -161,7 +167,7 @@ class OptimizedEventManager {
   async fetchEventsFromFirebase() {
     // Use query optimization - only fetch events from last 30 days to future
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 60);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
     const eventsQuery = query(
       colRef,
@@ -292,7 +298,7 @@ class OptimizedNoteWidget {
     };
 
     this.setupEventListeners();
-    this.startListening();
+    this.startPolling();
   }
 
   setupEventListeners() {
@@ -306,61 +312,16 @@ class OptimizedNoteWidget {
         this.collapse();
       }
     });
-
-    const prevBtn = document.getElementById("prevNote");
-    const nextBtn = document.getElementById("nextNote");
-
-    if (prevBtn) {
-      prevBtn.addEventListener("click", () => this.showPrevNote());
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => this.showNextNote());
-    }
   }
 
-  showPrevNote() {
-    if (!this.notes || this.notes.length === 0) return;
-    this.currentNoteIndex = (this.currentNoteIndex - 1 + this.notes.length) % this.notes.length;
-    this.displayNote(this.notes[this.currentNoteIndex]);
-  }
-
-  showNextNote() {
-    if (!this.notes || this.notes.length === 0) return;
-    this.currentNoteIndex = (this.currentNoteIndex + 1) % this.notes.length;
-    this.displayNote(this.notes[this.currentNoteIndex]);
-  }
-
-  startListening() {
-    const notesColRef = collection(this.db, "updateNotes");
-
-    this.unsubscribe = onSnapshot(notesColRef, (snapshot) => {
-      const notes = [];
-      snapshot.forEach((doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          if (this.shouldShowNote(data)) {
-            notes.push({ id: doc.id, ...data });
-          }
-        }
-      });
-
-      if (notes.length > 0) {
-        this.handleMultipleNotes(notes);
-      } else {
-        this.hide();
+  startPolling() {
+    this.checkForNotes(); // initial fetch
+    this.pollInterval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        this.checkForNotes();
       }
-    }, (error) => {
-      console.error("Error listening to notes:", error);
-    });
+    }, this.checkInterval);
   }
-
-  handleMultipleNotes(notes) {
-    this.notes = notes;        
-    this.currentNoteIndex = 0;
-    this.displayNote(this.notes[this.currentNoteIndex]);
-  }
-
-
 
   async checkForNotes() {
     const cacheKey = "note_data";
@@ -562,10 +523,7 @@ class OptimizedNoteWidget {
   }
 
   destroy() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-      this.unsubscribe = null;
-    }
+    if (this.pollInterval) clearInterval(this.pollInterval);
   }
 }
 
@@ -694,13 +652,6 @@ function setupPeriodicRefresh() {
   }, 10 * 60 * 1000); // 10 minutes
 }
 
-function cleanupPeriodicRefresh() {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-    refreshInterval = null;
-  }
-}
-
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   initializeMain();
@@ -770,11 +721,12 @@ function addCategoryFilter(calendar, eventsData) {
   categoryFilterDropdown.id = "category-filter";
   categoryFilterDropdown.title = "category-filter";
   categoryFilterDropdown.innerHTML = `
-        <option class='category-filter-option' value="">All Categories</option>
-        <option class='category-filter-option' value="special-event">Special Events</option>
-        <option class='category-filter-option' value="days-of-events">Days of Events</option>
-        <option class='category-filter-option' value="travelling-spirits">Travelling Spirits</option>
-        <option class='category-filter-option' value="seasons">Seasons</option>
+        <option value="">All Categories</option>
+        <option value="special-event">Special Events</option>
+        <option value="shard">Shard</option>
+        <option value="days-of-events">Days of Events</option>
+        <option value="travelling-spirits">Travelling Spirits</option>
+        <option value="seasons">Seasons</option>
     `;
 
   const calendarHeader = document.querySelector(".fc-toolbar-chunk:nth-child(2)");
@@ -1152,17 +1104,10 @@ let countdownInterval = setInterval(() => {
 
 // Clean up interval when page unloads
 window.addEventListener('beforeunload', () => {
-  cleanupPeriodicRefresh();
-  cleanupCountdown();
-});
-
-function cleanupCountdown() {
   if (countdownInterval) {
     clearInterval(countdownInterval);
-    countdownInterval = null;
   }
-}
-
+});
 
 // Debug function to check if Quick Overview is working
 // window.debugQuickOverview = function() {

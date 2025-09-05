@@ -154,3 +154,85 @@
     font-size: 1.5rem;
   }
 }
+
+/* ========Dark Theme for Credits Section======== */
+[data-theme="dark"] .credits-section {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .credits-section h1,
+[data-theme="dark"] .credits-section h2,
+[data-theme="dark"] .credits-section h3 {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .credits-intro {
+  background: var(--color-special);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .credits-section h2 {
+  border-bottom-color: var(--color-accent);
+}
+
+[data-theme="dark"] .credit-item {
+  background: var(--color-bg);
+  border-left-color: var(--color-accent);
+}
+
+[data-theme="dark"] .credit-label {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .credit-value {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .credit-value a {
+  color: var(--color-accent);
+}
+
+[data-theme="dark"] .credit-value a:hover {
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .credits-section a {
+  color: var(--color-accent);
+}
+
+[data-theme="dark"] .credits-section a:hover {
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .legal-notice {
+  background: var(--color-shards);
+  border-color: rgba(255, 255, 255, 0.1);
+  border-left-color: #e74c3c;
+}
+
+[data-theme="dark"] .legal-notice h3 {
+  color: #e74c3c;
+}
+
+[data-theme="dark"] .legal-notice .skycotl-description {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .disclaimer {
+  background: var(--color-warning);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .contact-info {
+  background: var(--color-ts);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .contributor-list {
+  color: #4ecdc4;
+}
+
+[data-theme="dark"] .skycotl-description {
+  color: var(--color-text-muted);
+}

@@ -131,6 +131,34 @@
   font-style: italic;
 }
 
+.note-navigation {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  gap: 6px;
+}
+
+.note-nav-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease;
+}
+
+.note-nav-btn:hover {
+  background: #2980b9;
+}
+
+.note-nav-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+
 /* ========Animation======== */
 @keyframes gentlePulse {
   0%,

@@ -193,6 +193,301 @@
   cursor: pointer;
 }
 
+#category-filter:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+#category-filter:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+}
+
+/* ========Filter Options======== */
+.category-filter-option {
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  margin: 2px 0;
+  position: relative;
+}
+
+.category-filter-option:hover {
+  background: rgba(163, 196, 243, 0.1);
+  color: var(--color-accent);
+  transform: translateX(4px);
+}
+
+.category-filter-option:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  background: rgba(163, 196, 243, 0.1);
+}
+
+.category-filter-option.selected {
+  background: var(--color-accent);
+  color: white;
+  font-weight: 600;
+}
+
+.category-filter-option.selected:hover {
+  background: #8bb3e8;
+  transform: translateX(0);
+}
+
+/* ========Category-specific styling======== */
+.category-filter-option[data-category="seasonal"] {
+  border-left: 4px solid var(--color-season);
+}
+
+.category-filter-option[data-category="ts"] {
+  border-left: 4px solid var(--color-ts);
+}
+
+.category-filter-option[data-category="special"] {
+  border-left: 4px solid var(--color-special);
+}
+
+.category-filter-option[data-category="shards"] {
+  border-left: 4px solid var(--color-shards);
+}
+
+.category-filter-option[data-category="days"] {
+  border-left: 4px solid var(--color-days);
+}
+
+.category-filter-option[data-category="all"] {
+  border-left: 4px solid var(--color-accent);
+}
+
+/* ========Option icons and labels======== */
+.category-filter-option-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.category-filter-option-icon.seasonal {
+  background: var(--color-season);
+  color: #5d4037;
+}
+
+.category-filter-option-icon.ts {
+  background: var(--color-ts);
+  color: #2e7d32;
+}
+
+.category-filter-option-icon.special {
+  background: var(--color-special);
+  color: #00695c;
+}
+
+.category-filter-option-icon.shards {
+  background: var(--color-shards);
+  color: var(--color-text);
+}
+
+.category-filter-option-icon.days {
+  background: var(--color-days);
+  color: #4a148c;
+}
+
+.category-filter-option-icon.all {
+  background: var(--color-accent);
+  color: white;
+}
+
+.category-filter-option-label {
+  flex-grow: 1;
+  text-align: left;
+  padding-left: var(--spacing-xs);
+}
+
+.category-filter-option-count {
+  background: rgba(163, 196, 243, 0.1);
+  color: var(--color-text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 20px;
+  text-align: center;
+}
+
+.category-filter-option.selected .category-filter-option-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* ========Dropdown container======== */
+.category-filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  padding: var(--spacing-xs);
+  margin-top: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: var(--animation-fade-in);
+}
+
+.category-filter-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.category-filter-dropdown::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 3px;
+}
+
+.category-filter-dropdown::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 3px;
+}
+
+.category-filter-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #8bb3e8;
+}
+
+/* ========Search within filter======== */
+.category-filter-search {
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid rgba(163, 196, 243, 0.2);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.category-filter-search:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(163, 196, 243, 0.1);
+}
+
+.category-filter-search::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* ========Dark Theme======== */
+[data-theme="dark"] #category-filter {
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] #category-filter:hover {
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .category-filter-option {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .category-filter-option:hover {
+  background: rgba(122, 163, 216, 0.1);
+  color: var(--color-accent);
+}
+
+[data-theme="dark"] .category-filter-option.selected {
+  background: var(--color-accent);
+  color: white;
+}
+
+[data-theme="dark"] .category-filter-option.selected:hover {
+  background: #6b92d1;
+}
+
+[data-theme="dark"] .category-filter-option-icon.seasonal {
+  background: var(--color-season);
+  color: #ffccbc;
+}
+
+[data-theme="dark"] .category-filter-option-icon.ts {
+  background: var(--color-ts);
+  color: #c8e6c9;
+}
+
+[data-theme="dark"] .category-filter-option-icon.special {
+  background: var(--color-special);
+  color: #b2dfdb;
+}
+
+[data-theme="dark"] .category-filter-option-icon.days {
+  background: var(--color-days);
+  color: #e1bee7;
+}
+
+[data-theme="dark"] .category-filter-option-icon.shards {
+  background: var(--color-shards);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .category-filter-option-count {
+  background: rgba(122, 163, 216, 0.1);
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .category-filter-dropdown {
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .category-filter-search {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-color: rgba(122, 163, 216, 0.2);
+}
+
+[data-theme="dark"] .category-filter-search:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(122, 163, 216, 0.1);
+}
+
+[data-theme="dark"] .category-filter-dropdown::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+[data-theme="dark"] .category-filter-dropdown::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+}
+
+[data-theme="dark"] .category-filter-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #6b92d1;
+}
+
+
 /* ========Responsive======== */
 @media (max-width: 768px) {
   #calendarSection {

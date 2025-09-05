@@ -64,6 +64,7 @@
   <link rel="stylesheet" href="subscription.css">
   <link rel="stylesheet" href="game_modal.css">
   <link rel="stylesheet" href="sticker.css">
+  <link rel="stylesheet" href="overlay.css">
 
 
   <link rel="icon" type="image/x-icon"
@@ -78,10 +79,10 @@
 </head>
 
 <body>
-  <!-- LOADING OVERLAY -->
-  <!-- <div class="overlay">
-    <div class="loader"></div>
-  </div> -->
+  <!-- Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
 
   <!-- Navigation Bar -->
   <nav class="navbar">
@@ -189,6 +190,10 @@
       </div>
       <div class="note-message" id="noteMessage"></div>
       <div class="note-timestamp" id="noteTimestamp"></div>
+      <div class="note-navigation">
+        <button id="prevNote" class="note-nav-btn">←</button>
+        <button id="nextNote" class="note-nav-btn">→</button>
+      </div>
     </div>
   </div>
 
@@ -1121,6 +1126,15 @@
     if (typeof module !== 'undefined' && module.exports) {
       module.exports = WebsiteManager;
     }
+  </script>
+
+  <script>
+    window.addEventListener("load", () => {
+      const overlay = document.getElementById("loadingOverlay");
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+      }, 3000); // 3 seconds
+    });
   </script>
 
 </body>
