@@ -895,8 +895,6 @@
       const modal = document.createElement('div');
       modal.className = 'calendar-instructions-modal';
 
-      // console.log('Device detection:', device); // For debugging
-
       // Build dynamic content based on device
       let title = 'Subscribe to Sky Events Calendar';
       let description = 'Add this calendar to stay updated with all Sky events:';
@@ -960,19 +958,154 @@
     function subscribeToGoogleCalendar() {
       const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
       const googleUrl = `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarUrl)}`;
+      
+      console.log('Opening Google Calendar with URL:', googleUrl);
       window.open(googleUrl, '_blank');
     }
 
     function subscribeToAppleCalendar() {
-      const url = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
-      window.location.href = url; // iOS Safari will open a prompt to subscribe
+      const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
+      const webcalUrl = calendarUrl.replace('https://', 'webcal://');
+      
+      console.log('Opening Apple Calendar with webcal URL:', webcalUrl);
+      
+      try {
+        window.location.href = webcalUrl;
+      } catch (error) {
+        console.log('Webcal failed, trying HTTPS:', error);
+        window.location.href = calendarUrl;
+      }
     }
 
     function subscribeToOutlookCalendar() {
+      // Use HTTPS instead of HTTP
       const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
       const outlookUrl = `https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(calendarUrl)}`;
+      
+      console.log('Opening Outlook Calendar with URL:', outlookUrl);
       window.open(outlookUrl, '_blank');
     }
+
+    function copyCalendarUrl() {
+      const timestamp = new Date().getTime();
+      const calendarUrl = `http://development--thatskyevents.netlify.app/.netlify/functions/calendar?v=${timestamp}`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(calendarUrl).then(() => {
+          showNotification('📋 Calendar URL copied to clipboard!');
+        }).catch(err => {
+          console.error('Failed to copy URL:', err);
+          fallbackCopyTextToClipboard(calendarUrl);
+        });
+      } else {
+        fallbackCopyTextToClipboard(calendarUrl);
+      }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showNotification('📋 Calendar URL copied to clipboard!');
+        } else {
+          showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+        }
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'copy-notification';
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 10001;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
+
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showNotification('📋 Calendar URL copied to clipboard!');
+      } else {
+        showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+      }
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+    }
+    
+    document.body.removeChild(textArea);
+  }
+
+  function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'copy-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 10001;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
 
     // Initialize WebsiteManager
     let websiteManager = null;

@@ -167,8 +167,11 @@ export async function handler(event, context) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Access-Control-Allow-Headers": "Content-Type",
-        "Cache-Control": "public, max-age=300",
-        "X-Content-Type-Options": "nosniff"
+        "Cache-Control": "no-cache, no-store, must-revalidate", 
+        "Pragma": "no-cache",
+        "Expires": "0",
+        "X-Content-Type-Options": "nosniff",
+        "ETag": `"${Date.now()}"`
       },
       body: calendarString
     };
