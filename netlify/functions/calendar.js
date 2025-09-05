@@ -21,14 +21,63 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-console.log("Firebase initialized");
+let cachedCalendar = null;
+let cachedETag = null;
+let cacheExpiry = 0;
+let cachedEventCount = 0;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes cache
+
+console.log("Firebase initialized with caching");
 
 export async function handler(event, context) {
   try {
-    const snapshot = await db.collection("events").get();
-    console.log(`Found ${snapshot.size} documents in events collection`);
+    const now = Date.now();
+    const clientETag = event.headers?.['if-none-match'];
 
-    const now = new Date();
+    if (cachedCalendar && now < cacheExpiry) {
+      console.log("✅ Serving from cache - NO Firebase reads!");
+      
+      // If client has same ETag, return 304 Not Modified
+      if (clientETag && clientETag === cachedETag) {
+        console.log("🎯 Client has current version - returning 304");
+        return {
+          statusCode: 304,
+          headers: {
+            "ETag": cachedETag,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "X-Served-From": "cache-304"
+          }
+        };
+      }
+
+      // Return cached calendar
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "text/calendar; charset=utf-8",
+          "Content-Disposition": 'inline; filename="sky-events.ics"',
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0",
+          "Pragma": "no-cache",
+          "Expires": "0",
+          "ETag": cachedETag,
+          "Last-Modified": new Date().toUTCString(),
+          "X-Content-Type-Options": "nosniff",
+          "Vary": "Accept-Encoding, User-Agent",
+          "X-Generated-At": new Date().toISOString(),
+          "X-Events-Count": cachedEventCount.toString(),
+          "X-Served-From": "cache"
+        },
+        body: cachedCalendar
+      };
+    }
+
+    console.log("⚠️  Cache expired/empty - fetching from Firestore");
+    const snapshot = await db.collection("events").get();
+    console.log(`📊 Firebase read: ${snapshot.size} documents`);
+
     const calendar = ical({
       name: "Sky CotL Events",
       prodId: {
@@ -38,11 +87,11 @@ export async function handler(event, context) {
       },
       url: "http://development--thatskyevents.netlify.app/.netlify/functions/calendar",
       method: "PUBLISH",
-      description: `Sky: Children of the Light Events - Last updated: ${now.toISOString()}`,
-      lastModified: now
+      description: `Sky: Children of the Light Events - Last updated: ${new Date().toISOString()}`,
+      lastModified: new Date()
     });
 
-    console.log("Generating calendar...");
+    console.log("🔄 Generating fresh calendar...");
 
     let eventCount = 0;
     let skippedCount = 0;
@@ -50,7 +99,6 @@ export async function handler(event, context) {
     snapshot.forEach((doc) => {
       const data = doc.data();
       console.log(`\n--- Processing document ${doc.id} ---`);
-      console.log("Raw Firestore data:", JSON.stringify(data, null, 2));
 
       if (!data.title) {
         console.warn("❌ Skipping event: missing title");
@@ -69,7 +117,6 @@ export async function handler(event, context) {
       }
 
       console.log(`✅ Event has required fields: "${data.title}"`);
-      console.log(`📅 Dates - start: "${data.start}", end: "${data.end}"`);
 
       try {
         let startJSDate, endJSDate;
@@ -106,7 +153,6 @@ export async function handler(event, context) {
           return;
         }
 
-        // Validate dates
         if (isNaN(startJSDate.getTime()) || isNaN(endJSDate.getTime())) {
           console.error(`❌ Invalid dates for "${data.title}":`, {
             startInput: data.start,
@@ -134,37 +180,36 @@ export async function handler(event, context) {
           sequence: Math.floor(Date.now() / 1000) 
         };
 
-        console.log("📝 Creating event with config:", JSON.stringify({
-          uid: eventConfig.uid,
-          start: eventConfig.start.toISOString(),
-          end: eventConfig.end.toISOString(),
-          summary: eventConfig.summary,
-          sequence: eventConfig.sequence
-        }, null, 2));
-
         calendar.createEvent(eventConfig);
         eventCount++;
         console.log(`✅ Event "${data.title}" added successfully!`);
 
       } catch (dateError) {
         console.error(`❌ Error processing dates for event "${data.title}":`, dateError);
-        console.error("Error stack:", dateError.stack);
         skippedCount++;
         return;
       }
     });
 
-    console.log(`\n=== SUMMARY ===`);
+    console.log(`\n=== GENERATION SUMMARY ===`);
     console.log(`📊 Total documents: ${snapshot.size}`);
     console.log(`✅ Events created: ${eventCount}`);
     console.log(`❌ Events skipped: ${skippedCount}`);
 
     const calendarString = calendar.toString();
-    console.log("Calendar preview:\n", calendarString.split("\n").slice(0, 10).join("\n"));
-
+    
+    //Cache the results
     const contentHash = Buffer.from(calendarString).toString('base64').substring(0, 16);
     const timestamp = Date.now();
     const uniqueETag = `"${contentHash}-${timestamp}"`;
+    
+    cachedCalendar = calendarString;
+    cachedETag = uniqueETag;
+    cachedEventCount = eventCount;
+    cacheExpiry = now + CACHE_DURATION;
+    
+    console.log(`🎯 Calendar cached for ${CACHE_DURATION / 60000} minutes`);
+    console.log(`📦 Cache will expire at: ${new Date(cacheExpiry).toISOString()}`);
 
     return {
       statusCode: 200,
@@ -187,13 +232,28 @@ export async function handler(event, context) {
         
         "X-Generated-At": new Date().toISOString(),
         "X-Events-Count": eventCount.toString(),
-        "X-Calendar-Version": timestamp.toString()
+        "X-Calendar-Version": timestamp.toString(),
+        "X-Served-From": "fresh"
       },
       body: calendarString
     };
+
   } catch (error) {
-    console.error("Calendar generation failed:", error);
+    console.error("💥 Calendar generation failed:", error);
     console.error("Error stack:", error.stack);
+    
+    if (cachedCalendar) {
+      console.log("🔄 Serving stale cache as fallback");
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "text/calendar; charset=utf-8",
+          "X-Served-From": "stale-cache-fallback"
+        },
+        body: cachedCalendar
+      };
+    }
+    
     return {
       statusCode: 500,
       headers: {
