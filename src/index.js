@@ -241,7 +241,7 @@ class OptimizedEventManager {
         title: doc.data().title,
         start: startLA.toDate(),
         end: endLA.toDate(),
-        allDay: !startTime,
+        allDay: false,
         color: doc.data().color,
         description: doc.data().description,
         images: doc.data().images,
@@ -1232,7 +1232,7 @@ function openEventModal(event) {
   if (note && note.trim()) {
     modalNote.innerHTML = `
             <div class="note-title">Note</div>
-            <div class="note-content">${note}</div>
+            <div class="modalnote-content">${note}</div>
         `;
     modalNote.style.display = 'block';
   } else {
