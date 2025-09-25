@@ -1,4 +1,4 @@
-# Sky: Children of the Light – Event Calendar  
+# That Sky Events – Event Calendar for Sky: Children of the Light
 
 A **fan-made event calendar website** for *Sky: Children of the Light*.  
 This project provides a clear and accessible way for players to track upcoming events, seasonal content, and community happenings within the game.  
