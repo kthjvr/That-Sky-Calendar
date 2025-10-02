@@ -241,7 +241,7 @@ class OptimizedEventManager {
         title: doc.data().title,
         start: startLA.toDate(),
         end: endLA.toDate(),
-        allDay: !startTime,
+        allDay: false,
         color: doc.data().color,
         description: doc.data().description,
         images: doc.data().images,
