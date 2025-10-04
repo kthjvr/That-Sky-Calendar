@@ -1232,7 +1232,7 @@ function openEventModal(event) {
   if (note && note.trim()) {
     modalNote.innerHTML = `
             <div class="note-title">Note</div>
-            <div class="note-content">${note}</div>
+            <div class="modal-note-content">${note}</div>
         `;
     modalNote.style.display = 'block';
   } else {
