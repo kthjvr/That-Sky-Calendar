@@ -931,6 +931,7 @@ function showQuickOverview(events) {
       const eventEnd = new Date(event.end);
       return eventEnd >= currentDate; // Show current and future events
     })
+    .sort((a, b) => new Date(a.start) - new Date(b.start)) // Sort by earliest start date
     .slice(0, 6); // Limit to 6 cards for quick overview
 
   // Handle single card layout
@@ -954,7 +955,6 @@ function showQuickOverview(events) {
 
   relevantEvents.forEach((event, index) => {
     const eventCard = createEventCard(event);
-    // Stagger animation
     eventCard.style.animationDelay = `${index * 0.1}s`;
     container.appendChild(eventCard);
   });
