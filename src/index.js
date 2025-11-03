@@ -1038,7 +1038,7 @@ function getBadgeInfo(category) {
   console.log(category);
   
 
-  if (categoryLower.includes('traveling')) {
+  if (categoryLower.includes('travelling-spirits')) {
     return { class: 'ts', text: 'TS' };
   } else if (categoryLower.includes('season')) {
     return { class: 'season', text: 'SEASON' };
@@ -1188,6 +1188,7 @@ function openEventModal(event) {
   const modal = document.getElementById('eventModal');
   const modalImageContainer = document.getElementById('modalImageContainer');
   const modalBadge = document.getElementById('modalBadge');
+  const modalCredits = document.getElementById('modalCredits');
   const modalTitle = document.getElementById('modalTitle');
   const modalDescription = document.getElementById('modalDescription');
   const modalNote = document.getElementById('modalNote');
@@ -1202,6 +1203,9 @@ function openEventModal(event) {
   const badgeInfo = getBadgeInfo(category);
   modalBadge.textContent = badgeInfo.text;
   modalBadge.className = `modal-badge ${badgeInfo.class}`;
+
+  let cleanCredits = event.credits || (event.extendedProps && event.extendedProps.credits);
+  modalCredits.textContent = "Credits: "+ cleanCredits;
 
   // Set title (clean up TS prefixes)
   let cleanTitle = event.title || '';
