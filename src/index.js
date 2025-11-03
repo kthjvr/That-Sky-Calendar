@@ -627,8 +627,6 @@ window.hideNote = async function () {
 
 // MAIN INITIALIZATION
 const optimizedEventManager = new OptimizedEventManager();
-
-// Replace your existing Promise.all fetch with this optimized version
 async function initializeMain() {
   try {
     console.log('Initializing optimized app...');
@@ -1037,13 +1035,17 @@ function createEventCard(event) {
 // Helper function to get badge information
 function getBadgeInfo(category) {
   const categoryLower = category?.toLowerCase() || '';
+  console.log(category);
+  
 
-  if (categoryLower.includes('traveling') || categoryLower.includes('ts')) {
+  if (categoryLower.includes('traveling')) {
     return { class: 'ts', text: 'TS' };
   } else if (categoryLower.includes('season')) {
     return { class: 'season', text: 'SEASON' };
   } else if (categoryLower.includes('special')) {
     return { class: 'special', text: 'SPECIAL' };
+  } else if (categoryLower.includes('days-of-events')) {
+    return { class: 'days', text: 'DAYS OF' };
   } else {
     return { class: 'special', text: 'EVENT' };
   }

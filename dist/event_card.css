@@ -157,6 +157,12 @@
   border-color: rgba(205, 234, 192, 0.5);
 }
 
+.event-badge.days {
+  background: rgba(205, 234, 192, 0.9);
+  color: #279fbd;
+  border-color: rgba(198, 245, 255, 0.5);
+}
+
 .event-badge.season {
   background: rgba(252, 213, 206, 0.9);
   color: #8b2635;

@@ -7,13 +7,13 @@
       "name": "That Sky Events",
       "url": "https://thatskyevents.netlify.app/",
       "description": "Community calendar for Sky: Children of the Light events",
-    }</script><link rel="stylesheet" href="style2.css"><link rel="stylesheet" href="event_card.css"><link rel="stylesheet" href="event_notice.css"><link rel="stylesheet" href="calendar.css"><link rel="stylesheet" href="modal.css"><link rel="stylesheet" href="event_list.css"><link rel="stylesheet" href="credits.css"><link rel="stylesheet" href="subscription.css"><link rel="icon" type="image/x-icon" href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705"><script defer="defer" src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script><script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script><script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script><script defer="defer" src="firebase-19f9d112.bundle.js"></script><script defer="defer" src="firebase-4e0e0553.bundle.js"></script><script defer="defer" src="vendors.bundle.js"></script><script defer="defer" src="index.bundle.js"></script></head><body><nav class="navbar"><div class="nav-container"><a href="#home" class="logo-link"><img class="logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo - Sky: Children of the Light"> </a><button type="button" class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button><ul class="nav-links"><button type="button" class="close-btn" aria-label="Close menu">&times;</button><li><a href="#home">Home</a></li><li><a href="#calendarSection">Calendar</a></li><li><a href="#eventsGrid">Events</a></li><li><a href="#about">About</a></li><li><button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode"><svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg> <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg></button></li></ul></div></nav><div class="nav-overlay"></div><section class="hero-banner" id="home"><picture class="hero-background"><source media="(max-width: 768px)" srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img-port.jpg?tr=w-768,q-70,f-webp" type="image/webp"><source media="(min-width: 769px)" srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70,f-webp" type="image/webp"><img src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70" alt="That Sky Events Hero Background" width="1600" height="900" loading="eager"></picture><div class="hero-overlay"></div><div class="hero-content"><h1 class="hero-title">That Sky Events</h1><p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.</p><div class="hero-cta-container"><button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">📅 Subscribe to Sky Events Calendar</button> <a href="#calendar" class="secondary-cta">View Calendar</a></div></div><div class="info-section"><div class="info-container"><h2>Heads Up</h2></div><div class="info-container game"><h2>Fancy a game?</h2><p class="game-description">Challenge yourself with a round of memory game! Click to play.</p><button type="button" id="open-game-modal">Play Game</button></div></div></section><button type="button" id="scrollTopBtn" aria-label="Scroll to top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></button><section class="quick-overview" id="quick-overview"><h2 class="section-title">Quick Overview</h2><div class="event-cards-overview" id="event-cards-container"><div class="loading-spinner"></div></div></section><section id="calendarSection"><div class="calendar-subscription-banner"><h3>📅 Want these events in your own calendar?</h3><p>Subscribe to get automatic updates for all Sky events, traveling spirits, and seasonal celebrations.</p><button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">Subscribe Now</button></div><div class="calendar-info"><div style="margin-right: 10px;"><img src="https://img.icons8.com/?size=100&id=63308&format=png&color=000000" alt="Calendar Icon" style="width: 30px; height: 30px;"></div><div><p style="margin: 0;">Click on the events inside the calendar to see more details.</p></div></div><div id="calendar" class="calendar"></div></section><div class="events-grid" id="eventsGrid"></div><section class="credits-section" id="about"><h1>Image Credits & Acknowledgments</h1><div class="credits-intro"><strong>That Sky Events</strong> is a community-created calendar and resource website for Sky: Children of the Light players. This is an unofficial fan project designed to help the Sky community stay informed about events and game information.</div><h2>Game Assets & Screenshots</h2><div class="credits-grid"><div class="credit-item"><div class="credit-label">Original Game:</div><div class="credit-value">Sky: Children of the Light</div></div><div class="credit-item"><div class="credit-label">Developer/Publisher:</div><div class="credit-value">thatgamecompany</div></div><div class="credit-item"><div class="credit-label">Copyright:</div><div class="credit-value">© thatgamecompany. All rights reserved.</div></div></div><p>All Sky: Children of the Light game imagery, assets, and screenshots are the intellectual property of <strong>thatgamecompany</strong>. These images are used for informational and educational purposes to help the Sky community.</p><h2>Community Documentation</h2><div class="credit-item"><div class="credit-label">Primary Source:</div><div class="credit-value"><a href="https://sky-children-of-the-light.fandom.com/" target="_blank" rel="noopener">Sky: Children of the Light Wiki</a> hosted on Fandom</div></div><h3>Special Recognition</h3><p>We acknowledge and thank all contributors to the Sky: Children of the Light Wiki, including administrators, editors, and image uploaders who have made comprehensive documentation possible. The wiki serves as an invaluable resource for the Sky community, and this calendar project would not be possible without their dedicated work.</p><div class="legal-notice"><h3>Copyright Notice</h3><p>All copyrighted materials used on this website remain the property of their respective copyright holders. Images are used for educational and informational purposes only, with no commercial intent.</p><p>If you are a copyright holder and would like content removed or have concerns about usage, please contact us and we will promptly address your request.</p></div><div class="disclaimer">That Sky Events is an independent fan-created resource and is not affiliated with or endorsed by thatgamecompany. Sky: Children of the Light is a trademark of thatgamecompany.</div></section><div class="modal-overlay" id="eventModal"><div class="event-modal"><div class="modal-header"><div class="modal-image-container" id="modalImageContainer"></div><button type="button" class="modal-close" id="closeModal">&times;</button><div class="modal-badge" id="modalBadge"></div></div><div class="modal-body"><h2 class="modal-title" id="modalTitle">Event Title</h2><div class="quick-info-summary" id="quickInfoSummary"></div><div class="modal-description" id="modalDescription"></div><div class="modal-note" id="modalNote"></div><div class="modal-actions"><button type="button" class="modal-btn share" id="modalShareBtn"><span class="btn-icon">📤</span> Share Event</button> <button type="button" class="modal-btn calendar" id="modalCalendarBtn"><span class="btn-icon">📅</span> Add to Calendar</button></div></div></div></div><div class="zoom-modal" id="zoomModal"></div><footer class="footer"><div class="footer-container"><div class="footer-left"><a href="#home" class="footer-logo-link"><img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo"></a><p class="footer-text">Made with ❤️ by <a href="https://kthjvr.github.io/Kathleen-Digital-Portfolio/" target="_blank" rel="noopener" class="footer-link">Kathy</a> © 2024 ThatSkyEvents. All rights reserved.</p></div><div class="footer-right"><h2 class="footer-title">Need assistance?</h2><p class="footer-help-text">I’m here to help! Contact me for any questions, requests, or navigation issues.</p><div class="social-links"><a rel="noopener" href="https://discordapp.com/users/kx.linaa" target="_blank" class="social-icon"><img src="https://img.icons8.com/?size=100&id=LIGCjf5dKGrN&format=png&color=000000" alt="Discord icon"> <span>Discord</span> </a><a rel="noopener" href="https://www.instagram.com/thatgrumpycatto/" target="_blank" class="social-icon"><img src="https://img.icons8.com/?size=100&id=bh8L0hocH1mA&format=png&color=000000" alt="Instagram icon"> <span>Instagram</span></a></div></div></div></footer><script>class WebsiteManager {
+    }</script><link rel="stylesheet" href="style2.css"><link rel="stylesheet" href="event_card.css"><link rel="stylesheet" href="event_notice.css"><link rel="stylesheet" href="calendar.css"><link rel="stylesheet" href="modal.css"><link rel="stylesheet" href="event_list.css"><link rel="stylesheet" href="credits.css"><link rel="stylesheet" href="subscription.css"><link rel="stylesheet" href="game_modal.css"><link rel="stylesheet" href="sticker.css"><link rel="stylesheet" href="overlay.css"><link rel="icon" type="image/x-icon" href="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705"><script defer="defer" src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script><script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script><script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script><script defer="defer" src="firebase-19f9d112.bundle.js"></script><script defer="defer" src="firebase-4e0e0553.bundle.js"></script><script defer="defer" src="vendors.bundle.js"></script><script defer="defer" src="index.bundle.js"></script></head><body><div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div><nav class="navbar"><div class="nav-container"><a href="#home" class="logo-link"><img class="logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo - Sky: Children of the Light"> </a><button type="button" class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button><ul class="nav-links"><button type="button" class="close-btn" aria-label="Close menu">&times;</button><li><a href="#home">Home</a></li><li><a href="#calendarSection">Calendar</a></li><li><a href="#eventsGrid">Events</a></li><li><a href="#about">About</a></li><li><button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode"><svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg> <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg></button></li></ul></div></nav><div class="nav-overlay"></div><section class="hero-banner" id="home"><picture class="hero-background"><source media="(max-width: 768px)" srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img-port.jpg?tr=w-768,q-70,f-webp" type="image/webp"><source media="(min-width: 769px)" srcset="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70,f-webp" type="image/webp"><img src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/hero-img.jpg?tr=w-1600,q-70" alt="That Sky Events Hero Background" width="1600" height="900" loading="eager"></picture><div class="hero-overlay"></div><div class="hero-content"><h1 class="hero-title">That Sky Events</h1><p class="hero-description">Stay updated with upcoming events, traveling spirits, and seasonal celebrations in the world of Sky.</p><div class="hero-cta-container"><button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">📅 Subscribe to Sky Events Calendar</button> <a href="#calendar" class="secondary-cta">View Calendar</a></div></div><div class="info-section"><div class="info-container"><h2>Heads Up</h2></div><div class="info-container game"><h2>Fancy a game?</h2><p class="game-description">Challenge yourself with a round of memory game! Click to play.</p><button type="button" id="open-game-modal">Play Game</button></div></div></section><div class="floating-note-sticker" id="noteSticker" style="display: none;"><div class="note-trigger" onclick="toggleNote()" aria-label="Toggle update note"><span class="note-icon">📌</span></div><div class="note-content" id="noteContent"><div class="note-header"><div class="note-title"><span id="noteTypeIcon">✨</span> <span id="noteTypeText">Update</span></div><button class="note-close" onclick="toggleNote()" aria-label="Close note">×</button></div><div class="note-message" id="noteMessage"></div><div class="note-timestamp" id="noteTimestamp"></div><div class="note-navigation"><button id="prevNote" class="note-nav-btn">←</button> <button id="nextNote" class="note-nav-btn">→</button></div></div></div><button type="button" id="scrollTopBtn" aria-label="Scroll to top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></button><section class="quick-overview" id="quick-overview"><h2 class="section-title">Quick Overview</h2><div class="event-cards-overview" id="event-cards-container"><div class="loading-spinner"></div></div></section><section id="calendarSection"><div class="calendar-subscription-banner"><h3>📅 Want these events in your own calendar?</h3><p>Subscribe to get automatic updates for all Sky events, traveling spirits, and seasonal celebrations.</p><button type="button" class="subscription-cta" onclick="showCalendarSubscriptionInstructions()">Subscribe Now</button></div><div class="calendar-info"><div style="margin-right: 10px;"><img src="https://img.icons8.com/?size=100&id=63308&format=png&color=000000" alt="Calendar Icon" style="width: 30px; height: 30px;"></div><div><p style="margin: 0;">Click on the events inside the calendar to see more details.</p></div></div><div id="calendar" class="calendar"></div></section><div class="events-grid" id="eventsGrid"></div><section class="credits-section" id="about"><h1>Image Credits & Acknowledgments</h1><div class="credits-intro"><strong>That Sky Events</strong> is a community-created calendar and resource website for Sky: Children of the Light players. This is an unofficial fan project designed to help the Sky community stay informed about events and game information.</div><h2>Game Assets & Screenshots</h2><div class="credits-grid"><div class="credit-item"><div class="credit-label">Original Game:</div><div class="credit-value">Sky: Children of the Light</div></div><div class="credit-item"><div class="credit-label">Developer/Publisher:</div><div class="credit-value">thatgamecompany</div></div><div class="credit-item"><div class="credit-label">Copyright:</div><div class="credit-value">© thatgamecompany. All rights reserved.</div></div></div><p class="skycotl-description">All game assets and screenshots are the intellectual property of <strong>thatgamecompany</strong>. Images contributed by the <strong>Sky: Children of the Light Wiki</strong> community are used under CC-BY-SA 3.0 for informational and educational purposes to help the Sky community.</p><h2>Community Documentation</h2><div class="credit-item"><div class="credit-label">Primary Source:</div><div class="credit-value"><a href="https://sky-children-of-the-light.fandom.com/" target="_blank" rel="noopener noreferrer">Sky: Children of the Light Wiki </a>hosted on Fandom</div></div><h3>Special Recognition</h3><p class="skycotl-description">We sincerely acknowledge and thank all contributors to the <strong>Sky: Children of the Light Wiki</strong>, including administrators, editors, and image uploaders. Their dedication and collaborative effort have made comprehensive documentation possible, serving as an invaluable resource for the Sky community. This project would not have been possible without their hard work and passion.</p><h3>Contributor Credits</h3><p class="skycotl-description contributor-list">Special thanks to the following community members for contributing images and infographics used in this project (licensed under CC-BY-SA 3.0): <strong><a href="https://sky-children-of-the-light.fandom.com/wiki/User:Raiiiiiiiiiiiin" target="_blank" rel="noopener noreferrer">Raiiiiiiiiiiiin</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:Morybel" target="_blank" rel="noopener noreferrer">Morybel</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:Ray808080" target="_blank" rel="noopener noreferrer">Ray808080</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:Ghostingskies" target="_blank" rel="noopener noreferrer">Ghostingskies</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:Ilivetowrite" target="_blank" rel="noopener noreferrer">Ilivetowrite</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:777.Ed" target="_blank" rel="noopener noreferrer">777.Ed</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:Journeyoftheuniverse" target="_blank" rel="noopener noreferrer">Journeyoftheuniverse</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:ChristianKingFu" target="_blank" rel="noopener noreferrer">ChristianKingFu</a>, <a href="https://sky-children-of-the-light.fandom.com/wiki/User:Jet Lye" target="_blank" rel="noopener noreferrer">Jet Lye</a></strong></p><div class="legal-notice"><h3>Copyright Notice</h3><p class="skycotl-description">All copyrighted materials used on this website remain the property of their respective copyright holders. Images and content are used for educational and informational purposes only, with no commercial intent.</p><p class="skycotl-description">If you are a copyright holder and would like content removed, or have any concerns about usage, please contact us. We will promptly address your request.</p></div><div class="disclaimer">That Sky Events is an independent, fan-created resource and is not affiliated with or endorsed by thatgamecompany. Sky: Children of the Light is a trademark of thatgamecompany.</div></section><div class="modal-overlay" id="eventModal"><div class="event-modal"><div class="modal-header"><div class="modal-image-container" id="modalImageContainer"></div><button type="button" class="modal-close" id="closeModal">&times;</button><div class="modal-badge" id="modalBadge"></div></div><div class="modal-body"><h2 class="modal-title" id="modalTitle">Event Title</h2><div class="quick-info-summary" id="quickInfoSummary"></div><div class="modal-description" id="modalDescription"></div><div class="modal-note" id="modalNote"></div><div class="modal-actions"><button type="button" class="modal-btn share" id="modalShareBtn"><span class="btn-icon">📤</span> Share Event</button> <button type="button" class="modal-btn calendar" id="modalCalendarBtn"><span class="btn-icon">📅</span> Add to Calendar</button></div></div></div></div><div class="zoom-modal" id="zoomModal"></div><div id="game-modal" class="game-modal" hidden><div class="game-modal-content"><span class="close" aria-label="Close game modal">&times;</span><div class="iframe-container"><iframe src="https://echoes-of-light.netlify.app/" title="Echoes of Light Memory Game" loading="lazy"></iframe></div></div></div><footer class="footer"><div class="footer-container"><div class="footer-left"><a href="#home" class="footer-logo-link"><img class="footer-logo" src="https://ik.imagekit.io/e3wiv79bq/Sky:%20Cotl/logo.jpg?updatedAt=1745047743705" alt="That Sky Events Calendar Logo"></a><p class="footer-text">Made with ❤️ by <a href="https://kthjvr.github.io/kathy-portfolio/" target="_blank" rel="noopener" class="footer-link">Kathy</a> © 2024 ThatSkyEvents. All rights reserved.</p></div><div class="footer-right"><h2 class="footer-title">Need assistance?</h2><p class="footer-help-text">I’m here to help! Contact me for any questions, requests, or navigation issues.</p><div class="social-links"><a rel="noopener" href="https://discordapp.com/users/kx.linaa" target="_blank" class="social-icon"><img src="https://img.icons8.com/?size=100&id=LIGCjf5dKGrN&format=png&color=000000" alt="Discord icon"> <span>Discord</span> </a><a rel="noopener" href="https://www.instagram.com/thatgrumpycatto/" target="_blank" class="social-icon"><img src="https://img.icons8.com/?size=100&id=bh8L0hocH1mA&format=png&color=000000" alt="Instagram icon"> <span>Instagram</span></a></div></div></div></footer><script>class WebsiteManager {
       constructor() {
         this.state = {
           isMenuOpen: false,
           currentTheme: null
         };
-        
+
         this.elements = {};
         this.init();
       }
@@ -34,21 +34,27 @@
           closeBtn: document.querySelector('.close-btn'),
           scrollTopBtn: document.getElementById('scrollTopBtn'),
           themeToggle: document.getElementById('theme-toggle'),
-          metaTheme: document.querySelector('meta[name="theme-color"]')
+          metaTheme: document.querySelector('meta[name="theme-color"]'),
+          // Game modal elements
+          gameModal: document.getElementById('game-modal'),
+          openGameBtn: document.getElementById('open-game-modal'),
+          closeGameBtn: document.querySelector('#game-modal .close')
         };
       }
 
       initializeComponents() {
         this.cacheElements();
+        this.setInitialMenuState();
         this.initMobileMenu();
         this.initScrollToTop();
         this.initThemeManager();
         this.initCalendarSubscription();
+        this.initGameModal();
       }
 
       initMobileMenu() {
         const { menuToggle, navLinks, navOverlay, closeBtn } = this.elements;
-        
+
         if (!menuToggle || !navLinks) return;
 
         // Set initial state properly
@@ -99,24 +105,24 @@
 
       openMenu() {
         const { menuToggle, navLinks, navOverlay } = this.elements;
-        
+
         this.state.isMenuOpen = true;
-        
+
         if (navLinks) {
-          navLinks.classList.add('active');
-          // Force display block before adding active class for smooth transition
           navLinks.style.display = 'block';
-          // Use requestAnimationFrame to ensure display takes effect before transition
+          navLinks.classList.add('active');
+
+          // Use requestAnimationFrame to ensure smooth animation
           requestAnimationFrame(() => {
             navLinks.style.transform = 'translateX(0)';
           });
         }
-        
+
         if (navOverlay) {
           navOverlay.classList.add('active');
           navOverlay.style.display = 'block';
         }
-        
+
         if (menuToggle) {
           menuToggle.setAttribute('aria-expanded', 'true');
         }
@@ -126,13 +132,13 @@
 
       closeMenu() {
         const { menuToggle, navLinks, navOverlay } = this.elements;
-        
+
         this.state.isMenuOpen = false;
-        
+
         if (navLinks) {
           navLinks.classList.remove('active');
-          // Reset transform to initial position
-          navLinks.style.transform = '';
+          navLinks.style.transform = 'translateX(100%)'; // Slide off-screen
+
           // Hide after transition completes
           setTimeout(() => {
             if (!this.state.isMenuOpen) {
@@ -140,12 +146,12 @@
             }
           }, 300);
         }
-        
+
         if (navOverlay) {
           navOverlay.classList.remove('active');
           navOverlay.style.display = 'none';
         }
-        
+
         if (menuToggle) {
           menuToggle.setAttribute('aria-expanded', 'false');
         }
@@ -155,30 +161,35 @@
 
       setInitialMenuState() {
         const { navLinks, navOverlay, menuToggle } = this.elements;
-        
+
         if (this.isMobile()) {
+          // On mobile, ensure menu is hidden
           if (navLinks) {
             navLinks.classList.remove('active');
             navLinks.style.display = 'none';
-            navLinks.style.transform = '';
+            navLinks.style.transform = 'translateX(100%)';
           }
-          
+
           if (navOverlay) {
             navOverlay.classList.remove('active');
             navOverlay.style.display = 'none';
           }
-          
+
           if (menuToggle) {
             menuToggle.setAttribute('aria-expanded', 'false');
           }
         } else {
-          // On desktop, ensure menu is visible
           if (navLinks) {
-            navLinks.style.display = '';
-            navLinks.style.transform = '';
+            navLinks.classList.remove('active');
+            navLinks.style.display = 'flex';
+            navLinks.style.transform = 'translateX(0)';
+          }
+
+          if (navOverlay) {
+            navOverlay.style.display = 'none';
           }
         }
-        
+
         this.state.isMenuOpen = false;
         document.body.style.overflow = '';
       }
@@ -194,14 +205,14 @@
 
       initScrollToTop() {
         const { scrollTopBtn } = this.elements;
-        
+
         if (!scrollTopBtn) return;
 
         let scrollTimeout = null;
-        
+
         window.addEventListener('scroll', () => {
           if (scrollTimeout) return;
-          
+
           scrollTimeout = setTimeout(() => {
             this.handleScroll();
             scrollTimeout = null;
@@ -218,7 +229,7 @@
 
       handleScroll() {
         const { scrollTopBtn } = this.elements;
-        
+
         if (window.scrollY > 200) {
           scrollTopBtn?.classList.add('show');
         } else {
@@ -228,7 +239,7 @@
 
       initThemeManager() {
         const { themeToggle } = this.elements;
-        
+
         this.state.currentTheme = this.getStoredTheme() || this.getSystemTheme();
         this.applyTheme(this.state.currentTheme);
 
@@ -263,7 +274,7 @@
       applyTheme(theme) {
         this.state.currentTheme = theme;
         document.documentElement.setAttribute('data-theme', theme);
-        
+
         const { metaTheme } = this.elements;
         if (metaTheme) {
           const themeColor = theme === 'dark' ? '#1a1f2e' : '#fafafa';
@@ -275,14 +286,14 @@
         const newTheme = this.state.currentTheme === 'light' ? 'dark' : 'light';
         this.applyTheme(newTheme);
         this.setStoredTheme(newTheme);
-        
+
         this.addToggleAnimation();
       }
 
       addToggleAnimation() {
         const { themeToggle } = this.elements;
         if (!themeToggle) return;
-        
+
         themeToggle.style.transform = 'scale(0.95)';
         setTimeout(() => {
           themeToggle.style.transform = '';
@@ -291,7 +302,7 @@
 
       setupSystemThemeListener() {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
+
         mediaQuery.addEventListener('change', (e) => {
           if (!this.getStoredTheme()) {
             this.applyTheme(e.matches ? 'dark' : 'light');
@@ -333,7 +344,7 @@
         } catch (error) {
           console.warn('Could not clear theme from localStorage:', error);
         }
-        
+
         this.applyTheme(this.getSystemTheme());
       }
 
@@ -345,9 +356,87 @@
         return this.state.isMenuOpen;
       }
 
+      initGameModal() {
+        this.cacheGameElements();
+        this.setupGameEventListeners();
+      }
+
+      cacheGameElements() {
+        this.elements.gameModal = document.getElementById('game-modal');
+        this.elements.openGameBtn = document.getElementById('open-game-modal');
+        this.elements.closeGameBtn = document.querySelector('#game-modal .close');
+      }
+
+      setupGameEventListeners() {
+        const { gameModal, openGameBtn, closeGameBtn } = this.elements;
+
+        if (!gameModal || !openGameBtn) return;
+        openGameBtn.addEventListener('click', () => this.openGameModal());
+
+        if (closeGameBtn) {
+          closeGameBtn.addEventListener('click', () => this.closeGameModal());
+        }
+
+        gameModal.addEventListener('click', (e) => {
+          if (e.target === gameModal) {
+            this.closeGameModal();
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.isGameModalOpen()) {
+            this.closeGameModal();
+          }
+        });
+      }
+
+      openGameModal() {
+        const { gameModal } = this.elements;
+        if (!gameModal) return;
+        document.body.style.overflow = 'hidden';
+
+        gameModal.removeAttribute('hidden');
+
+        requestAnimationFrame(() => {
+          gameModal.classList.add('show');
+        });
+
+        const closeBtn = gameModal.querySelector('.close');
+        if (closeBtn) {
+          closeBtn.focus();
+        }
+
+        console.log('Game modal opened');
+      }
+
+      closeGameModal() {
+        const { gameModal } = this.elements;
+        if (!gameModal) return;
+
+        gameModal.classList.remove('show');
+
+        setTimeout(() => {
+          gameModal.setAttribute('hidden', '');
+          document.body.style.overflow = '';
+        }, 250);
+
+        const openBtn = this.elements.openGameBtn;
+        if (openBtn) {
+          openBtn.focus();
+        }
+
+        console.log('Game modal closed');
+      }
+
+      isGameModalOpen() {
+        const { gameModal } = this.elements;
+        return gameModal && gameModal.classList.contains('show');
+      }
+
       destroy() {
         document.body.style.overflow = '';
         this.closeMenu();
+        this.closeGameModal();
       }
     }
 
@@ -356,36 +445,35 @@
       const userAgent = navigator.userAgent;
       const platform = navigator.platform;
       const maxTouchPoints = navigator.maxTouchPoints || 0;
-      
+
       // Detect specific devices and platforms
       const detection = {
         // Mobile Operating Systems
         isIOS: /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream,
         isAndroid: /Android/.test(userAgent),
         isWindowsPhone: /Windows Phone/.test(userAgent),
-        
+
         // Desktop Operating Systems
         isWindows: /Win/.test(platform) || /Windows/.test(userAgent),
         isMacOS: /Mac/.test(platform) && !(/iPad|iPhone|iPod/.test(userAgent)),
         isLinux: /Linux/.test(platform) && !/Android/.test(userAgent),
         isChromebook: /CrOS/.test(userAgent),
-        
+
         // Browsers
         isChrome: /Chrome/.test(userAgent) && !/Edge|Edg/.test(userAgent),
         isSafari: /Safari/.test(userAgent) && !/Chrome|Edge|Edg/.test(userAgent),
         isFirefox: /Firefox/.test(userAgent),
         isEdge: /Edge|Edg/.test(userAgent),
-        
+
         // Device types
         isMobile: /Mobi|Android/i.test(userAgent) || maxTouchPoints > 0 && window.innerWidth <= 768,
         isTablet: (/iPad/.test(userAgent)) || (maxTouchPoints > 0 && window.innerWidth > 768 && window.innerWidth <= 1024),
         isDesktop: !(/Mobi|Android|iPad|iPhone|iPod/.test(userAgent)) && maxTouchPoints === 0,
-        
-        // Capabilities
+
         hasTouch: maxTouchPoints > 0 || 'ontouchstart' in window,
         isStandalone: window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches
       };
-      
+
       // Determine primary platform category
       if (detection.isIOS) detection.platform = 'ios';
       else if (detection.isAndroid) detection.platform = 'android';
@@ -393,28 +481,25 @@
       else if (detection.isWindows) detection.platform = 'windows';
       else if (detection.isLinux) detection.platform = 'linux';
       else detection.platform = 'unknown';
-      
+
       // Determine device category
       if (detection.isMobile) detection.deviceType = 'mobile';
       else if (detection.isTablet) detection.deviceType = 'tablet';
       else detection.deviceType = 'desktop';
-      
+
       return detection;
     }
 
-    // Calendar subscription functions with enhanced device detection
     function showCalendarSubscriptionInstructions() {
       const device = detectDevice();
       const modal = document.createElement('div');
       modal.className = 'calendar-instructions-modal';
-      
-      console.log('Device detection:', device); // For debugging
-      
+
       // Build dynamic content based on device
       let title = 'Subscribe to Sky Events Calendar';
       let description = 'Add this calendar to stay updated with all Sky events:';
       let buttons = '';
-      
+
       // Customize based on platform
       if (device.isIOS) {
         title = '📱 Add to your iPhone/iPad Calendar';
@@ -438,15 +523,14 @@
         buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
         buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
       } else {
-        // Fallback for other systems
         buttons += `<button onclick="subscribeToGoogleCalendar()" class="primary-option">📊 Google Calendar</button>`;
         buttons += `<button onclick="subscribeToAppleCalendar()">📅 Apple Calendar</button>`;
         buttons += `<button onclick="subscribeToOutlookCalendar()">📧 Outlook Calendar</button>`;
       }
-      
+
       // Always include copy URL option
       buttons += `<button onclick="copyCalendarUrl()" class="secondary-option">📋 Copy Calendar URL</button>`;
-      
+
       // Add device-specific instructions
       let instructions = '';
       if (device.isMobile && device.isIOS) {
@@ -456,7 +540,7 @@
       } else if (device.isDesktop) {
         instructions = '<p class="device-instructions">💡 Links will open in your default browser and calendar application.</p>';
       }
-      
+
       modal.innerHTML = `
         <div class="modal-content">
           <h3>${title}</h3>
@@ -474,26 +558,161 @@
     function subscribeToGoogleCalendar() {
       const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
       const googleUrl = `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(calendarUrl)}`;
+      
+      console.log('Opening Google Calendar with URL:', googleUrl);
       window.open(googleUrl, '_blank');
     }
 
     function subscribeToAppleCalendar() {
-      const url = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
-      window.location.href = url; // iOS Safari will open a prompt to subscribe
+      const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
+      const webcalUrl = calendarUrl.replace('https://', 'webcal://');
+      
+      console.log('Opening Apple Calendar with webcal URL:', webcalUrl);
+      
+      try {
+        window.location.href = webcalUrl;
+      } catch (error) {
+        console.log('Webcal failed, trying HTTPS:', error);
+        window.location.href = calendarUrl;
+      }
     }
 
     function subscribeToOutlookCalendar() {
+      // Use HTTPS instead of HTTP
       const calendarUrl = 'http://development--thatskyevents.netlify.app/.netlify/functions/calendar';
       const outlookUrl = `https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(calendarUrl)}`;
+      
+      console.log('Opening Outlook Calendar with URL:', outlookUrl);
       window.open(outlookUrl, '_blank');
     }
+
+    function copyCalendarUrl() {
+      const timestamp = new Date().getTime();
+      const calendarUrl = `http://development--thatskyevents.netlify.app/.netlify/functions/calendar?v=${timestamp}`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(calendarUrl).then(() => {
+          showNotification('📋 Calendar URL copied to clipboard!');
+        }).catch(err => {
+          console.error('Failed to copy URL:', err);
+          fallbackCopyTextToClipboard(calendarUrl);
+        });
+      } else {
+        fallbackCopyTextToClipboard(calendarUrl);
+      }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showNotification('📋 Calendar URL copied to clipboard!');
+        } else {
+          showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+        }
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+        showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'copy-notification';
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 10001;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
+
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showNotification('📋 Calendar URL copied to clipboard!');
+      } else {
+        showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+      }
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      showNotification('❌ Failed to copy URL. Please copy manually: ' + text);
+    }
+    
+    document.body.removeChild(textArea);
+  }
+
+  function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'copy-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 10001;
+      font-family: Arial, sans-serif;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
 
     // Initialize WebsiteManager
     let websiteManager = null;
 
     if (typeof window !== 'undefined') {
       websiteManager = new WebsiteManager();
-      
+
       window.setTheme = (theme) => websiteManager?.setTheme(theme);
       window.resetTheme = () => websiteManager?.resetToSystemTheme();
       window.getCurrentTheme = () => websiteManager?.getCurrentTheme();
@@ -501,4 +720,9 @@
 
     if (typeof module !== 'undefined' && module.exports) {
       module.exports = WebsiteManager;
-    }</script></body></html>
+    }</script><script>window.addEventListener("load", () => {
+      const overlay = document.getElementById("loadingOverlay");
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+      }, 3000); // 3 seconds
+    });</script></body></html>
