@@ -121,12 +121,12 @@ class OptimizedEventManager {
     const cachedData = this.cacheManager.get(cacheKey);
 
     if (!forceRefresh && cachedData) {
-      console.log('Using cached events data');
+      // console.log('Using cached events data');
       return cachedData;
     }
 
     if (!forceRefresh && cachedData && this.isOnline) {
-      console.log('Using memory cached events');
+      // console.log('Using memory cached events');
       this.eventCache = cachedData;
       return cachedData;
     }
@@ -134,13 +134,13 @@ class OptimizedEventManager {
     if (!this.isOnline) {
       const cachedData = this.cacheManager.get('events_data');
       if (cachedData) {
-        console.log('Offline: using cached data');
+        // console.log('Offline: using cached data');
         return cachedData;
       }
     }
 
     try {
-      console.log('Fetching fresh events data from Firebase');
+      // console.log('Fetching fresh events data from Firebase');
       const events = await this.fetchEventsFromFirebase();
       
       this.cacheManager.set(cacheKey, events, this.fetchInterval);
@@ -161,7 +161,7 @@ class OptimizedEventManager {
   async fetchEventsFromFirebase() {
     // Use query optimization - only fetch events from last 30 days to future
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 60);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 75);
     
     const eventsQuery = query(
       colRef,
@@ -604,7 +604,7 @@ window.updateNote = async function (type, message, priority) {
     if (priority !== undefined) updateData.priority = priority;
 
     await updateDoc(noteDocRef, updateData);
-    console.log("Note updated successfully");
+    // console.log("Note updated successfully");
   } catch (error) {
     console.error("Error updating note:", error);
   }
@@ -619,7 +619,7 @@ window.hideNote = async function () {
   try {
     const noteDocRef = doc(db, "updateNotes", "note#1");
     await updateDoc(noteDocRef, { isActive: false });
-    console.log("Note hidden successfully");
+    // console.log("Note hidden successfully");
   } catch (error) {
     console.error("Error hiding note:", error);
   }
@@ -629,7 +629,7 @@ window.hideNote = async function () {
 const optimizedEventManager = new OptimizedEventManager();
 async function initializeMain() {
   try {
-    console.log('Initializing optimized app...');
+    // console.log('Initializing optimized app...');
     
     const events = await optimizedEventManager.fetchEventsIfNeeded();
     
@@ -684,7 +684,7 @@ function setupPeriodicRefresh() {
           updateCalendarEvents(events);
         }
         
-        console.log('Data refreshed successfully');
+        // console.log('Data refreshed successfully');
       } catch (error) {
         console.error('Background refresh failed:', error);
       }
@@ -1035,7 +1035,7 @@ function createEventCard(event) {
 // Helper function to get badge information
 function getBadgeInfo(category) {
   const categoryLower = category?.toLowerCase() || '';
-  console.log(category);
+  // console.log(category);
   
 
   if (categoryLower.includes('travelling-spirits')) {
@@ -2760,7 +2760,7 @@ window.updateNote = async function (type, message, priority) {
     if (priority !== undefined) updateData.priority = priority;
 
     await updateDoc(noteDocRef, updateData);
-    console.log('Note updated successfully');
+    // console.log('Note updated successfully');
   } catch (error) {
     console.error('Error updating note:', error);
   }
@@ -2777,7 +2777,7 @@ window.hideNote = async function () {
     await updateDoc(noteDocRef, {
       isActive: false
     });
-    console.log('Note hidden successfully');
+    // console.log('Note hidden successfully');
   } catch (error) {
     console.error('Error hiding note:', error);
   }
