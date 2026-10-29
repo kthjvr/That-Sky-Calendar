@@ -1752,13 +1752,16 @@ function setQuickInfoSummary(event) {
     
   } else if (category === 'seasons') {
     // Seasonal Events
-    const seasonType = getProp('seasonType');
+    const realm = getProp('realm');
+    const location = getProp('location');
     const spiritCount = getProp('spiritCount');
-    const duration = getProp('duration');
-    const specialItems = getProp('specialItems');
-
+    const emote = getProp('emote');
+  
     infoItems.push(
+      { icon: '🌍', label: 'Realm:', value: realm || 'To be announced' },
+      { icon: '📌', label: 'Location:', value: location || 'To be announced' },
       { icon: '👥', label: 'Spirits:', value: spiritCount || 'To be announced' },
+      { icon: '🕊️', label: 'Emote:', value: emote || 'N/A' }
     );
   } else if (category === 'days-of-events') {
     const location = getProp('location');
@@ -1783,11 +1786,13 @@ function setQuickInfoSummary(event) {
     const spiritCount = getProp('spiritCount');
     const realms = getProp('realms');
     const duration = getProp('duration');
+    const emote = getProp('emote');
 
     infoItems.push(
       { icon: '👥', label: 'Spirit Count:', value: spiritCount || 'To be announced' },
       { icon: '🌍', label: 'Realms:', value: realms || 'Multiple realms' },
       { icon: '⏱️', label: 'Duration:', value: duration || 'To be announced' },
+      { icon: '🕊️', label: 'Emote:', value: emote || 'N/A' }
     );
   } else {
     // Default/Generic events
